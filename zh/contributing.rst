@@ -12,8 +12,6 @@
     contributing/cakephp-coding-conventions
     contributing/backwards-compatibility
 
-
-
 .. meta::
     :title lang=zh: Contributing
     :keywords lang=zh: coding conventions,documentation,maxdepth

@@ -1,14 +1,14 @@
-SessionHelper
-#############
+Session
+#######
 
 .. php:namespace:: Cake\View\Helper
 
 .. php:class:: SessionHelper(View $view, array $config = [])
 
-Équivalent du Component Session, le Helper Session offre la majorité des
-fonctionnalités du component et les rend disponible dans votre vue.
+Le SessionHelper offre la majorité des fonctionnalités de l'objet Session et
+les rend disponible dans votre vue.
 
-La grande différence entre le Component Session et le Helper Session est que ce
+La grande différence entre l'objet Session et le SessionHelper est que ce
 dernier *ne peut pas* écrire dans la session.
 
 Comme pour le Component Session, les données sont écrites et lues en
@@ -21,7 +21,7 @@ comme ci-dessous::
 
 Étant donné ce tableau, le nœud sera accessible par ``User.username``, le point
 indiquant le tableau imbriqué. Cette notation est utilisée pour toutes les
-méthodes du helper Session où une variable ``$key`` est utilisée.
+méthodes du SessionHelper où une variable ``$key`` est utilisée.
 
 .. php:method:: read(string $key)
 
@@ -34,10 +34,10 @@ méthodes du helper Session où une variable ``$key`` est utilisée.
 
     :rtype: boolean
 
-    Vérifie si une clé est dans la Session. Retourne un boléen sur l'existence
+    Vérifie si une clé est dans la Session. Retourne un booléen sur l'existence
     d'un clé.
 
 .. meta::
     :title lang=fr: SessionHelper
-    :description lang=fr: Équivalent du component Session, le Helper Session offre la majorité des fonctionnalités du component et les rend disponibles dans votre vue.
+    :description lang=fr: Le SessionHelper offre la majorité des fonctionnalités disponibles dans votre vue.
     :keywords lang=fr: session helper,flash messages,session flash,session read,session check

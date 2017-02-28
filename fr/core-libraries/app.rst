@@ -17,7 +17,7 @@ Cette méthode est utilisée pour trouver les noms de classe dans CakePHP.
 Elle retrouve les noms courts que CakePHP utilise et retourne le nom de
 classe entier::
 
-    // Retourne un nom de classe court avec le namespace + suffix
+    // Retourne un nom de classe court avec le namespace + suffixe
     App::classname('Auth', 'Controller/Component', 'Component');
     // Retourne Cake\Controller\Component\AuthComponent
 
@@ -56,7 +56,7 @@ pour lesquels l'autoloader est configuré.
 
 .. php:staticmethod:: core(string $package)
 
-Utilisé pour trouver le chemin vers un package dans CakePHP::
+Utilisée pour trouver le chemin vers un package dans CakePHP::
 
     // Obtenir le chemin des moteurs de Cache.
     App::core('Cache/Engine');
@@ -64,13 +64,13 @@ Utilisé pour trouver le chemin vers un package dans CakePHP::
 Localiser les Plugins
 =====================
 
-.. php:staticmethod:: pluginPath(string $plugin)
+.. php:staticmethod:: Plugin::path(string $plugin)
 
-Les plugins peuvent aussi être localisés avec App. En utilisant
-``App::pluginPath('DebugKit');`` par exemple, cela vous donnera le chemin
+Les plugins peuvent être localisés avec Plugin. En utilisant
+``Plugin::path('DebugKit');`` par exemple, cela vous donnera le chemin
 complet vers le plugin DebugKit::
 
-    $path = App::pluginPath('DebugKit');
+    $path = Plugin::path('DebugKit');
 
 Localiser les Themes
 ====================
@@ -89,7 +89,7 @@ Si vous ne pouvez pas installer une librairie avec Composer, il est mieux
 d'installer chaque librairie dans un répertoire en suivant les conventions de
 Composer de ``vendor/$author/$package``.
 Si vous avez une librairie appelée AcmeLib, vous pouvez l'installer dans
-``/vendor/Acme/AcmeLib``. En supposant qu'il n'utilise pas des noms de classe
+``vendor/Acme/AcmeLib``. En supposant qu'il n'utilise pas des noms de classe
 compatible avec PSR-0, vous pouvez auto-charger les classes qu'il contient en
 utilisant ``classmap`` dans le ``composer.json`` de votre application::
 

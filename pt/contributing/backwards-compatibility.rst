@@ -1,166 +1,183 @@
-Backwards Compatibility Guide
-#############################
+Guia de retrocompatibilidade
+############################
 
-Ensuring that you can upgrade your applications easily and smoothly is important
-to us. That's why we only break compatibility at major release milestones.
-You might be familiar with `semantic versioning <http://semver.org/>`_, which is
-the general guideline we use on all CakePHP projects. In short, semantic
-versioning means that only major releases (such as 2.0, 3.0, 4.0) can break
-backwards compatibility. Minor releases (such as 2.1, 3.1, 3.2) may introduce new
-features, but are not allowed to break compatibility. Bug fix releases (such as 2.1.2,
-3.0.1) do not add new features, but fix bugs or enhance performance only.
+Garantir que você possa atualizar suas aplicações facilmente é importante para
+nós. Por esse motivo, apenas quebramos compatibilidade nos *major releases*.
+Você deve estar familiarizado  com
+`versionamento semântico <http://semver.org/>`_, orientação usada em
+todos os projetos do CakePHP. Resumindo, significa que apenas *major releases*
+(tais como 2.0, 3.0, 4.0) podem quebrar retrocompatibilidades. *Minor releases*
+(tais como 2.1, 3.1, 4.1) podem introduzir novos recursos, mas não podem quebrar
+retrocompatibilidades. *Releases* de correção de *bugs* (tais como 2.1.2, 3.0.1)
+não incluem novos recursos, são destinados apenas à correção de erros e melhora
+de desempenho.
 
 .. note::
 
-    CakePHP started following semantic versioning in 2.0.0. These
-    rules do not apply to 1.x.
+    O CakePHP começou a seguir o versionamento semântico na versão 2.0.0. Essas
+    regras não se aplicam às versões 1.x.
 
-To clarify what changes you can expect in each release tier we have more
-detailed information for developers using CakePHP, and for developers working on
-CakePHP that helps set expectations of what can be done in minor releases. Major
-releases can have as many breaking changes as required.
+Para esclarecer que mudanças você pode esperar em cada ciclo de *release*, nós
+temos mais informações detalhadas para desenvolvedores usando o CakePHP, e para
+desenvolvedores trabalhando Não CakePHP que ajudam a definir espectativas do que
+pode ser feito em *minor releases*. *Major releases* podem ter tantas quebras
+quanto forem necessárias.
 
-Migration Guides
+Guia de migração
 ================
 
-For each major and minor release, the CakePHP team will provide a migration
-guide. These guides explain the new features and any breaking changes that are
-in each release. They can be found in the :doc:`/appendices` section of the
-cookbook.
+Para cada *major* ou *minor releases*, a equipe do CakePHP vai disponibilizar
+um guia de migração. Esses guias explicam os novos recursos e qualquer quebra
+de compatibilidade. Eles podem ser encontrados na seção :doc:`/appendices` do
+manual.
 
-Using CakePHP
-=============
+Usando o CakePHP
+================
 
-If you are building your application with CakePHP, the following guidelines
-explain the stability you can expect.
+Se você está construindo sua aplicação com o CakePHP, as orientações a seguir
+vão demonstrar a estabilidade que você pode esperar.
 
 Interfaces
 ----------
 
-Outside of major releases, interfaces provided by CakePHP will **not** have any
-existing methods changed. New methods may be added, but no existing methods will
-be changed.
+Com exceção dos *major releases*, interfaces oferecidas pelo CakePHP **não**
+irão ter alterações em qualquer método. Novos métodos podem ser incluídos, mas
+nenhum método existente será alterado.
 
 Classes
 -------
 
-Classes provided by CakePHP can be constructed and have their public methods and
-properties used by application code and outside of major releases backwards
-compatibility is ensured.
+Classes oferecidas pelo CakePHP podem ser construidas e ter seus métodos
+públicos e propriedades usados Não código da aplicação e com exceção de
+*major releases* a retrocompatibilidade é garantida.
 
 .. note::
 
-    Some classes in CakePHP are marked with the ``@internal`` API doc tag. These
-    classes are **not** stable and do not have any backwards compatibility
-    promises.
+    Algumas classes Não CakePHP são marcadas com a *tag* da documentação da API
+    ``@internal``. Essas classes **não** são estáveis e não tem garantias de
+    retrocompatibilidade.
 
-In minor releases, new methods may be added to classes, and existing methods may
-have new arguments added. Any new arguments will have default values, but if
-you've overidden methods with a differing signature you may see fatal errors.
-Methods that have new arguments added will be documented in the migration guide
-for that release.
+Em *minor releases*, novos métodos podem ser adicionados a classes, e métodos
+existentes podem passar a receber novos argumentos. Qualquer novo argumento vai
+ter valores padrões, mas se você sobrescrever métodos com uma assinatura
+diferente, é possível que você receba erros fatais. Métodos que recebem novos
+argumentos serão documentados Não guia de migração correspondente ao *release*.
 
-The following table outlines several use cases and what compatibility you can
-expect from CakePHP:
+A tabela a seguir descreve quais casos de uso e que tipo de compatibilidade
+você pode esperar do CakePHP.
 
 +-------------------------------+--------------------------+
-| If you...                     | Backwards compatibility? |
+| Se você...                    | Retrocompatibilidade?    |
 +===============================+==========================+
-| Typehint against the class    | Yes                      |
+| Typehint referente à classe   | Sim                      |
 +-------------------------------+--------------------------+
-| Create a new instance         | Yes                      |
+| Criar uma nova instância      | Sim                      |
 +-------------------------------+--------------------------+
-| Extend the class              | Yes                      |
+| Estender a classe             | Sim                      |
 +-------------------------------+--------------------------+
-| Access a public property      | Yes                      |
+| Acessar uma propriedade       | Sim                      |
+| pública                       |                          |
 +-------------------------------+--------------------------+
-| Call a public method          | Yes                      |
+| Chamar um método público      | Sim                      |
 +-------------------------------+--------------------------+
-| **Extend a class and...**                                |
+| **Estender uma classe e...**                             |
 +-------------------------------+--------------------------+
-| Override a public property    | Yes                      |
+| Sobrescrever uma              | Sim                      |
+| propriedade pública           |                          |
 +-------------------------------+--------------------------+
-| Access a protected property   | No [1]_                  |
+| Acessar uma propriedade       | Não [1]_                 |
+| protegida                     |                          |
 +-------------------------------+--------------------------+
-| Override a protected property | No [1]_                  |
+| Sobrescrever uma              | Não [1]_                 |
+| propriedade protegida         |                          |
 +-------------------------------+--------------------------+
-| Override a protected method   | No [1]_                  |
+| Sobrescrever um método        | Não [1]_                 |
 +-------------------------------+--------------------------+
-| Call a protected method       | No [1]_                  |
+| Chamar um método protegido    | Não [1]_                 |
 +-------------------------------+--------------------------+
-| Add a public property         | No                       |
+| Adicionar uma propriedade     | Não                      |
+| pública                       |                          |
 +-------------------------------+--------------------------+
-| Add a public method           | No                       |
+| Adicionar um método público   | Não                      |
 +-------------------------------+--------------------------+
-| Add an argument               | No [1]_                  |
-| to an overridden method       |                          |
+| Adicionar um argumento        | Não [1]_                 |
+| a um método sobrescrito       |                          |
 +-------------------------------+--------------------------+
-| Add a default argument        | Yes                      |
-| to an existing method         |                          |
+| Adicinar um valor padrão      | Sim                      |
+| a um argumento de método      |                          |
+| existente                     |                          |
 +-------------------------------+--------------------------+
 
-Working on CakePHP
-==================
+Trabalhando no CakePHP
+======================
 
-If you are helping make CakePHP even better please keep the following guidelines
-in mind when adding/changing functionality: 
+Se você está ajudando a fazer o CakePHP ainda melhor, por favor, siga as
+orientações a seguir quando estiver adicionando/alterando funcionalidades:
 
-In a minor release you can:
+Em um *minor release* você pode:
 
 +-------------------------------+--------------------------+
-| In a minor release can you...                            |
+| Em um *minor release* você pode...                       |
 +===============================+==========================+
 | **Classes**                                              |
 +-------------------------------+--------------------------+
-| Remove a class                | No                       |
+| Remover uma classe            | Não                      |
 +-------------------------------+--------------------------+
-| Remove an interface           | No                       |
+| Remover uma interface         | Não                      |
 +-------------------------------+--------------------------+
-| Remove a trait                | No                       |
+| Remover um trait              | Não                      |
 +-------------------------------+--------------------------+
-| Make final                    | No                       |
+| Tornar final                  | Não                      |
 +-------------------------------+--------------------------+
-| Make abstract                 | No                       |
+| Tornar abstract               | Não                      |
 +-------------------------------+--------------------------+
-| Change name                   | Yes [2]_                 |
+| Trocar o nome                 | Sim [2]_                 |
 +-------------------------------+--------------------------+
 | **Properties**                                           |
 +-------------------------------+--------------------------+
-| Add a public property         | Yes                      |
+| Adicionar uma propriedade     | Sim                      |
+| pública                       |                          |
 +-------------------------------+--------------------------+
-| Remove a public property      | No                       |
+| Remove a public property      | Não                      |
 +-------------------------------+--------------------------+
-| Add a protected property      | Yes                      |
+| Adicionar uma propriedade     | Sim                      |
+| protegida                     |                          |
 +-------------------------------+--------------------------+
-| Remove a protected property   | Yes [3]_                 |
+| Remover uma propriedade       | Sim [3]_                 |
+| protegida                     |                          |
 +-------------------------------+--------------------------+
-| **Methods**                                              |
+| **Métodos**                                              |
 +-------------------------------+--------------------------+
-| Add a public method           | Yes                      |
+| Adicionar um método público   | Sim                      |
 +-------------------------------+--------------------------+
-| Remove a public method        | No                       |
+| Remover um método público     | Não                      |
 +-------------------------------+--------------------------+
-| Add a protected method        | Yes                      |
+| Adicionar um método público   | Sim                      |
 +-------------------------------+--------------------------+
-| Move to parent class          | Yes                      |
+| Mover para uma classe parente | Sim                      |
 +-------------------------------+--------------------------+
-| Remove a protected method     | Yes [3]_                 |
+| Remover um método protegido   | Sim [3]_                 |
 +-------------------------------+--------------------------+
-| Reduce visibility             | No                       |
+| Reduzir visibilidade          | Não                      |
 +-------------------------------+--------------------------+
-| Change method name            | Yes [2]_                 |
+| Mudar nome do método          | Sim [2]_                 |
 +-------------------------------+--------------------------+
-| Add argument with             | Yes                      |
-| default value                 |                          |
+| Adicionar um novo argumento   | Sim                      |
+| com valor padrão              |                          |
 +-------------------------------+--------------------------+
-| Add required argument         | No                       |
+| Adicionar um novo argumento   | Não                      |
+| a um método existente.        |                          |
++-------------------------------+--------------------------+
+| Remover um valor padrão de    | Não                      |
+| um argumento existente        |                          |
 +-------------------------------+--------------------------+
 
 
-.. [1] Your code *may* be broken by minor releases. Check the migration guide
-       for details.
-.. [2] You can change a class/method name as long as the old name remains available.
-       This is generally avoided unless renaming has significant benefit.
-.. [3] Avoid whenever possible. Any removals need to be documented in
-       the migration guide.
+.. [1] Seu código *pode* ser quebrado por *minor releases*. Verifique o guia de
+       migração para mais detalhes.
+.. [2] Você pode mudar o nome de uma classe/método desde que o nome antigo
+       permaneça disponível. Isso normalmente é evitado, a não ser que a
+       renomeação traga algum benefício significante.
+.. [3] Evite sempre que possível. Qualquer remoção precisa ser documentada
+       no guia de migração.
 

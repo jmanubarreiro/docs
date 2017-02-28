@@ -1,7 +1,9 @@
 Coding Standards
 ################
 
-CakePHP developers will use the following coding standards.
+CakePHP developers will use the `PSR-2 coding style guide
+<http://www.php-fig.org/psr/psr-2/>`_ in addition to the following rules as
+coding standards.
 
 It is recommended that others developing CakeIngredients follow the same
 standards.
@@ -16,10 +18,19 @@ Adding New Features
 No new features should be added, without having their own tests – which
 should be passed before committing them to the repository.
 
+IDE Setup
+=========
+
+Please make sure your IDE is set up to "trim right" on whitespaces.
+There should be no trailing spaces per line.
+
+Most modern IDEs also support an ``.editorconfig`` file. The CakePHP app
+skeleton ships with it by default. It already contains best practise defaults.
+
 Indentation
 ===========
 
-One tab will be used for indentation.
+Four spaces will be used for indentation.
 
 So, indentation should look like this::
 
@@ -40,11 +51,34 @@ Or::
         }
     }
 
+In cases where you're using a multi-line function call use the following
+guidelines:
+
+*  Opening parenthesis of a multi-line function call must be the last content on
+   the line.
+*  Only one argument is allowed per line in a multi-line function call.
+*  Closing parenthesis of a multi-line function call must be on a line by itself.
+
+As an example, instead of using the following formatting::
+
+    $matches = array_intersect_key($this->_listeners,
+                    array_flip(preg_grep($matchPattern,
+                        array_keys($this->_listeners), 0)));
+
+Use this instead::
+
+    $matches = array_intersect_key(
+        $this->_listeners,
+        array_flip(
+            preg_grep($matchPattern, array_keys($this->_listeners), 0)
+        )
+    );
+
 Line Length
 ===========
 
-It is recommended to keep lines at approximately 100 characters long for better code readability.
-Lines must not be longer than 120 characters.
+It is recommended to keep lines at approximately 100 characters long for better
+code readability. Lines must not be longer than 120 characters.
 
 In short:
 
@@ -65,18 +99,17 @@ Control structures are for example "``if``", "``for``", "``foreach``",
         // default_action;
     }
 
-*  In the control structures there should be 1 (one) space before the
-   first parenthesis and 1 (one) space between the last parenthesis and
-   the opening bracket.
-*  Always use curly brackets in control structures, even if they are not
-   needed. They increase the readability of the code, and they give you
-   fewer logical errors.
-*  Opening curly brackets should be placed on the same line as the
-   control structure. Closing curly brackets should be placed on new
-   lines, and they should have same indentation level as the control
-   structure. The statement included in curly brackets should begin on a
-   new line, and code contained within it should gain a new level of
-   indentation.
+*  In the control structures there should be 1 (one) space before the first
+   parenthesis and 1 (one) space between the last parenthesis and the opening
+   bracket.
+*  Always use curly brackets in control structures, even if they are not needed.
+   They increase the readability of the code, and they give you fewer logical
+   errors.
+*  Opening curly brackets should be placed on the same line as the control
+   structure. Closing curly brackets should be placed on new lines, and they
+   should have same indentation level as the control structure. The statement
+   included in curly brackets should begin on a new line, and code contained
+   within it should gain a new level of indentation.
 *  Inline assignments should not be used inside of the control structures.
 
 ::
@@ -107,11 +140,10 @@ Control structures are for example "``if``", "``for``", "``foreach``",
 Ternary Operator
 ----------------
 
-Ternary operators are permissible when the entire ternary operation fits
-on one line. Longer ternaries should be split into ``if else``
-statements. Ternary operators should not ever be nested. Optionally
-parentheses can be used around the condition check of the ternary for
-clarity::
+Ternary operators are permissible when the entire ternary operation fits on one
+line. Longer ternaries should be split into ``if else`` statements. Ternary
+operators should not ever be nested. Optionally parentheses can be used around
+the condition check of the ternary for clarity::
 
     // Good, simple and readable
     $variable = isset($options['variable']) ? $options['variable'] : true;
@@ -120,11 +152,11 @@ clarity::
     $variable = isset($options['variable']) ? isset($options['othervar']) ? true : false : false;
 
 
-View Files
-----------
+Template Files
+--------------
 
-In view files (.ctp files) developers should use keyword control structures.
-Keyword control structures are easier to read in complex view files. Control
+In template files (.ctp files) developers should use keyword control structures.
+Keyword control structures are easier to read in complex template files. Control
 structures can either be contained in a larger PHP block, or in separate PHP
 tags::
 
@@ -142,13 +174,13 @@ tags::
 Comparison
 ==========
 
-Always try to be as strict as possible. If a none strict test is deliberate it might be wise to
-comment it as such to avoid confusing it for a mistake.
+Always try to be as strict as possible. If a non-strict test is deliberate it
+might be wise to comment it as such to avoid confusing it for a mistake.
 
 For testing if a variable is null, it is recommended to use a strict check::
 
     if ($value === null) {
-    	  // ...
+        // ...
     }
 
 The value to check against should be placed on the right side::
@@ -166,33 +198,34 @@ The value to check against should be placed on the right side::
 Function Calls
 ==============
 
-Functions should be called without space between function's name and
-starting bracket. There should be one space between every parameter of a
-function call::
+Functions should be called without space between function's name and starting
+parenthesis. There should be one space between every parameter of a function
+call::
 
     $var = foo($bar, $bar2, $bar3);
 
-As you can see above there should be one space on both sides of equals
-sign (=).
+As you can see above there should be one space on both sides of equals sign (=).
 
 Method Definition
 =================
 
 Example of a method definition::
 
-    public function someFunction($arg1, $arg2 = '') {
+    public function someFunction($arg1, $arg2 = '')
+    {
         if (expr) {
             statement;
         }
+        
         return $var;
     }
 
-Parameters with a default value, should be placed last in function
-definition. Try to make your functions return something, at least ``true``
-or ``false``, so it can be determined whether the function call was
-successful::
+Parameters with a default value, should be placed last in function definition.
+Try to make your functions return something, at least ``true`` or ``false``, so
+it can be determined whether the function call was successful::
 
-    public function connection($dns, $persistent = false) {
+    public function connection($dns, $persistent = false)
+    {
         if (is_array($dns)) {
             $dnsInfo = $dns;
         } else {
@@ -202,6 +235,7 @@ successful::
         if (!($dnsInfo) || !($dnsInfo['phpType'])) {
             return $this->addError();
         }
+        
         return true;
     }
 
@@ -216,26 +250,29 @@ We only typehint public methods, though, as typehinting is not cost-free::
     /**
      * Some method description.
      *
-     * @param Model $Model The model to use.
+     * @param \Cake\ORM\Table $table The table class to use.
      * @param array $array Some array value.
      * @param callable $callback Some callback.
-     * @param boolean $boolean Some boolean value.
+     * @param bool $boolean Some boolean value.
      */
-    public function foo(Model $Model, array $array, callable $callback, $boolean) {
+    public function foo(Table $table, array $array, callable $callback, $boolean)
+    {
     }
 
-Here ``$Model`` must be an instance of ``Model``, ``$array`` must be an ``array`` and
-``$callback`` must be of type ``callable`` (a valid callback).
+Here ``$table`` must be an instance of ``\Cake\ORM\Table``, ``$array`` must be
+an ``array`` and ``$callback`` must be of type ``callable`` (a valid callback).
 
-Note that if you want to allow ``$array`` to be also an instance of ``ArrayObject``
-you should not typehint as ``array`` accepts only the primitive type::
+Note that if you want to allow ``$array`` to be also an instance of
+``\ArrayObject`` you should not typehint as ``array`` accepts only the primitive
+type::
 
     /**
      * Some method description.
      *
-     * @param array|ArrayObject $array Some array value.
+     * @param array|\ArrayObject $array Some array value.
      */
-    public function foo($array) {
+    public function foo($array)
+    {
     }
 
 Anonymous Functions (Closures)
@@ -254,7 +291,7 @@ Method Chaining
 ===============
 
 Method chaining should have multiple methods spread across separate lines, and
-indented with one tab::
+indented with four spaces::
 
     $email->from('foo@example.com')
         ->to('bar@example.com')
@@ -264,8 +301,8 @@ indented with one tab::
 Commenting Code
 ===============
 
-All comments should be written in English, and should in a clear way
-describe the commented block of code.
+All comments should be written in English, and should in a clear way describe
+the commented block of code.
 
 Comments can include the following `phpDocumentor <http://phpdoc.org>`_
 tags:
@@ -273,7 +310,8 @@ tags:
 *  `@author <http://phpdoc.org/docs/latest/references/phpdoc/tags/author.html>`_
 *  `@copyright <http://phpdoc.org/docs/latest/references/phpdoc/tags/copyright.html>`_
 *  `@deprecated <http://phpdoc.org/docs/latest/references/phpdoc/tags/deprecated.html>`_
-   Using the ``@version <vector> <description>`` format, where ``version`` and ``description`` are mandatory.
+   Using the ``@version <vector> <description>`` format, where ``version``
+   and ``description`` are mandatory.
 *  `@example <http://phpdoc.org/docs/latest/references/phpdoc/tags/example.html>`_
 *  `@ignore <http://phpdoc.org/docs/latest/references/phpdoc/tags/ignore.html>`_
 *  `@internal <http://phpdoc.org/docs/latest/references/phpdoc/tags/internal.html>`_
@@ -282,8 +320,8 @@ tags:
 *  `@since <http://phpdoc.org/docs/latest/references/phpdoc/tags/since.html>`_
 *  `@version <http://phpdoc.org/docs/latest/references/phpdoc/tags/version.html>`_
 
-PhpDoc tags are very much like JavaDoc tags in Java. Tags are only
-processed if they are the first thing in a DocBlock line, for example::
+PhpDoc tags are very much like JavaDoc tags in Java. Tags are only processed if
+they are the first thing in a DocBlock line, for example::
 
     /**
      * Tag example.
@@ -301,7 +339,8 @@ processed if they are the first thing in a DocBlock line, for example::
      *
      * @return void
      */
-    function bar() {
+    function bar()
+    {
     }
 
     /**
@@ -309,11 +348,12 @@ processed if they are the first thing in a DocBlock line, for example::
      *
      * @return void
      */
-    function foo() {
+    function foo()
+    {
     }
 
-Comment blocks, with the exception of the first block in a file, should
-always be preceded by a newline.
+Comment blocks, with the exception of the first block in a file, should always
+be preceded by a newline.
 
 Variable Types
 --------------
@@ -351,21 +391,24 @@ You can also combine types using the pipe char::
 
 For more than two types it is usually best to just use ``mixed``.
 
-When returning the object itself, e.g. for chaining, one should use ``$this`` instead::
+When returning the object itself, e.g. for chaining, one should use ``$this``
+instead::
 
     /**
      * Foo function.
      *
      * @return $this
      */
-    public function foo() {
+    public function foo()
+    {
         return $this;
     }
 
 Including Files
 ===============
 
-``include``, ``require``, ``include_once`` and ``require_once`` do not have parentheses::
+``include``, ``require``, ``include_once`` and ``require_once`` do not have
+parentheses::
 
     // wrong = parentheses
     require_once('ClassFileName.php');
@@ -381,15 +424,15 @@ When including files with classes or libraries, use only and always the
 PHP Tags
 ========
 
-Always use long tags (``<?php ?>``) Instead of short tags (``<? ?>``). The short echo
-should be used in view files (``.ctp``) where appropriate.
+Always use long tags (``<?php ?>``) instead of short tags (``<? ?>``). The short
+echo should be used in template files (**.ctp**) where appropriate.
 
 Short Echo
 ----------
 
-The short echo should be used in view files in place of ``<?php echo``. It should be
-immediately followed by a single space, the variable or function value to ``echo``, a
-single space, and the php closing tag::
+The short echo should be used in template files in place of ``<?php echo``. It
+should be immediately followed by a single space, the variable or function value
+to ``echo``, a single space, and the php closing tag::
 
     // wrong = semicolon, no spaces
     <td><?=$name;?></td>
@@ -397,8 +440,8 @@ single space, and the php closing tag::
     // good = spaces, no semicolon
     <td><?= $name ?></td>
 
-As of PHP 5.4 the short echo tag (``<?=``) is no longer to be consider a 'short tag'
-is always available regardless of the ``short_open_tag`` ini directive.
+As of PHP 5.4 the short echo tag (``<?=``) is no longer to be consider a 'short
+tag' is always available regardless of the ``short_open_tag`` ini directive.
 
 Naming Convention
 =================
@@ -408,7 +451,8 @@ Functions
 
 Write all functions in camelBack::
 
-    function longFunctionName() {
+    function longFunctionName()
+    {
     }
 
 Classes
@@ -416,69 +460,47 @@ Classes
 
 Class names should be written in CamelCase, for example::
 
-    class ExampleClass {
+    class ExampleClass
+    {
     }
 
 Variables
 ---------
 
-Variable names should be as descriptive as possible, but also as short
-as possible. Normal variables should start with a lowercase letter, and
-should be written in camelBack in case of multiple words. Variables
-referencing objects should start with a capital letter, and in some way
-associate to the class the variable is an object of. Example::
+Variable names should be as descriptive as possible, but also as short as
+possible. All variables should start with a lowercase letter, and should be
+written in camelBack in case of multiple words. Variables referencing objects
+should in some way associate to the class the variable is an object of.
+Example::
 
     $user = 'John';
     $users = ['John', 'Hans', 'Arne'];
 
-    $Dispatcher = new Dispatcher();
+    $dispatcher = new Dispatcher();
 
 Member Visibility
 -----------------
 
-Use PHP5's private and protected keywords for methods and variables. Additionally,
-protected method or variable names start with a single underscore (``_``). Example::
-
-    class A {
-        protected $_iAmAProtectedVariable;
-
-        protected function _iAmAProtectedMethod() {
-           /* ... */
-        }
-    }
-
-Private methods or variable names start with double underscore (``__``). Example::
-
-    class A {
-        private $__iAmAPrivateVariable;
-
-        private function __iAmAPrivateMethod() {
-            /* ... */
-        }
-    }
-
-Try to avoid private methods or variables, though, in favor of protected ones.
-The latter can be accessed or modified by subclasses, whereas private ones
-prevent extension or re-use. Private visibility also makes testing much more difficult.
+Use PHP's ``public``, ``protected`` and ``private`` keywords for methods and variables.
 
 Example Addresses
 -----------------
 
-For all example URL and mail addresses use "example.com", "example.org"
-and "example.net", for example:
+For all example URL and mail addresses use "example.com", "example.org" and
+"example.net", for example:
 
 *  Email: someone@example.com
 *  WWW: `http://www.example.com <http://www.example.com>`_
 *  FTP: `ftp://ftp.example.com <ftp://ftp.example.com>`_
 
-The "example.com" domain name has been reserved for this (see :rfc:`2606`) and is recommended
-for use in documentation or as examples.
+The "example.com" domain name has been reserved for this (see :rfc:`2606`) and
+is recommended for use in documentation or as examples.
 
 Files
 -----
 
-File names which do not contain classes should be lowercased and underscored, for
-example::
+File names which do not contain classes should be lowercased and underscored,
+for example::
 
     long_file_name.php
 
@@ -490,19 +512,20 @@ For casting we use:
 Type
     Description
 (bool)
-		Cast to boolean.
+    Cast to boolean.
 (int)
-		Cast to integer.
+    Cast to integer.
 (float)
-		Cast to float.
+    Cast to float.
 (string)
-		Cast to string.
+    Cast to string.
 (array)
-		Cast to array.
+    Cast to array.
 (object)
-		Cast to object.
+    Cast to object.
 
-Please use ``(int)$var`` instead of ``intval($var)`` and ``(float)$var`` instead of ``floatval($var)`` when applicable.
+Please use ``(int)$var`` instead of ``intval($var)`` and ``(float)$var`` instead
+of ``floatval($var)`` when applicable.
 
 Constants
 ---------
@@ -511,11 +534,77 @@ Constants should be defined in capital letters::
 
     define('CONSTANT', 1);
 
-If a constant name consists of multiple words, they should be separated
-by an underscore character, for example::
+If a constant name consists of multiple words, they should be separated by an
+underscore character, for example::
 
     define('LONG_NAMED_CONSTANT', 2);
 
+Careful when using empty()/isset()
+==================================
+
+While ``empty()`` is an easy to use function, it can mask errors and cause
+unintended effects when ``'0'`` and ``0`` are given. When variables or
+properties are already defined, the usage of ``empty()`` is not recommended.
+When working with variables, it is better to rely on type-coercion to boolean
+instead of ``empty()``::
+
+    function manipulate($var)
+    {
+        // Not recommended, $var is already defined in the scope
+        if (empty($var)) {
+            // ...
+        }
+
+        // Use boolean type coercion
+        if (!$var) {
+            // ...
+        }
+        if ($var) {
+            // ...
+        }
+    }
+
+When dealing with defined properties you should favour ``null`` checks over
+``empty()``/``isset()`` checks::
+
+    class Thing
+    {
+        private $property; // Defined
+
+        public function readProperty()
+        {
+            // Not recommended as the property is defined in the class
+            if (!isset($this->property)) {
+                // ...
+            }
+            // Recommended
+            if ($this->property === null) {
+
+            }
+        }
+    }
+
+When working with arrays, it is better to merge in defaults over using
+``empty()`` checks. By merging in defaults, you can ensure that required keys
+are defined::
+
+    function doWork(array $array)
+    {
+        // Merge defaults to remove need for empty checks.
+        $array += [
+            'key' => null,
+        ];
+
+        // Not recommended, the key is already set
+        if (isset($array['key'])) {
+            // ...
+        }
+
+        // Recommended
+        if ($array['key'] !== null) {
+            // ...
+        }
+    }
 
 .. meta::
     :title lang=en: Coding Standards

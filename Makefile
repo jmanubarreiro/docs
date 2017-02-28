@@ -1,17 +1,17 @@
 # MakeFile for building all the docs at once.
-# Inspired by the Makefile used by bazaar. 
+# Inspired by the Makefile used by bazaar.
 # http://bazaar.launchpad.net/~bzr-pqm/bzr/2.3/
 
 PYTHON = python
 ES_HOST =
 
-.PHONY: all clean html latexpdf epub htmlhelp website website-dirs
+.PHONY: all clean html latexpdf epub htmlhelp website website-dirs rebuild-index
 
 # Languages that can be built.
-LANGS = en es fr ja pt ru ro sr zh
+LANGS = en es fr ja pt zh tr ru
 
-# pdflatex does not like ja or ru for some reason.
-PDF_LANGS = en es fr pt ro
+# pdflatex does not like ja, zh & tr for some reason.
+PDF_LANGS = en es fr pt
 
 DEST = website
 
@@ -19,13 +19,13 @@ DEST = website
 # Clone the en/Makefile everywhere.
 SPHINX_DEPENDENCIES = $(foreach lang, $(LANGS), $(lang)/Makefile)
 
-# Copy-paste the English Makefile everywhere it's needed.
+# Copy-paste the English Makefile everywhere it's needed (if non existing).
 %/Makefile: en/Makefile
-	cp $< $@
+	cp -n $< $@
 
 #
 # The various formats the documentation can be created in.
-# 
+#
 # Loop over the possible languages and call other build targets.
 #
 html: $(foreach lang, $(LANGS), html-$(lang))
@@ -35,11 +35,15 @@ latex: $(foreach lang, $(PDF_LANGS), latex-$(lang))
 pdf: $(foreach lang, $(PDF_LANGS), pdf-$(lang))
 htmlhelp: $(foreach lang, $(LANGS), htmlhelp-$(lang))
 populate-index: $(foreach lang, $(LANGS), populate-index-$(lang))
+server: $(foreach lang, $(LANGS), server-$(lang))
+rebuild-index: $(foreach lang, $(LANGS), rebuild-index-$(lang))
 
 
 # Make the HTML version of the documentation with correctly nested language folders.
 html-%: $(SPHINX_DEPENDENCIES)
 	cd $* && make html LANG=$*
+	make build/html/$*/_static/css/app.css
+	make build/html/$*/_static/app.js
 
 htmlhelp-%: $(SPHINX_DEPENDENCIES)
 	cd $* && make htmlhelp LANG=$*
@@ -53,7 +57,14 @@ latex-%: $(SPHINX_DEPENDENCIES)
 pdf-%: $(SPHINX_DEPENDENCIES)
 	cd $* && make latexpdf LANG=$*
 
+server-%: $(SPHINX_DEPENDENCIES)
+	cd build/html/$* && python -m SimpleHTTPServer
+
 populate-index-%: $(SPHINX_DEPENDENCIES)
+	php scripts/populate_search_index.php $* $(ES_HOST)
+
+rebuild-index-%: $(SPHINX_DEPENDENCIES)
+	curl -XDELETE $(ES_HOST)/documentation/3-0-$*
 	php scripts/populate_search_index.php $* $(ES_HOST)
 
 website-dirs:
@@ -81,3 +92,28 @@ clean:
 
 clean-website:
 	rm -rf $(DEST)/*
+
+build/html/%/_static:
+	mkdir -p build/html/$*/_static
+
+CSS_FILES = themes/cakephp/static/css/fonts.css \
+  themes/cakephp/static/css/bootstrap.min.css \
+  themes/cakephp/static/css/font-awesome.min.css \
+  themes/cakephp/static/css/style.css \
+  themes/cakephp/static/css/default.css \
+  themes/cakephp/static/css/pygments.css \
+  themes/cakephp/static/css/responsive.css
+
+build/html/%/_static/css/app.css: build/html/%/_static $(CSS_FILES)
+	# echo all dependencies ($$^) into the output ($$@)
+	cat $(CSS_FILES) > $@
+
+JS_FILES = themes/cakephp/static/jquery.js \
+  themes/cakephp/static/vendor.js \
+  themes/cakephp/static/app.js \
+  themes/cakephp/static/search.js \
+  themes/cakephp/static/typeahead.js
+
+build/html/%/_static/app.js: build/html/%/_static $(JS_FILES)
+	# echo all dependencies ($JS_FILES) into the output ($$@)
+	cat $(JS_FILES) > $@

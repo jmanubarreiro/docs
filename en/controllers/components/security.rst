@@ -1,5 +1,5 @@
-SecurityComponent
-##################
+Security
+########
 
 .. php:class:: SecurityComponent(ComponentCollection $collection, array $config = [])
 
@@ -22,7 +22,7 @@ Security component.
 If you are using Security component's form protection features and
 other components that process form data in their ``startup()``
 callbacks, be sure to place Security Component before those
-components in your ``$components`` array.
+components in your ``initialize()`` method.
 
 .. note::
 
@@ -34,13 +34,17 @@ components in your ``$components`` array.
     :php:meth:`~Cake\\View\\Helper\\FormHelper::end()`).  Dynamically altering
     the fields that are submitted in a POST request (e.g.  disabling, deleting
     or creating new fields via JavaScript) is likely to cause the request to be
-    send to the blackhole callback. See the ``$validatePost`` or
-    ``$disabledFields`` configuration parameters.
+    send to the blackhole callback.
+
+    You should always verify the HTTP method being used before executing
+    side-effects. You should :ref:`check the HTTP method <check-the-request>` or
+    use :php:meth:`Cake\\Network\\Request::allowMethod()` to ensure the correct
+    HTTP method is used.
 
 Handling Blackhole Callbacks
 ============================
 
-.. php:method:: blackHole(object $controller, string $error)
+.. php:method:: blackHole(object $controller, string $error = '', SecurityException $exception = null)
 
 If an action is restricted by the Security Component it is
 'black-holed' as an invalid request which will result in a 400 error
@@ -51,11 +55,13 @@ in the controller.
 By configuring a callback method you can customize how the blackhole process
 works::
 
-    public function beforeFilter(Event $event) {
+    public function beforeFilter(Event $event)
+    {
         $this->Security->config('blackHoleCallback', 'blackhole');
     }
 
-    public function blackhole($type) {
+    public function blackhole($type)
+    {
         // Handle errors.
     }
 
@@ -64,6 +70,12 @@ The ``$type`` parameter can have the following values:
 * 'auth' Indicates a form validation error, or a controller/action mismatch
   error.
 * 'secure' Indicates an SSL method restriction failure.
+
+.. versionadded:: cakephp/cakephp 3.2.6
+
+    As of v3.2.6 an additional parameter is included in the blackHole callback,
+    an instance of the ``Cake\Controller\Exception\SecurityException`` is
+    included as a second parameter.
 
 Restrict Actions to SSL
 =======================
@@ -83,14 +95,11 @@ Restrict Actions to SSL
 Restricting Cross Controller Communication
 ==========================================
 
-.. php:attr:: allowedControllers
-
-    A list of controllers which can send requests 
+allowedControllers
+    A list of controllers which can send requests
     to this controller.
     This can be used to control cross controller requests.
-
-.. php:attr:: allowedActions
-
+allowedActions
     A list of actions which are allowed to send requests
     to this controller's actions.
     This can be used to control cross controller requests.
@@ -119,18 +128,18 @@ structure and compare the hash.
     The SecurityComponent will **not** prevent select options from being
     added/changed. Nor will it prevent radio options from being added/changed.
 
-.. php:attr:: unlockedFields
-
+unlockedFields
     Set to a list of form fields to exclude from POST validation. Fields can be
     unlocked either in the Component, or with
     :php:meth:`FormHelper::unlockField()`. Fields that have been unlocked are
     not required to be part of the POST and hidden unlocked fields do not have
     their values checked.
 
-.. php:attr:: validatePost
-
+validatePost
     Set to ``false`` to completely skip the validation of POST
     requests, essentially turning off form validation.
+
+The above configuration options can be set with ``config()``.
 
 Usage
 =====
@@ -144,12 +153,18 @@ want and the Security Component will enforce them on its startup::
     use App\Controller\AppController;
     use Cake\Event\Event;
 
-    class WidgetsController extends AppController {
+    class WidgetsController extends AppController
+    {
 
-        public $components = ['Security'];
+        public function initialize()
+        {
+            parent::initialize();
+            $this->loadComponent('Security');
+        }
 
-        public function beforeFilter(Event $event) {
-            if (isset($this->request->params['admin'])) {
+        public function beforeFilter(Event $event)
+        {
+            if ($this->request->getParam('admin')) {
                 $this->Security->requireSecure();
             }
         }
@@ -163,19 +178,25 @@ require secure SSL requests::
     use App\Controller\AppController;
     use Cake\Event\Event;
 
-    class WidgetsController extends AppController {
+    class WidgetsController extends AppController
+    {
 
-        public $components = ['Security'];
+        public function initialize()
+        {
+            parent::initialize();
+            $this->loadComponent('Security', ['blackHoleCallback' => 'forceSSL']);
+        }
 
-        public function beforeFilter(Event $event) {
-            if (isset($this->params['admin'])) {
-                $this->Security->blackHoleCallback = 'forceSSL';
+        public function beforeFilter(Event $event)
+        {
+            if ($this->request->getParam('admin')) {
                 $this->Security->requireSecure();
             }
         }
 
-        public function forceSSL() {
-            return $this->redirect('https://' . env('SERVER_NAME') . $this->here);
+        public function forceSSL()
+        {
+            return $this->redirect('https://' . env('SERVER_NAME') . $this->request->here());
         }
     }
 
@@ -200,7 +221,7 @@ Disabling Security Component for Specific Actions
 
 There may be cases where you want to disable all security checks for an action
 (ex. AJAX requests).  You may "unlock" these actions by listing them in
-``$this->Security->unlockedActions`` in your ``beforeFilter``. The
+``$this->Security->unlockedActions`` in your ``beforeFilter()``. The
 ``unlockedActions`` property will **not** affect other features of
 ``SecurityComponent``::
 
@@ -209,11 +230,17 @@ There may be cases where you want to disable all security checks for an action
     use App\Controller\AppController;
     use Cake\Event\Event;
 
-    class WidgetController extends AppController {
+    class WidgetController extends AppController
+    {
 
-        public $components = ['Security'];
+        public function initialize()
+        {
+            parent::initialize();
+            $this->loadComponent('Security');
+        }
 
-        public function beforeFilter(Event $event) {
+        public function beforeFilter(Event $event)
+        {
              $this->Security->config('unlockedActions', ['edit']);
         }
     }

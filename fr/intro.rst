@@ -1,28 +1,28 @@
 CakePHP en un Coup d'Oeil
 #########################
 
-CakePHP est conçu pour rendre les tâches communes de développement web simples
-et faciles. En fournissant une boite à outil tout-en-un pour vous aider à
-démarrer, les différentes parties de CakePHP fonctionnent aussi bien ensemble
+CakePHP est conçu pour faciliter et simplifier les tâches classiques du
+développement web. En fournissant une boite à outil tout-en-un pour vous aider
+à démarrer, les différentes parties de CakePHP fonctionnent aussi bien ensemble
 que séparément.
 
 Le but de cette présentation est d'introduire les concepts généraux de CakePHP,
 et de vous donner un aperçu rapide de la façon dont ces concepts sont mis en
-œuvre dans CakePHP. Si vous êtes impatient de démarrer un projet, cous pouvez
-:doc:`commencer avec le tutoriel </tutorials-and-examples/blog/blog>`, ou
-:doc:`plonger dans la documentaion </topics>`.
+œuvre dans CakePHP. Si vous êtes impatient de démarrer un projet, vous pouvez
+:doc:`commencer avec le tutoriel </tutorials-and-examples/bookmarks/intro>`, ou
+:doc:`vous plonger dans la documentation </topics>`.
 
-Conventions plutôt que de Configuration
-=======================================
+Conventions plutôt que Configuration
+====================================
 
-CakePHP fournit une structure organisationnelle de base qui couvre les noms de
-classes, les noms de fichiers, les noms de table de base de données, et
-d'autres conventions. Même si les conventions prennent du temps à apprendre, en
-suivant les conventions offertes par CakePHP, vous pouvez éviter les
-configurations inutiles et construire une structure d'application uniforme
-qui rend le travail avec de multiples projets un jeu d'enfant. Le :doc:`chapitre
-sur les conventions </intro/conventions>` couvre les différentes conventions
-utilisées par CakePHP.
+CakePHP fournit une structure organisationnelle de base qui comprend les noms
+de classes, les noms de fichiers, les noms de table de base de données, et
+d'autres conventions. Même si les conventions peuvent paraître longues à
+apprendre, en suivant les conventions offertes par CakePHP, vous pouvez éviter
+les configurations inutiles et construire une structure d'application uniforme
+ce qui facilite le travail quand vous travaillez sur de multiples projets. Le
+:doc:`chapitre sur les conventions </intro/conventions>` couvre les différentes
+conventions utilisées par CakePHP.
 
 La Couche Model (Modèle)
 ========================
@@ -30,14 +30,14 @@ La Couche Model (Modèle)
 La couche Model représente la partie de l'application qui exécute la logique
 applicative. Elle est responsable de récupérer les données et de les convertir
 selon des concepts significatifs pour votre application. Cela inclut le
-traitement, la validation, l'association et beaucoup d'autres tâches
-concernant la manipulation des données.
+traitement, la validation, l'association et beaucoup d'autres tâches concernant
+la manipulation des données.
 
 Dans le cas d'un réseau social, la couche Model s'occuperait des tâches telles
 que sauvegarder les données utilisateur, sauvegarder les associations d'amis,
 enregistrer et récupérer les photos des utilisateurs, trouver des suggestions
 de nouveaux amis, etc ...
-Tandis que les objets Models seront "Friend", "User", "Comment", "Photo".
+Tandis que les objets Models seraient "Friend", "User", "Comment", "Photo".
 Si nous voulions charger des données depuis notre table ``users``, nous
 pourrions faire::
 
@@ -68,29 +68,30 @@ La Couche View (Vue)
 
 La View retourne une présentation des données modélisées. Etant séparée des
 objets Model, elle est responsable de l'utilisation des informations dont
-elle dispose pour produire n'importequ'elle interface de présentation
+elle dispose pour produire n'importe qu'elle interface de présentation
 nécessaire à votre application.
 
-Par exemple, la view pourrait utiliser les données du model pour rendre une
-page HTML les contenant ou un résultat au format XML pour que d'autres
-l'utilisent::
+Par exemple, la view pourrait utiliser les données du model pour afficher un
+template de vue HTML les contenant ou un résultat au format XML pour que
+d'autres l'utilisent::
 
-    // Dans un fichier view, nous afficherons un 'element' pour chaque utilisateur (user).
+    // Dans un fichier de template de view, nous afficherons un 'element' pour chaque utilisateur (user).
     <?php foreach ($users as $user): ?>
-        <div class="user">
+        <li class="user">
             <?= $this->element('user', ['user' => $user]) ?>
-        </div>
+        </li>
     <?php endforeach; ?>
 
 
-La couche View fournit un certain nombre d'extensions tels que
-:ref:`les Elements <view-elements>` et les :doc:`Cells </views/cells>` pour vous
-permettre de ré-utiliser facilement votre logique de présentation.
+La couche View fournit un certain nombre d'extensions tels que les
+:ref:`Templates <view-templates>`, les :ref:`Elements <view-elements>` et les
+:doc:`Cells </views/cells>` pour vous permettre de réutiliser votre logique de
+présentation.
 
-La couche Vue n'est pas seulement limitée au HTML ou à la répresentation en
+La couche View n'est pas seulement limitée au HTML ou à la représentation en
 texte de données. Elle peut aussi être utilisée pour offrir une grande variété
-de formats tels que JSON, XML et grâce à une arhitecture modulable tout autre
-format dont vous auriez besoin.
+de formats tels que JSON, XML et grâce à une architecture modulable tout autre
+format dont vous auriez besoin, comme CSV par exemple.
 
 La Couche Controller (Contrôleur)
 =================================
@@ -104,14 +105,15 @@ que toutes les ressources nécessaires pour accomplir une tâche soient délégu
 aux bonnes personnes. Il attend des requêtes des clients, vérifie leur validité
 selon l'authentification et les règles d'autorisation, délègue la récupération
 et le traitement des données à la couche Model, puis sélectionne les types de
-présentation acceptés par client pour finalement déléguer le processus 
-de rendu à la couche View. Un example de controller d'enregistrement
-d'utilisateur serait::
+présentation acceptés par le client pour finalement déléguer le processus de
+rendu à la couche View. Un exemple de controller d'enregistrement d'utilisateur
+serait::
 
-    public function add() {
+    public function add()
+    {
         $user = $this->Users->newEntity();
         if ($this->request->is('post')) {
-            $user = $this->Users->patchEntity($user, $this->request->data);
+            $user = $this->Users->patchEntity($user, $this->request->getData());
             if ($this->Users->save($user, ['validate' => 'registration'])) {
                 $this->Flash->success(__('Vous êtes maintenant enregistré.'));
             } else {
@@ -121,9 +123,9 @@ d'utilisateur serait::
         $this->set('user', $user);
     }
 
-Notez que nous n'avons jamais explicitement rendu de vue. Les conventions de
-CakePHP prendront soin de sélectionner la bonne vue et de la rendre à la vue
-avec les données préparées avec ``set()``.
+Notez que nous n'avons jamais explicitement rendu de view. Les conventions de
+CakePHP prendront soin de sélectionner la bonne view et de la rendre avec les
+données préparées avec ``set()``.
 
 .. _request-cycle:
 
@@ -141,31 +143,43 @@ Le cycle d'une requête CakePHP typique débute avec une requête utilisateur
 qui demande une page ou une ressource de votre application. À haut niveau
 chaque requête passe par les étapes suivantes:
 
-#. La requête est d'abord aiguillée par les routes.
-#. Après que la requête a été routée, le dispatcher va sélectionner le bon
-   objet controller pour la traiter.
-#. L'action du controller est appellée et le controller interragit avec les
+#. Les règles de réécriture de votre serveur web dirigent la requête vers
+   **webroot/index.php**.
+#. Votre Application est chargée et liée à un ``HttpServer``.
+#. Le middleware de votre application est initialisé.
+#. Une requête et une réponse sont dispatchées à travers le Middleware PSR-7
+   utilisé par votre application. Typiquement, il inclut l'interception
+   d'erreurs et le routing.
+#. Si aucune réponse n'est retournée à partir du middleware et que la requête
+   contient des informations de routing, un controller et une action sont
+   sélectionnés.
+#. L'action du controller est appelée et le controller interagit avec les
    Models et Components nécessaires.
-#. Le controller delègue la création de la response à la View générer le
-   résultat obtenu à partir des données de model.
+#. Le controller délègue la création de la response à la View pour générer
+   le résultat obtenu à partir des données du model.
+#. Le View utilise les Helpers et les Cells pour générer l'en-tête et le corps
+   de la réponse.
+#. La réponse est de nouveau envoyée à travers le
+   :doc:`/controllers/middleware`.
+#. ``HttpServer`` émet la réponse au serveur web.
+
 
 Que le Début
 ============
 
-Espérons que ce bref aperçu ait éveillé votre intérêt. Quelques autres grandes 
+Espérons que ce bref aperçu ait éveillé votre intérêt. Quelques autres grandes
 fonctionnalités de CakePHP sont:
 
-* Un framework de :doc:`cache</core-libraries/caching>` framework qui s'intègre
-  avec Memcache, Redis et d'autres.
-* Un :doc:`outil de génération de code
-  </console-and-shells/code-generation-with-bake>` puissant pour partir sur les
-  chapeaux de roue.
-* Un :doc:`framework de tests intégéré</development/testing>` pour vous assurer
+* Un framework de :doc:`cache</core-libraries/caching>` qui s'intègre à
+  Memcached, Redis et d'autres moteurs de cache.
+* Un :doc:`outil de génération de code </bake/usage>` puissant pour partir sur
+  les chapeaux de roue.
+* Un :doc:`framework de tests intégré</development/testing>` pour vous assurer
   que votre code fonctionne correctement.
 
-Les prochaines étapes évidentes sont de :doc:`télécharger CakePHP </installation>`
-, lire le
-:doc:`tutoriel and construire un truc génial </tutorials-and-examples/blog/blog>`.
+Les prochaines étapes évidentes sont de
+:doc:`télécharger CakePHP </installation>`, lire le
+:doc:`tutoriel et construire un truc génial </tutorials-and-examples/bookmarks/intro>`.
 
 Lectures Complémentaires
 ========================

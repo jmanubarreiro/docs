@@ -1,68 +1,82 @@
-Debugging
+Depuração
 #########
 
-Debugging is an inevitable and necessary part of any development
-cycle. While CakePHP doesn't offer any tools that directly connect
-with any IDE or editor, CakePHP does provide several tools to
-assist in debugging and exposing what is running under the hood of
-your application.
+Depuração é uma etapa inevitável e importante de qualquer ciclo de
+desenvolvimento. Ainda que o CakePHP não forneça nenhuma ferramenta que se
+conecte com qualquer IDE ou editor de texto, este oferece várias ferramentas que
+auxiliam na depuração e exibição de tudo que está sendo executado "por baixo dos
+panos" na sua aplicação.
 
-Basic Debugging
-===============
+Depuração Básica
+================
 
 .. php:function:: debug(mixed $var, boolean $showHtml = null, $showFrom = true)
+    :noindex:
 
-The ``debug()`` function is a globally available function that works
-similarly to the PHP function ``print\_r()``. The ``debug()`` function
-allows you to show the contents of a variable in a number of
-different ways. First, if you'd like data to be shown in an
-HTML-friendly way, set the second parameter to ``true``. The function
-also prints out the line and file it is originating from by
-default.
+A função ``debug()`` é uma função de escopo global que funciona de maneira
+similar a função PHP ``print_r()``. A função ``debug()`` exibe os conteúdos de
+uma variável de diversas maneiras. Primeiramente, se você deseja exibir os dados
+no formato HTML, defina o segundo parâmetro como ``true``. A função
+também exibe a linha e o arquivo de onde a mesma foi chamada.
 
-Output from this function is only shown if the core ``$debug`` variable
-has been set to ``true``.
+A saída da função somente é exibida caso a variável ``$debug`` do core esteja
+definida com o valor ``true``.
 
-.. php:function stackTrace()
+.. php:function:: stackTrace()
 
-The ``stackTrace()`` function is available globally, and allows you to output
-a stack trace whereever the function is called.
+A função ``stackTrace()`` é uma função de escopo global, função esta que permite
+que seja exibida a pilha de execução onde quer que a mesma tenha sido chamada.
 
-Using the Debugger Class
+.. php:function:: breakpoint()
+
+.. versionadded:: 3.1
+
+Se você tem o `Psysh <http://psysh.org/>`_ instalado poderá usar esta função em
+ambientes de interface de linha de comando (CLI) para abrir um console
+interativo com o escopo local atual::
+
+    // Some code
+    eval(breakpoint());
+
+Abrirá um console interativo que poderá ser utilizado para avaliar variáveis
+locais e executar outros trechos de código. Você pode sair do depurador
+interativo executando os comandos ``quit`` ou ``q`` na sessão.
+
+Usando a Classe Debugger
 ========================
 
 .. php:namespace:: Cake\Error
 
 .. php:class:: Debugger
 
-To use the debugger, first ensure that ``Configure::read('debug')`` is
-set to ``true``.
+Para usar o depurador, assegure que ``Configure::read('debug')`` esteja definida
+como ``true``.
 
-Outputting Values
-=================
+Valores de saída
+================
 
 .. php:staticmethod:: dump($var, $depth = 3)
 
-Dump prints out the contents of a variable. It will print out all
-properties and methods (if any) of the supplied variable::
+O método dump exibe o conteúdo da variável, incluindo todas as propriedades e
+métodos (caso existam) da variável fornecida no primeiro parâmetro::
 
-    $foo = array(1,2,3);
+    $foo = [1,2,3];
 
     Debugger::dump($foo);
 
-    // Outputs
+    // Saídas
     array(
         1,
         2,
         3
     )
 
-    // Simple object
+    // Objeto
     $car = new Car();
 
     Debugger::dump($car);
 
-    // Outputs
+    // Saídas
     object(Car) {
         color => 'red'
         make => 'Toyota'
@@ -70,53 +84,50 @@ properties and methods (if any) of the supplied variable::
         mileage => (int)15000
     }
 
-Logging With Stack Traces
-=========================
+Criando Logs com Pilha de Execução
+==================================
 
 .. php:staticmethod:: log($var, $level = 7, $depth = 3)
 
-Creates a detailed stack trace log at the time of invocation. The
-``log()`` method prints out data similar to that done by
-``Debugger::dump()``, but to the debug.log instead of the output
-buffer. Note your ``tmp`` directory (and its contents) must be
-writable by the web server for ``log()`` to work correctly.
+Cria um log detalhado da pilha de execução no momento em que a mesma foi
+invocada. O método ``log()`` exibe dados similares ao``Debugger::dump()``, mas
+no arquivo debug.log ao invés do buffer de saída principal. É valido ressaltar
+que o diretório **tmp** e seu conteúdo devem ter permissão de escrita para o
+servidor web a fim de que a função ``log()`` consiga executar corretamente.
 
-Generating Stack Traces
-=======================
+Gerando Pilhas de Execução
+==========================
 
 .. php:staticmethod:: trace($options)
 
-Returns the current stack trace. Each line of the trace includes
-the calling method, including which file and line the call
-originated from::
+Retorna a pilha de execução atual. Cada linha inclui o método que chamou, qual
+arquivo e linha do qual a chamada foi originada::
 
-    // In PostsController::index()
+    // Em PostsController::index()
     pr(Debugger::trace());
 
-    // Outputs
+    // Saídas
     PostsController::index() - APP/Controller/DownloadsController.php, line 48
     Dispatcher::_invoke() - CORE/src/Routing/Dispatcher.php, line 265
     Dispatcher::dispatch() - CORE/src/Routing/Dispatcher.php, line 237
     [main] - APP/webroot/index.php, line 84
 
-Above is the stack trace generated by calling ``Debugger::trace()`` in
-a controller action. Reading the stack trace bottom to top shows
-the order of currently running functions (stack frames).
+Abaixo encontra-se a pilha de execução gerada ao chamar ``Debugger::trace()`` em
+uma ação de um controller. A leitura do fim para o início da pilha exibe a ordem
+de execução das funções.
 
 
-
-Getting an Excerpt From a File
-==============================
+Pegando Trechos de Arquivos
+===========================
 
 .. php:staticmethod:: excerpt($file, $line, $context)
 
-Grab an excerpt from the file at $path (which is an absolute
-filepath), highlights line number $line with $context number of
-lines around it.::
+Colete um trecho de um arquivo localizado em $path (caminho absoluto), na linha
+$line com número de linhas em torno deste trecho $context::
 
     pr(Debugger::excerpt(ROOT . DS . LIBS . 'debugger.php', 321, 2));
 
-    // Will output the following.
+    // Gera como saída o seguinte:
     Array
     (
         [0] => <code><span style="color: #000000"> * @access public</span></code>
@@ -127,45 +138,48 @@ lines around it.::
         [4] => <code><span style="color: #000000">        $data = @explode("\n", file_get_contents($file));</span></code>
     )
 
-Although this method is used internally, it can be handy if you're
-creating your own error messages or log entries for custom
-situations.
+Ainda que este método seja usado internamente, o mesmo pode ser conveniente caso
+você esteja criando suas próprias mensagens de erros e registros de logs.
 
 .. php:staticmethod:: Debugger::getType($var)
 
-Get the type of a variable. Objects will return their class name
+Obtém o tipo da variável. Caso seja um objeto, o retorno do método será o nome
+de sua classe
 
 
-Using Logging to Debug
-======================
+Usando Logging para Depuração
+=============================
 
-Logging messages is another good way to debug applications, and you can use
-:php:class:`Cake\\Log\\Log` to do logging in your application. All objects that
-use ``LogTrait`` have an instance method `log()` which can be used
-to log messages::
+Registrar as mensagens é uma outra boa maneira de se depurar aplicações. Para
+isto, pode ser usada a classe :php:class:`Cake\\Log\\Log` para fazer o logging
+na sua aplicação. Todos os objetos que fazem uso de ``LogTrait`` têm um método
+de instanciação ``log()`` que pode ser usado para registrar mensagens::
 
-    $this->log('Got here', 'debug');
+    $this->log('Cheguei aqui', 'debug');
 
-The above would write ``Got here`` into the debug log. You can use log entries
-to help debug methods that involve redirects or complicated loops. You can also
-use :php:meth:`Cake\\Log\\Log::write()` to write log messages. This method can be called
-statically anywhere in your application one CakeLog has been loaded::
+O código acima escreverá ``Cheguei aqui`` no arquivo de registros de depuração
+(debug log). Você pode usar seus registros para auxiliar na depuração de métodos
+que contêm redirecionamentos e laços complicados. Você poderá usar também
+:php:meth:`Cake\\Log\\Log::write()` para escrever mensagens nos registros. Esse
+método pode ser chamado de forma estática em qualquer lugar da sua aplicação,
+pressupondo-se que CakeLog já esteja carregado::
 
-    // At the top of the file you want to log in.
+    // No início do arquivo que deseja registrar.
     use Cake\Log\Log;
 
-    // Anywhere that Log has been imported.
-    Log::debug('Got here');
+    // Em qualquer lugar que Log tenha sido importado.
+    Log::debug('Cheguei aqui');
 
 Debug Kit
 =========
 
-DebugKit is a plugin that provides a number of good debugging tools. It
-primarily provides a toolbar in the rendered HTML, that provides a plethora of
-information about your application and the current request. You can download
-`DebugKit <https://github.com/cakephp/debug_kit>`_ from GitHub.
+O DebugKit é um plugin composto por ótimas ferramentas de depuração. Uma dessas
+ferramentas é uma toolbar renderizada em HTML, na qual é possível visualizar uma
+grande quantidade de informações sobre sua aplicação e a atual requisição
+realizada pela mesma. Veja no capítulo :doc:`/debug-kit` como instalar e usar o
+DebugKit.
 
 .. meta::
-    :title lang=en: Debugging
-    :description lang=en: Debugging CakePHP with the Debugger class, logging, basic debugging and using the DebugKit plugin.
-    :keywords lang=en: code excerpt,stack trace,default output,error link,default error,web requests,error report,debugger,arrays,different ways,excerpt from,cakephp,ide,options
+    :title lang=pt: Depuração
+    :description lang=pt: Depurando CakePHP usando a classe Debugger, logging, depuração básica e uso do plugin DebugKit.
+    :keywords lang=pt: trecho de código,pilha de execução,saida padrão,link de erro,erro padrão,requisições web,relatório de erro,depurador,vetores,maneiras diferentes,trechos de código de,cakephp,ide,opções

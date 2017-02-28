@@ -1,11 +1,11 @@
-CookieComponent
-###############
+Cookie
+######
 
 .. php:namespace:: Cake\Controller\Component
 
 .. php:class:: CookieComponent(ComponentRegistry $collection, array $config = [])
 
-The CookieComponent is a wrapper around the native PHP ``setcookie`` method. It
+The CookieComponent is a wrapper around the native PHP ``setcookie()`` method. It
 makes it easier to manipulate cookies, and automatically encrypt cookie data.
 
 Configuring Cookies
@@ -89,7 +89,7 @@ The CookieComponent offers a number of methods for working with Cookies.
 .. php:method:: read(mixed $key = null)
 
     This method is used to read the value of a cookie variable with the
-    name specified by $key.::
+    name specified by $key. ::
 
         // Outputs "Larry"
         echo $this->Cookie->read('name');
@@ -102,6 +102,12 @@ The CookieComponent offers a number of methods for working with Cookies.
         $this->Cookie->read('User');
 
         // This outputs something like ['name' => 'Larry', 'role' => 'Lead']
+
+    .. warning::
+        CookieComponent cannot interact with bare strings values that contain
+        ``,``. The component will attempt to interpret these values as
+        arrays, leading to incorrect results. Instead you should use
+        ``$request->getCookie()``.
 
 .. php:method:: check($key)
 

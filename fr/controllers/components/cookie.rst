@@ -5,9 +5,9 @@ CookieComponent
 
 .. php:class:: CookieComponent(ComponentRegistry $collection, array $config = [])
 
-Le component Cookie est un conteneur de la méthode native de PHP ``setcookie``.
-Il simplifie la manipulation des cookies et chiffre automatiquement les données
-du cookie.
+Le component Cookie est un conteneur de la méthode native de PHP
+``setcookie()``. Il simplifie la manipulation des cookies et chiffre
+automatiquement les données du cookie.
 
 Paramétrage des Cookies
 =======================
@@ -35,12 +35,12 @@ pour configurer une clé spécifique, utilisez la méthode ``configKey()``::
 Il y a plusieurs valeurs de configuration pour les cookies:
 
 expires
-    Combien de temps les cookies doivent durer. Par défaut à 1 mois.
+    Combien de temps les cookies doivent durer. Par défaut 1 mois.
 path
     Le chemin sur le serveur web dans lequel le cookie sera disponible. Si le
     chemin est défini à '/foo/', le cookie sera seulement disponible dans le
     répertoire /foo/ et tous ses sous-répertoires comme /foo/bar/ du domaine.
-    La valeur par défaut est le domaine entier.
+    La valeur par défaut est le chemin de base de votre application.
 domain
     Le domaine pour lequel le cookie est disponible. Pour rendre le cookie
     disponible sur tous les sous-domaines de example.com, définissez le domaine
@@ -53,8 +53,8 @@ key
     La clé de chiffrement utilisé quand les cookies chiffrés sont activés. Par
     défaut à Security.salt.
 httpOnly
-    Défini à ``true`` pour ne faire que des cookies HTTP. Les Cookies qui sont HTTP
-    nes ont uniquement accessible en JavaScript. Par défaut à ``false``.
+    Défini à ``true`` pour ne faire que des cookies HTTP. Les Cookies qui sont
+    HTTPOnly ne sont pas accessible en JavaScript. Par défaut à ``false``.
 encryption
     Le type de chiffrement à utiliser. Par défaut à 'aes'. Peut aussi être
     'rijndael' pour une compatibilité rétroactive.
@@ -66,7 +66,7 @@ Le Component Cookie offre plusieurs méthodes pour travailler avec les Cookies.
 
 .. php:method:: write(mixed $key, mixed $value = null)
 
-    La méthode write() est le cœur du composant Cookie, $key est le
+    La méthode write() est le cœur du composant Cookie. $key est le
     nom de la variable désirée, et $value est l'information à stocker::
 
         $this->Cookie->write('name', 'Larry');
@@ -85,15 +85,15 @@ Le Component Cookie offre plusieurs méthodes pour travailler avec les Cookies.
         );
 
     Toutes les valeurs dans le cookie sont chiffrées avec AES par défaut. Si
-    vous voulez stocker les valeurs en texte, assure-vous de configurer la clé
-    space::
+    vous voulez stocker les valeurs en texte, assurez-vous de configurer
+    l'espace de la clé::
 
         $this->Cookie->configKey('User', 'encryption', false);
 
 .. php:method:: read(mixed $key = null)
 
     Cette méthode est utilisée pour lire la valeur d'une variable de cookie
-    avec le nom spécifié dans $key.::
+    avec le nom spécifié dans $key::
 
         // Sortie "Larry"
         echo $this->Cookie->read('name');
@@ -101,11 +101,17 @@ Le Component Cookie offre plusieurs méthodes pour travailler avec les Cookies.
         // Vous pouvez aussi utiliser la notation par point pour lire
         echo $this->Cookie->read('User.name');
 
-        // Pour prendre les variables que vous aviez groupées en utilisant
+        // Pour récupérer les variables que vous aviez groupées en utilisant
         // la notation par point comme tableau, faites quelque chose comme
         $this->Cookie->read('User');
 
         // ceci retourne quelque chose comme ['name' => 'Larry', 'role' => 'Lead']
+
+    .. warning::
+        CookieComponent ne peut pas intéragir avec les valeurs de chaînes vides
+        qui contiennent ``,``. Le component va tenter d'interpreter ces valeurs
+        en tableaux, ce qui conduit à des résultats incorrects. A la place, vous
+        devez utiliser ``$request->getCookie()``.
 
 .. php:method:: check($key)
 
@@ -115,15 +121,14 @@ Le Component Cookie offre plusieurs méthodes pour travailler avec les Cookies.
 
 .. php:method:: delete(mixed $key)
 
-    Efface une variable de cookie dont le nom est défini dans $key. Fonctionne avec la
-    notation par point::
+    Efface une variable de cookie dont le nom est défini dans $key. Fonctionne
+    avec la notation par point::
 
         // Efface une variable
         $this->Cookie->delete('bar');
 
-        // Efface la variable bar du cookie, mais seulement dans foo.
+        // Efface la variable bar du cookie, mais rien d'autre sous foo.
         $this->Cookie->delete('foo.bar');
-
 
 .. meta::
     :title lang=fr: Cookie

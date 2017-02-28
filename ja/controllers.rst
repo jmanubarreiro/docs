@@ -1,649 +1,514 @@
 コントローラ
 ############
 
-コントローラはMVCの'C'です。ルーティングが適用されて適切なコントローラが見つかった後、コントローラのアクションが呼ばれます。
-コントローラはリクエストを解釈して操作し、適切なモデルが呼ばれるのを確認して、正しいレスポンスまたはビューを書き出します。
-コントローラはモデルとビューの仲介者とみなすことが出来ます。
-コントローラは薄くシンプルに、モデルを大きくしましょう。そうすれば、あなたの書いたコードは再利用しやすくなり、そして簡単にテスト出来るでしょう。
+.. php:namespace:: Cake\Controller
 
-一般的に、コントローラは1つのモデルのロジックを管理するために使われます。
-たとえば、Online Bakeryを構築しようとしている場合、レシピやその材料を管理するRecipesControllerとIngredientsControllerを作るでしょう。
-CakePHPでは、主に操作するモデルにちなんで、コントローラの名前が付けられます。
-コントローラは複数のモデルを扱う場合でも、問題なく動作します。
+.. php:class:: Controller
 
-アプリケーションのコントローラは ``AppController`` クラスを継承し、そしてそれは :php:class:`Controller` クラスを継承しています。
-``AppController`` クラスは ``/app/Controller/AppController.php`` に定義し、アプリケーションのコントローラ全体で共有されるメソッドを含めるようにしましょう。
+コントローラ (Controller) は MVC の 'C' です。ルーティングが適用されて適切なコントローラが見つかった後、
+コントローラのアクションが呼ばれます。コントローラはリクエストを解釈して、適切なモデルが
+呼ばれるのを確認して、正しいレスポンスまたはビューを書き出します。コントローラはモデルとビューの
+中間層とみなすことができます。コントローラは薄くシンプルに、モデルを大きくしましょう。
+そうすれば、あなたの書いたコードはより簡単に再利用できるようになり、そしてより簡単にテストできるでしょう。
 
-コントローラは *アクション* と呼ばれるいくつかのメソッドを提供します。
-アクションはリクエストを操作するためのコントローラーのメソッドです。
-デフォルトで、コントローラ上のすべてのpublicメソッドはアクションとなり、URLからアクセスが出来ます。
+一般的に、コントローラはひとつのモデルのロジックを管理するために使われます。
+たとえば、オンラインベーカリーのサイトを構築しようとしている場合、レシピやその材料を管理する
+RecipesController と IngredientsController を作るでしょう。
+コントローラは複数のモデルを扱う場合でも問題なく動作しますが、CakePHP では
+主に操作するモデルにちなんで、コントローラの名前が付けられます。
+
+アプリケーションのコントローラは ``AppController`` クラスを継承し、そしてそれは
+:php:class:`Controller` クラスを継承しています。 ``AppController`` クラスは
+**src/Controller/AppController.php** に定義し、アプリケーションのコントローラ全体で
+共有されるメソッドを含めるようにしましょう。
+
+コントローラは、リクエストを操作するための *アクション* と呼ばれるいくつかのメソッドを提供します。
+デフォルトで、コントローラ上のすべての public メソッドはアクションとなり、URL からアクセスができます。
 アクションはリクエストを解釈してレスポンスを返す役割があります。
 普通、レスポンスは描画されたビューの形式となっていますが、同様のレスポンスを作成する方法は他にもあります。
-
 
 .. _app-controller:
 
 AppController
 =============
 
-冒頭で述べたように、 ``AppController`` クラスはアプリケーションのすべてのコントローラの親クラスとなります。
-``AppController`` はそれ自身、CakePHPのコアライブラリに含まれる :php:class:`Controller` クラスを継承しています。
-``AppController`` は ``/app/Controller/AppController.php`` に次のように定義されます。::
+冒頭で述べたように、 ``AppController`` クラスはアプリケーションのすべてのコントローラの
+親クラスとなります。 ``AppController`` はそれ自身、CakePHP のコアライブラリに含まれる
+:php:class:`Cake\\Controller\\Controller` クラスを継承しています。
+``AppController`` は **src/Controller/AppController.php** に次のように定義されます。 ::
 
-    class AppController extends Controller {
+    namespace App\Controller;
+
+    use Cake\Controller\Controller;
+
+    class AppController extends Controller
+    {
     }
 
+``AppController`` で作られたクラス変数とメソッドはそれを継承するすべてのコントローラで
+有効となります。コンポーネント (あとで学びます) は多くのコントローラ 
+(必ずしもすべてのコントローラとは限りません) で使われるコードをまとめるのに使われます。
 
-``AppController`` で作られたクラス変数とメソッドはアプリケーション中のすべてのコントローラで有効となります。
-コントローラ共通のコードを ``AppController`` に書くのが理想的です。
-コンポーネントは多くのコントローラ(必ずしもすべてのコントローラとは限りません)で使われるコードをまとめるのに使われます(コンポーネントについてはあとで学びます)
+アプリケーション中のすべてのコントローラで使われるコンポーネントを読み込むために
+``AppController`` を使うことができます。CakePHP はこうした用途のために、 Controller
+のコンストラクタの最後で呼び出される ``initialize()`` メソッドを提供します。 ::
 
-通常のオブジェクト指向の継承ルールが適用されていれば、CakePHPはコントローラにある特定の変数が指定された場合に、動作を拡張します。
-コントローラで使用されるコンポーネントとヘルパーのリストは特別に扱われ、これらの変数は ``AppController`` の値と子コントローラの値でマージされます。
-普通は子クラスの変数は、 ``AppController`` の変数を上書きします。
+    namespace App\Controller;
 
-.. note::
+    use Cake\Controller\Controller;
 
-    CakePHPは、 ``AppController`` とアプリケーションのコントローラとで、次の変数をマージします。:
+    class AppController extends Controller
+    {
 
-    -  :php:attr:`~Controller::$components`
-    -  :php:attr:`~Controller::$helpers`
-    -  :php:attr:`~Controller::$uses`
+        public function initialize()
+        {
+            // CSRF コンポーネントを常に有効にします。
+            $this->loadComponent('Csrf');
+        }
 
-``AppController`` で :php:attr:`~Controller::$helpers` 変数を定義したら、デフォルトでHtmlヘルパーとFormヘルパーが追加されます。
-
-また、子コントローラのコールバック中で ``AppController`` のコールバックを呼び出すのは、このようにするのがベストです。::
-
-    public function beforeFilter() {
-        parent::beforeFilter();
     }
 
-リクエストパラメータ
-====================
+``initialize()`` メソッドに加えて、旧来の ``$components`` プロパティでも
+どのコンポーネントが読まれるべきかを定義することができます。
+通常のオブジェクト指向の継承ルールが適用されますが、
+コントローラで使用されるコンポーネントとヘルパーは特別に扱われます。
+これらの場合、 ``AppController`` のプロパティの値は、子コントローラの配列の値とマージされます。
+常に子クラスの値が ``AppController`` の値を上書きします。
 
-CakePHPアプリケーションにリクエストがあった時、CakePHPの :php:class:`Router` クラスと :php:class:`Dispatcher` クラスは適切なコントローラを見つけて、それを生成するために :ref:`routes-configuration` を使います。
-リクエストデータはリクエストオブジェクトの中にカプセル化されています。
-CakePHPは、すべての重要なリクエスト情報を ``$this->request`` プロパティにセットします。
-CakePHPのリクエストオブジェクトについてのより詳しい情報は :ref:`cake-request` セクションを参照してください。
+リクエストの流れ
+================
+
+CakePHPアプリケーションへのリクエストが生じると、 CakePHP の :php:class:`Cake\\Routing\\Router`
+と :php:class:`Cake\\Routing\\Dispatcher` クラスは正しいコントローラを見つけて、
+インスタンスを作成するために :ref:`routes-configuration` を使用します。
+リクエストデータはリクエストオブジェトに中にカプセル化されています。
+CakePHP はすべての重要なリクエスト情報を ``$this->request`` プロパティの中に格納します。
+CakePHP のリクエストオブジェクトについてのより詳しい情報は :ref:`cake-request` の章を参照してください。
 
 コントローラのアクション
 ========================
 
-コントローラのアクションは、リクエストパラメータを、要求を送ってきたブラウザやユーザーに対するレスポンスに変換する役割があります。
-CakePHPは規約に則ることで、このプロセスを自動化し、本来であればあなたが書かないといけないコードを省いてくれます。
+コントローラのアクションは、リクエストパラメータを、要求を送ってきたブラウザやユーザーに対する
+レスポンスに変換する役割があります。CakePHP は規約に則ることで、このプロセスを自動化し、
+本来であればあなたが書かなければならなかったコードを省いてくれます。
 
-CakePHPは規約に従って、アクション名のビューを描画します。
-Online Bakeryのサンプルに戻ってみてみると、RecipesControllerは ``view()``, ``share()``, ``search()`` アクションが含まれています。
-このコントローラは ``/app/Controller/RecipesController.php`` にあり、次のようなコードになっています。::
+CakePHP は規約に従って、アクション名のビューを描画します。オンラインベーカリーの例に戻りますが、
+RecipesController は ``view()`` 、 ``share()`` 、 ``search()`` アクションを持つかもしれません。
+このコントローラは **src/Controller/RecipesController.php** にあり、
+次のようなコードになっています。 ::
 
-        # /app/Controller/RecipesController.php
+    // src/Controller/RecipesController.php
 
-        class RecipesController extends AppController {
-            public function view($id) {
-                //action logic goes here..
-            }
-
-            public function share($customerId, $recipeId) {
-                //action logic goes here..
-            }
-
-            public function search($query) {
-                //action logic goes here..
-            }
+    class RecipesController extends AppController
+    {
+        public function view($id)
+        {
+            // アクションの処理をここで行います。
         }
 
-これらのアクションのビューは ``app/View/Recipes/view.ctp`` 、 ``app/View/Recipes/share.ctp`` 、 ``app/View/Recipes/search.ctp`` にあります。
-規約に従ったビューのファイル名は、アクション名を小文字にしてアンダースコアでつないだものです。
+        public function share($customerId, $recipeId)
+        {
+            // アクションの処理をここで行います。
+        }
 
-通常、コントローラのアクションは :php:class:`View` クラスがビューを描画するために使うコンテキストを作るために :php:meth:`~Controller::set()` を使います。
-CakePHPの規約があるので、手動でビューを描画したり生成したりする必要はありません。
-コントローラのアクションが完了すると、CakePHPはビューの描画と送信をします。
-
-もしデフォルトの動作をスキップさせたければ、次のテクニックを使えばビューを描画するデフォルトの動作をバイパスできます。
-
-* コントローラのアクションから文字列もしくは文字列に変換可能なオブジェクトを返した場合、その文字列がレスポンスのボディとして使われます。
-* レスポンスとして :php:class:`CakeResponse` を返すことが出来ます。
-
-コントローラのメソッドが :php:meth:`~Controller::requestAction()` から呼ばれた時、文字列ではないデータを返したい場合があると思います。
-もし通常のWebリクエストからもrequestActionからも呼ばれるコントローラのメソッドがあれば、値を返す前にリクエストタイプをチェックしましょう。::
-
-    class RecipesController extends AppController {
-        public function popular() {
-            $popular = $this->Recipe->popular();
-            if (!empty($this->request->params['requested'])) {
-                return $popular;
-            }
-            $this->set('popular', $popular);
+        public function search($query)
+        {
+            // アクションの処理をここで行います。
         }
     }
 
-上記のコントローラのアクションは :php:meth:`~Controller::requestAction()` と通常のリクエストとで、メソッドがどのように使われるかの例です。
-requestActionではない通常のリクエストに配列のデータを戻り値として返せば、エラーの原因になるのでやめましょう。
-:php:meth:`~Controller::requestAction()` のより詳しい情報については :php:meth:`Controller::requestAction()` のセクションを参照してください。
+これらのアクションのテンプレートファイルは **src/Template/Recipes/view.ctp** 、
+**src/Template/Recipes/share.ctp** 、そして **src/Template/Recipes/search.ctp** になります。
+規約に従ったビューのファイル名は、アクション名を小文字にしてアンダースコアでつないだものです。
 
-アプリケーションでコントローラを効率的に使うために、CakePHPのコントローラから提供されるいくつかのコアな属性やメソッドを説明しましょう。
+通常、コントローラのアクションは :php:class:`View` クラスがビュー層の描画で使う
+コンテキストを作るために :php:meth:`~Controller::set()` を使います。
+CakePHP の規約に従うと、手動でビューを描画したり生成したりする必要はありません。
+代わりに、コントローラのアクションが完了すると、CakePHP はビューの描画と送信をします。
 
-.. _controller-life-cycle:
+もし何らかの理由でデフォルトの動作をスキップさせたければ、完全にレスポンスを作成して、
+アクションから :php:class:`Cake\\Network\\Response` オブジェクトを返すこともできます。
 
+アプリケーションでコントローラを効率的に使うために、CakePHP のコントローラから提供される
+いくつかのコアな属性やメソッドを説明しましょう。
 
-リクエストライフサイクルコールバック
-====================================
+ビューとの相互作用
+==================
 
-.. php:class:: Controller
+コントローラはビューといくつかの方法でお互いに作用しあっています。最初に、コントローラは
+``Controller::set()`` を使って、ビューにデータを渡すことができます。
+コントローラからどのビュークラスを使うか、どのビューを描画すべきか、を決めることもできます。
 
-CakePHPのコントローラは、リクエストのライフサイクル周りにロジックを挿入できるコールバック関数がついています。:
+.. _setting-view_variables:
 
-.. php:method:: beforeFilter()
-
-    この関数はコントローラの各アクションの前に実行されます。
-    アクティブセッションのチェックや、ユーザー権限の検査をするために役立ちます。
-
-    .. note::
-
-        beforeFilter()メソッドはアクションが存在しない場合やscaffoldアクションの場合でも呼ばれます。
-
-.. php:method:: beforeRender()
-
-    コントローラのアクションの後で、ビューが描画される前に呼ばれます。
-    このコールバックはあまり使われませんが、アクションの最後で :php:meth:`~Controller::render()` を手動で呼び出した場合に使うことがあるかもしれません。
-
-.. php:method:: afterFilter()
-
-    コントローラのアクションの後で、描画が完了した後に呼ばれます。
-    これはコントローラの最後に実行されるメソッドです。
-
-コントローラのコールバックに加えて、 :doc:`/controllers/components` も同じようなコールバックを提供します。
-
-.. _controller-methods:
-
-コントローラのメソッド
-======================
-
-コントローラのメソッドとその説明については、CakePHP APIを確認してください。
-`http://api20.cakephp.org/class/controller <http://api20.cakephp.org/class/controller>`_.
-
-ビューとの関係
---------------
-
-コントローラはビューとお互いに影響しあっています。
-最初に、コントローラは :php:meth:`~Controller::set()` を使って、ビューにデータを渡すことが出来ます。
-どのビュークラスを使うか、どのビューを描画すべきか、を決めることも出来ます。
+ビュー変数の設定
+----------------
 
 .. php:method:: set(string $var, mixed $value)
 
-    :php:meth:`~Controller::set()` メソッドはコントローラからビューへデータを渡すための主な方法です。
-    1度 :php:meth:`~Controller::set()` を使えば、その変数はビュー内でアクセスできるようになります。::
+``Controller::set()`` メソッドはコントローラからビューへデータを渡すための主な方法です。
+``Controller::set()`` を使った後は、その変数はビュー内でアクセスできるようになります。 ::
 
-        // まずコントローラからデータを渡します
+    // まずコントローラからデータを渡します
 
-        $this->set('color', 'pink');
+    $this->set('color', 'pink');
 
-        // すると、ビューでそのデータを利用できます
-        ?>
+    // すると、ビューでそのデータを利用できます
+    ?>
 
-        You have selected <?php echo $color; ?> icing for the cake.
+    You have selected <?= h($color) ?> icing for the cake.
 
-    :php:meth:`~Controller::set()` メソッドは最初のパラメータに連想配列も指定できます。
-    この方法はデータのかたまりを簡単にビューに割り当てる方法としてよく使われます。 ::
+``Controller::set()`` メソッドは最初のパラメータに連想配列も指定できます。
+この方法はデータのかたまりを簡単にビューに割り当てる方法としてよく使われます。 ::
 
-        $data = array(
-            'color' => 'pink',
-            'type' => 'sugar',
-            'base_price' => 23.95
-        );
+    $data = [
+        'color' => 'pink',
+        'type' => 'sugar',
+        'base_price' => 23.95
+    ];
 
-        // ビューで$color, $type, $base_price の変数が使えるようになります
+    // $color 、 $type 、および $base_price を作成し
+    // ビューで使用できるようになります
 
-        $this->set($data);
+    $this->set($data);
 
+ビューオプションの設定
+----------------------
 
-    ``$pageTitle`` という変数はもう存在しません。タイトルをセットするには :php:meth:`~Controller::set()` を使ってください。::
+もしビュークラスや、レイアウト／テンプレートのパス、
+ビューの描画時に使われるヘルパーやテーマをカスタマイズしたければ、
+ビルダーを得るために ``viewBuilder()`` メソッドを使います。
+このビルダーは、ビューが作成される前にビューのプロパティを設定するために使われます。 ::
 
-        $this->set('title_for_layout', 'This is the page title');
+    $this->viewBuilder()
+        ->helpers(['MyCustom'])
+        ->theme('Modern')
+        ->className('Modern.Admin');
 
+上記は、どのようにしてカスタムヘルパーを読み込み、テーマを設定し、
+カスタムビュークラスを使用できるかを示しています。
 
-.. php:method:: render(string $action, string $layout, string $file)
+.. versionadded:: 3.1
+    ViewBuilder は 3.1 で追加されました
 
-    :php:meth:`~Controller::render()` メソッドは各アクションの最後に自動的に呼ばれます。
-    このメソッドは(:php:meth:`~Controller::set()` を使って渡したデータを使って)すべてのビューロジックを実行し、ビューを :php:attr:`~View::$layout` 内に配置し、エンドユーザーに表示します。
+ビューの描画
+------------
 
-    レンダリングに使用されるデフォルトのビューファイルは、規約によって決定されます。
-    RecipesControllerの ``search()`` アクションがリクエストされたら、/app/View/Recipes/search.ctpのビューファイルが描画されます。::
+.. php:method:: render(string $view, string $layout)
 
-        class RecipesController extends AppController {
-        // ...
-            public function search() {
-                // /View/Recipes/search.ctpのビューが描画されます
-                $this->render();
-            }
-        // ...
+``Controller::render()`` メソッドは各アクションの最後に自動的に呼ばれます。
+このメソッドは (``Controller::set()`` で渡したデータを使って)
+すべてのビューロジックを実行し、ビューを ``View::$layout`` 内に配置し、
+エンドユーザーに表示します。
+
+render に使用されるデフォルトのビューファイルは、規約によって決定されます。
+RecipesController の ``search()`` アクションがリクエストされたら、
+**src/Template/Recipes/search.ctp** のビューファイルが描画されます。 ::
+
+    namespace App\Controller;
+
+    class RecipesController extends AppController
+    {
+    // ...
+        public function search()
+        {
+            // src/Template/Recipes/search.ctp のビューを描画します
+            $this->render();
         }
+    // ...
+    }
 
-    CakePHPは(``$this->autoRender`` にfalseをセットしない限り)アクションの後に自動的に描画メソッドを呼び出しますが、
-    コントローラで ``$action`` にアクション名を指定することで、別のビューファイルを指定することが出来ます。
+CakePHP は (``$this->autoRender`` に ``false`` をセットしない限り) アクションの後に
+自動的に描画メソッドを呼び出しますが、 ``Controller::render()`` メソッドの第一引数に
+ビュー名を指定することで、別のビューファイルを指定することができます。
 
-    ``$action`` が'/'で始まっていれば、 ``/app/View`` への相対パスでビューまたはエレメントを探そうとします。
-    これはエレメントを直接描画することができ、Ajax呼び出しではとても有用です。::
+``$view`` が '/' で始まっていれば、ビューまたはエレメントのファイルが **src/Template** 
+フォルダからの相対パスであると見なします。これはエレメントを直接描画することができ、
+AJAX 呼び出しではとても有用です。 ::
 
-        // /View/Elements/ajaxreturn.ctpのビューが描画されます
-        $this->render('/Elements/ajaxreturn');
+    // src/Template/Element/ajaxreturn.ctp のエレメントを描画します
+    $this->render('/Element/ajaxreturn');
+ 
+``Controller::render()`` の第二引数 ``$layout``
+はビューが描画されるレイアウトを指定することができます。
 
-    また3つ目のパラメータ ``$file`` を使って別のビューまたはエレメントを指定することも出来ます。
-    :php:attr:`~View::$layout` パラメータはビューが描画されるレイアウトの指定が出来ます。
-
-指定したビューを描画する
+特定のテンプレートの描画
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-コントローラでは、規約に従ったものではなく、別のビューを描画したことがあるかもしれません。
-これは :php:meth:`~Controller::render()` を直接呼び出すことで出来ます。
-一度 :php:meth:`~Controller::render()` を呼び出すと、CakePHPは再度ビューを描画することはありません。::
+コントローラで、規約に従ったものではなく、別のビューを描画したいことがあるかもしれません。
+これは ``Controller::render()`` を直接呼び出すことで可能です。一度 ``Controller::render()``
+を呼び出すと、CakePHP は再度ビューを描画することはありません。 ::
 
-    class PostsController extends AppController {
-        public function my_action() {
+    namespace App\Controller;
+
+    class PostsController extends AppController
+    {
+        public function my_action()
+        {
             $this->render('custom_file');
         }
     }
 
-これは ``app/View/Posts/my_action.ctp`` の代わりに ``app/View/Posts/custom_file.ctp`` を描画します。
+これは **src/Template/Posts/my_action.ctp** の代わりに
+**src/Template/Posts/custom_file.ctp** を描画します。
 
 また、次のような書式で、プラグイン内のビューを描画することもできます。
-``$this->render('PluginName.PluginController/custom_file')``
-
+``$this->render('PluginName.PluginController/custom_file')`` 。
 例::
 
-    class PostsController extends AppController {
-        public function my_action() {
+    namespace App\Controller;
+
+    class PostsController extends AppController
+    {
+        public function my_action()
+        {
             $this->render('Users.UserDetails/custom_file');
         }
     }
+    
+これは **plugins/Users/src/Template/UserDetails/custom_file.ctp** を描画します。
 
-これは ``app/Plugin/Users/View/UserDetails/custom_file.ctp`` を描画します。
+他のページへの転送
+==================
 
-フローコントロール
-------------------
+.. php:method:: redirect(string|array $url, integer $status)
 
-.. php:method:: redirect(mixed $url, integer $status, boolean $exit)
+もっともよく使う、フロー制御のメソッドは ``Controller::redirect()`` です。
+このメソッドは最初の引数に、CakePHP の相対 URL を受け取ります。
+ユーザーが正常に注文を出した時、レシート画面にリダイレクトさせたいかもしれません。 ::
 
-    もっともよく使う、フローをコントロールするメソッドは :php:meth:`~Controller::redirect()` です。
-    このメソッドは最初の引数に、CakePHPの相対URLを指定します。
-    ユーザーが正常に注文を出した時、領収画面にリダイレクトさせるとすると::
-
-        public function place_order() {
-            // 注文終了のためのロジック
-            if ($success) {
-                return $this->redirect(array('controller' => 'orders', 'action' => 'thanks'));
-            }
-            return $this->redirect(array('controller' => 'orders', 'action' => 'confirm'));
+    public function place_order()
+    {
+        // 注文終了のためのロジック
+        if ($success) {
+            return $this->redirect(
+                ['controller' => 'Orders', 'action' => 'thanks']
+            );
         }
-
-    $urlに相対URLまたは絶対URLを指定することも出来ます。::
-
-        $this->redirect('/orders/thanks'));
-        $this->redirect('http://www.example.com');
-
-    アクションにデータを渡すこともできます。::
-
-        $this->redirect(array('action' => 'edit', $id));
-
-    :php:meth:`~Controller::redirect()` の2つ目のパラメータは、リダイレクトに伴うHTTPステータスコードを定義することが出来ます。
-    通常のリダイレクトに従って、301(moved parmanently)または303(see other)を使ったほうが良いでしょう。
-
-    このメソッドは3つ目のパラメータに ``false`` を指定しない限りはリダイレクト後に ``exit()`` を呼び出します。
-
-    リファラのページにリダイレクトする必要があれば、次のように出来ます。::
-
-        $this->redirect($this->referer());
-
-    このメソッドは名前付きパラメータもサポートしています。
-    たとえば ``http://www.example.com/orders/confirm/product:pizza/quantity:5`` のようなURLにリダイレクトしたい場合、以下のように使います。::
-
-        $this->redirect(array('controller' => 'orders', 'action' => 'confirm', 'product' => 'pizza', 'quantity' => 5));
-
-    クエリストリングとハッシュを使う場合は次のようになります。 ::
-
-        $this->redirect(array(
-            'controller' => 'orders', 'action' => 'confirm', '?' => array('product' => 'pizza', 'quantity' => 5), '#' => 'top'));
-
-    生成される URL はこのようになります: ``http://www.example.com/orders/confirm?product=pizza&quantity=5#top``
-
-.. php:method:: flash(string $message, string $url, integer $pause, string $layout)
-
-    :php:meth:`~Controller::redirect()` のように、 :php:meth:`~Controller::flash()` メソッドはある操作の後に、ユーザーを新しいページに誘導するために使われます。
-    :php:meth:`~Controller::flash()` メソッドはユーザーを別のURLへ移動させる前にメッセージを表示するという点において違いがあります。
-
-    最初のパラメータは表示されるメッセージを指定し、2つ目のパラメータはCakePHPの相対URLとします。
-    CakePHPはユーザーを転送する前に、 ``$pause`` 秒の間 ``$message`` を表示します。
-
-    表示させたいメッセージの特定のテンプレートがあるなら、 :php:attr:`~View::$layout` パラメータにそのレイアウト名を指定します。
-
-    ページ内のflashメッセージについては、 :php:meth:`SessionComponent::setFlash()` メソッドを参照してください。
-
-コールバック
-------------
-
-:ref:`controller-life-cycle` に加えて、CakePHPはscaffoldingに関連したコールバックもサポートしています。
-
-.. php:method:: beforeScaffold($method)
-
-    $methodは、たとえばindex, editなどの、呼び出されたメソッドの名前です。
-
-.. php:method:: afterScaffoldSave($method)
-
-    $methodは、editかupdateのどちらかの、呼び出されたメソッドの名前です。
-
-.. php:method:: afterScaffoldSaveError($method)
-
-    $methodは、editかupdateのどちらかの、呼び出されたメソッドの名前です。
-
-.. php:method:: scaffoldError($method)
-
-    $methodは、たとえばindex, editなどの、呼び出されたメソッドの名前です。
-
-その他の便利なメソッド
-----------------------
-
-.. php:method:: constructClasses
-
-    このメソッドはコントローラに必要とされるモデルをロードします。
-    モデルをロードするプロセスは通常CakePHPによって行われますが、このメソッドは別の視点からコントローラにアクセスする時に便利です。
-    コマンドラインスクリプトまたは何かしらの外部のプログラムをCakePHPで使う必要がある場合、 :php:meth:`~Controller::constructClasses()` が便利でしょう。
-
-.. php:method:: referer(mixed $default = null, boolean $local = false)
-
-    現在のリクエストに対するリファラURLを返します。
-    ``$default`` パラメータは、HTTP\_REFERERがヘッダから読み取れなかった場合にデフォルトURLとして使うために指定します。
-    つまり、このようにする代わりに::
-
-        class UserController extends AppController {
-            public function delete($id) {
-                // delete code goes here, and then...
-                if ($this->referer() != '/') {
-                    return $this->redirect($this->referer());
-                }
-                return $this->redirect(array('action' => 'index'));
-            }
-        }
-
-    このように出来ます。::
-
-        class UserController extends AppController {
-            public function delete($id) {
-                // delete code goes here, and then...
-                return $this->redirect($this->referer(array('action' => 'index')));
-            }
-        }
-
-    ``$default`` がセットされていなければ、この関数はドメインのルート'/'をデフォルト値とします。
-
-    ``$local`` パラメータに ``true`` をセットすれば、ローカルサーバーに対するリファラURLを制限します。
-
-.. php:method:: disableCache
-
-    ユーザーの使っている **ブラウザ** に対して、現在のリクエストをキャッシュしないように伝えるために使われます。
-    これはビューキャッシュとは違います。ビューキャッシュについてはあとの章で説明します。
-
-    これを使った時のヘッダは次のようなものを送ります。::
-
-        Expires: Mon, 26 Jul 1997 05:00:00 GMT
-        Last-Modified: [current datetime] GMT
-        Cache-Control: no-store, no-cache, must-revalidate
-        Cache-Control: post-check=0, pre-check=0
-        Pragma: no-cache
-
-.. php:method:: postConditions(array $data, mixed $op, string $bool, boolean $exclusive)
-
-    POSTされたモデルのデータ(HtmlHelperに互換性のある入力からのデータ)をモデルのfind条件にセットするための形式に変換ためのメソッドです。
-    この関数は、検索ロジックを構築する上でのショートカットとなります。
-    たとえば管理権限のあるユーザーは、どの商品を出荷する必要があるのかを知るために、注文を検索出来たほうがよいでしょう。
-    ここで、Orderモデルに基づくフォームを作るために、CakePHPの :php:class:`FormHelper` と :php:class:`HtmlHelper` を使えます。
-    そうすると、コントローラのアクションはそのフォームからポストされたデータをfind条件を作るために使うことができます。::
-
-        public function index() {
-            $conditions = $this->postConditions($this->request->data);
-            $orders = $this->Order->find('all', compact('conditions'));
-            $this->set('orders', $orders);
-        }
-
-    ``$this->request->data['Order']['destination']`` が"Old Towne Bakery"であれば、postConditionsはその条件をModel->find()メソッドで使える配列に変換します。
-    この場合は、 ``array('Order.destination' => 'Old Towne Bakery')`` という形になります。
-
-    もし他のSQL演算子を使いたければ、それらの演算子を2つ目のパラメータに渡してください。::
-
-        /*
-        $this->request->dataは以下のような形式です。
-        array(
-            'Order' => array(
-                'num_items' => '4',
-                'referrer' => 'Ye Olde'
-            )
-        )
-        */
-
-        // 'Ye Olde'を含んでいて、少なくとも4つの商品をもっている注文を探しましょう
-        $conditions = $this->postConditions(
-            $this->request->data,
-            array(
-                'num_items' => '>=',
-                'referrer' => 'LIKE'
-            )
+        return $this->redirect(
+            ['controller' => 'Orders', 'action' => 'confirm']
         );
-        $orders = $this->Order->find('all', compact('conditions'));
+    }
 
-    3つ目のパラメータは、条件の結合になにを使うのかを指定することが出来ます。
-    'AND', 'OR', 'XOR'のような文字列です。
+このメソッドは適切なヘッダが設定されたレスポンスのインスタンスを返します。
+ビューの描画を抑制し、ディスパッチャが実際にリダイレクトを行えるようにするために
+このレスポンスのインスタンスを return すべきです。
 
-    最後のパラメータがtrueで、$opパラメータが配列であれば、$opに含まれていない項目は、この関数から返ってくる条件には含まれなくなります。
+$url 引数に相対 URL または絶対 URL を指定することもできます。 ::
 
-.. php:method:: paginate()
+    return $this->redirect('/orders/thanks');
+    return $this->redirect('http://www.example.com');
 
-    このメソッドはモデルから取得した結果をページングするために使われます。
-    ページサイズやモデルのfind条件などを指定出来ます。
-    paginateのより詳しい使い方は :doc:`pagination <core-libraries/components/pagination>` セクションを参照してください。
+アクションにデータを渡すこともできます。 ::
 
-.. php:method:: requestAction(string $url, array $options)
+    return $this->redirect(['action' => 'edit', $id]);
 
-    この関数は任意の場所からコントローラのアクションを呼び出し、アクションからのデータを返します。
-    ``$url`` には、CakePHPの相対URLを渡します(/controllername/actionname/params)。
-    呼び出し先のコントローラのアクションに対して追加のデータを渡すためには、$options配列を指定してください。
+``Controller::redirect()`` の第二引数では、リダイレクトに伴う
+HTTP ステータスコードを定義することができます。リダイレクトの性質によっては、
+301 (moved parmanently) または 303 (see other) を使ったほうが良いでしょう。
 
-    .. note::
+リファラのページにリダイレクトする必要があれば、次のようにできます。 ::
 
-        描画されたビューを取得するために、 ``requestAction($url, array('return'));`` というようにoptionsに 'return' を渡して :php:meth:`~Controller::requestAction()` を使うことができます。
-        注意してほしいのは、コントローラのメソッドから :php:meth:`~Controller::requestAction()` で 'return' を使うと、scriptタグとcssタグが正しく動作しない原因となるということです。
+    return $this->redirect($this->referer());
 
-    .. warning::
+クエリ文字列とハッシュを使う例は次のようになります。 ::
 
-        :php:meth:`~Controller::requestAction()` をキャッシュせずに利用すると、パフォーマンスの低下につながります。
-        コントローラやモデルで使用するのは稀です。
+    return $this->redirect([
+        'controller' => 'Orders',
+        'action' => 'confirm',
+        '?' => [
+            'product' => 'pizza',
+            'quantity' => 5
+        ],
+        '#' => 'top'
+    ]);
 
-    :php:meth:`~Controller::requestAction()` は(キャッシュされた)エレメントと組み合わせてよく使われます。
-    レンダリング前にエレメントに対してデータを取得するような場合です。
-    レイアウトの中に"最新のコメント"のエレメントを配置するサンプルを使ってみましょう。
-    まず、データを返すコントローラの関数を作ります。::
+生成される URL はこのようになります。 ::
 
-        // Controller/CommentsController.php
-        class CommentsController extends AppController {
-            public function latest() {
-                if (empty($this->request->params['requested'])) {
-                    throw new ForbiddenException();
-                }
-                return $this->Comment->find('all', array('order' => 'Comment.created DESC', 'limit' => 10));
-            }
-        }
+    http://www.example.com/orders/confirm?product=pizza&quantity=5#top
 
-    :php:meth:`~Controller::requestAction()` で実行したいメソッドは、実際に :php:meth:`~Controller::requestAction()` からリクエストが発せられているかどうかをチェックするべきです。
-    そうしないと、そのメソッドはURLから直接からアクセスできるようになってしまいます。それは望ましくありません。
+同じコントローラの他のアクションへの転送
+----------------------------------------
 
-    上記の関数を呼ぶための簡単なエレメントを作ったら::
+.. php:method:: setAction($action, $args...)
 
-        // View/Elements/latest_comments.ctp
+もし、現在のアクションを *同じ* コントローラの異なるアクションにフォワードする必要があれば、
+リクエストオブジェクトを更新し、描画されるビューテンプレートを変更し、そして
+指定のアクションに実行をフォワードするために ``Controller::setAction()`` を使用します。 ::
 
-        $comments = $this->requestAction('/comments/latest');
-        foreach ($comments as $comment) {
-            echo $comment['Comment']['title'];
-        }
-
-    どこか出力したい場所にさっきのエレメントを配置できます。::
-
-        echo $this->element('latest_comments');
-
-    ここに書かれた方法では、エレメントが描画されると毎回、データを取得するためにコントローラに対してリクエストが作られ、データが処理されて結果が返ってきます。
-    したがって、不必要な処理を防ぐためにエレメントのキャッシュを使うのが良いでしょう。::
-
-        echo $this->element('latest_comments', array(), array('cache' => true));
-
-    :php:meth:`~Controller::requestAction()` の呼び出しはキャッシュされたエレメントのビューファイルが存在してそれが有効な限り、リクエストの発行はしません。
-
-    加えて、 :php:meth:`~Controller::requestAction()` はCakePHP形式のURL配列を引数に取ることが出来ます。::
-
-        echo $this->requestAction(
-            array('controller' => 'articles', 'action' => 'featured'),
-            array('return')
-        );
-
-    これは、 :php:meth:`~Controller::requestAction()` の呼び出しが、パフォーマンスを向上できる :php:meth:`Router::url()` の利用を避けることが出来ます。
-    配列ベースのURLは次の1点を除いて :php:meth:`HtmlHelper::link()` で使うものと同じです。
-    その違いは、名前付きパラメータやGETで渡されるパラメータを使う場合、それらを2つ目の引数に指定して、適切なキーでラップしなければならないということです。
-    これは、 :php:meth:`~Controller::requestAction()` が名前付きパラメータの配列(requestActionの2つ目の引数)を ``Controller::params`` 配列にマージして、名前付きパラメータに対して明示的に'named'というキーを付けないからです。
-    ``$option`` 配列で指定した追加の値は、リクエストされたアクションの ``Controller::params`` 配列の中で使えるようになります。::
-
-        echo $this->requestAction('/articles/featured/limit:3');
-        echo $this->requestAction('/articles/view/5');
-
-    上記の場合、:php:meth:`~Controller::requestAction()` の配列は次のようになります。::
-
-        echo $this->requestAction(
-            array('controller' => 'articles', 'action' => 'featured'),
-            array('named' => array('limit' => 3))
-        );
-
-        echo $this->requestAction(
-            array('controller' => 'articles', 'action' => 'view'),
-            array('pass' => array(5))
-        );
-
-    .. note::
-
-        配列のURLが文字列のURLと似ている他の部分とは異なり、 :php:meth:`~Controller::requestAction()` はURLの扱い方が違います。
-
-    :php:meth:`~Controller::requestAction()` で配列のURLを使う時は、リクエストされるアクションにおいて必要となる **全て** のパラメータを指定しなければなりません。
-    これは ``$this->request->data`` のようなパラメータも含まれます。
-    必要な全てのパラメータを渡すことに加えて、名前付き及びGETパラメータも上記で見たように、2つ目の引数に指定しなければなりません。
+    // delete アクションから、更新後の一覧ページを描画することができます。
+    $this->setAction('index');
 
 
-.. php:method:: loadModel(string $modelClass, mixed $id)
+追加のモデル読み込み
+====================
 
-    :php:meth:`~Controller::loadModel()` 関数は、コントローラのデフォルトモデルまたはそれに関連づいたモデル以外のモデルを使う必要がある時に便利です。::
+.. php:method:: loadModel(string $modelClass, string $type)
 
-        $this->loadModel('Article');
-        $recentArticles = $this->Article->find('all', array('limit' => 5, 'order' => 'Article.created DESC'));
+``loadModel`` 関数は、コントローラのデフォルト以外のモデルを使う必要がある時に便利です。 ::
 
-        $this->loadModel('User', 2);
-        $user = $this->User->read();
+    // コントローラのメソッドの中で。
+    $this->loadModel('Articles');
+    $recentArticles = $this->Articles->find('all', [
+        'limit' => 5,
+        'order' => 'Articles.created DESC'
+    ]);
 
+もしも組み込み ORM 以外のテーブルプロバイダを使いたければ、
+ファクトリメソッドに接続することで、そのテーブルシステムを
+CakePHP のコントローラに紐づけることができます。 ::
 
-コントローラ変数
-================
+    // コントローラのメソッドの中で。
+    $this->modelFactory(
+        'ElasticIndex',
+        ['ElasticIndexes', 'factory']
+    );
 
-コントローラの変数とその説明については、CakePHP APIを確認してください。
-`http://api20.cakephp.org/class/controller <http://api20.cakephp.org/class/controller>`_.
+テーブルファクトリを登録した後は、インスタンスを読み出すために
+``loadModel`` を使うことができます。 ::
 
-.. php:attr:: name
-
-    :php:attr:`~Controller::$name` 変数はコントローラ名がセットされます。
-    通常これは、コントローラが使うメインのモデルの複数形となります。
-    このプロパティは必須ではありません。::
-
-        // $name変数の使い方のサンプル
-        class RecipesController extends AppController {
-           public $name = 'Recipes';
-        }
-
-
-$componentsと$helpersと$uses
-----------------------------
-
-次に説明するコントローラの変数は、現在のコントローラの中でどのヘルパー、コンポーネント、モデルを使うのかをCakePHPに伝える役割をはたします。これらの変数はもっとも良く使われる変数です。
-これらを使うことで、 :php:attr:`~Controller::$components` や :php:attr:`~Controller::$uses` で与えられたMVCクラスはコントローラの中でクラス変数として(例えば ``$this->ModelName``)、また :php:attr:`~Controller::$helpers` で与えられたクラスはビューの中でオブジェクトへの参照として(例えば ``$this->{$helpername}``)有効になります。
+    // コントローラのメソッドの中で。
+    $this->loadModel('Locations', 'ElasticIndex');
 
 .. note::
 
-    それぞれのコントローラはデフォルトでこのようなクラスをいくつか持っていて、使える状態になっています。
-    したがって、コントローラではすべてを設定する必要はありません。
+    組み込みの ORM の TableRegistry は既定では 'Table' プロバイダとして
+    接続されています。
 
-.. php:attr:: uses
+モデルのページ分け
+==================
 
-    コントローラはデフォルトで主要なモデルへアクセスできるようになっています。
-    RecipesControllerは ``$this->Recipe`` でアクセスできるモデルクラスを持っており、ProductsControllerもまた ``$this->Product`` にProductモデルを持っています。
-    しかし、 コントローラが :php:attr:`~Controller::$uses` 変数に追加のモデルを指定して、それらが使えるようになっている時は、 :php:attr:`~Controller::$uses` に現在のコントローラのモデルの名前も含めなければなりません。
-    これについては、下の方のサンプルで説明します。
+.. php:method:: paginate()
 
-    コントローラでモデルを使いたくない場合は、 ``public $uses = array()`` とセットしてください。
-    これでコントローラを使うのに対応するモデルファイルが必要なくなります。
+このメソッドはモデルから取得した結果をページ分けするために使われます。
+ページサイズやモデルの検索条件などを指定できます。
+`paginate()` のより詳しい使い方は :doc:`ページネーション <controllers/components/pagination>`
+の章を参照してください。
 
-.. php:attr:: helpers
+paginate 属性は ``paginate()`` がどうふるまうかを簡単にカスタマイズする方法を提供します。 ::
 
-    :php:class:`SessionComponent` と同様に、:php:class:`HtmlHelper` 、:php:class:`FormHelper` 、:php:class:`SessionHelper` はデフォルトで有効になっています。
-    しかし、 ``AppController`` で :php:attr:`~Controller::$helpers` を独自に定義している場合、 :php:class:`HtmlHelper` と :php:class:`FormHelper` をコントローラで有効にしたければ、それらを :php:attr:`~Controller::$helpers` に含むようにしてください。
-    このマニュアルの後ろにある、それぞれのセクションを確認して、これらのクラスについてよく詳しく学んでください。
+    class ArticlesController extends AppController
+    {
+        public $paginate = [
+            'Articles' => [
+                'conditions' => ['published' => 1]
+            ]
+        ];
+    }
 
-    追加で利用するMVCクラス達をどうやってCakePHPのコントローラに伝えるのかを見てみましょう。::
+コンポーネント読み込みの設定
+============================
 
-        class RecipesController extends AppController {
-            public $uses = array('Recipe', 'User');
-            public $helpers = array('Js');
-            public $components = array('RequestHandler');
-        }
+.. php:method:: loadComponent($name, $config = [])
 
-    これらの変数はそれぞれ、継承された値とマージされます。
-    したがって、たとえば :php:class:`FormHelper` や ``AppController`` で宣言されている他のクラスを、再度宣言する必要はありません。
+コントローラの ``initialize()`` メソッドの中で、読み込みたいコンポーネントや、
+その設定データを定義することができます。 ::
+
+    public function initialize()
+    {
+        parent::initialize();
+        $this->loadComponent('Csrf');
+        $this->loadComponent('Comments', Configure::read('Comments'));
+    }
 
 .. php:attr:: components
 
-    components配列はコントローラで使う :doc:`/controllers/components` をセットします。
-    :php:attr:`~Controller::$helpers` や :php:attr:`~Controller::$uses` のように、あなたのコントローラのコンポーネントは ``AppController`` のコンポーネントとマージされます。
-    :php:attr:`~Controller::$helpers` のように、:php:attr:`~Controller::$components` には設定を渡すことが出来ます。
-    より詳しくは :ref:`configuring-components` を参照してください。
+コントローラの ``$components`` プロパティでは、コンポーネントの設定ができます。
+設定されたコンポーネントとそれに依存するコンポーネントは CakePHP によって構築されます。
+より詳しい情報は :ref:`configuring-components` の章を参照してください。先に述べたように、
+``$components`` プロパティはコントローラの各親クラスで定義されたプロパティとマージされます。
 
-その他の変数
+ヘルパー読み込みの設定
+======================
+
+.. php:attr:: helpers
+
+追加で利用する MVC クラスをどうやって
+CakePHP のコントローラに伝えるのかを見てみましょう。 ::
+
+    class RecipesController extends AppController
+    {
+        public $helpers = ['Form'];
+    }
+
+これらの変数はそれぞれ、継承された値とマージされます。したがって、たとえば
+``FormHelper`` を、あるいは ``AppController`` で宣言されている他のクラスを、
+再度宣言する必要はありません。
+
+.. deprecated:: 3.0
+    コントローラからのヘルパーの読み込みは後方互換のために提供しています。
+    ヘルパーをどう読み込むかについては :ref:`configuring-helpers` を参照してください。
+
+.. _controller-life-cycle:
+
+リクエストライフサイクルコールバック
+====================================
+
+CakePHP のコントローラはリクエストのライフサイクル周りにロジックを挿入できる
+いくつかのイベント／コールバックを呼び出します。
+
+イベント一覧
 ------------
 
-コントローラの変数の詳細については、 `API <http://api.cakephp.org>`_ ページで確認すれば、ここで説明した以外の他のコントローラ変数についてのセクションがあります。
+* ``Controller.initialize``
+* ``Controller.startup``
+* ``Controller.beforeRedirect``
+* ``Controller.beforeRender``
+* ``Controller.shutdown``
 
-.. php:attr:: cacheAction
+コントローラのコールバックメソッド
+----------------------------------
 
-    cacheAction変数はフルページキャッシュの持続時間やその他の情報を定義するために使われます。
-    フルページキャッシュについてのより詳しい情報は :php:class:`CacheHelper` のドキュメントを読んでください。
+コントローラでメソッドが実装されていれば、
+既定では以下のコールバックメソッドが関連するイベントに接続されます。
 
-.. php:attr:: paginate
+.. php:method:: beforeFilter(Event $event)
 
-    paginate変数は非推奨の互換性のあるプロパティです。
-    この変数を使って、 :php:class:`PaginatorComponent` の読み込みと設定をします。
-    次のように、コンポーネントの設定を使うように修正することが推奨されます。::
+    コントローラの各アクションの前に発動する ``Controller.initialize``
+    イベント中に呼ばれます。アクティブなセッションのチェックや、
+    ユーザーの権限の調査に適した場所です。
 
-        class ArticlesController extends AppController {
-            public $components = array(
-                'Paginator' => array(
-                    'Article' => array(
-                        'conditions' => array('published' => 1)
-                    )
-                )
-            );
-        }
+    .. note::
 
-.. todo::
+        beforeFilter() メソッドはアクションが存在しない場合でも呼ばれます。
 
-    この章は、コントローラのAPIとそのサンプルの量が少ないかもしれませんが、コントローラ変数は、最初からそれらを理解するのはとても難しいです。
-    この章では、いくつかのサンプルと、またそれらサンプルで何をやっているか、などと一緒に学習を初めて行きましょう。
+    ``beforeFilter`` メソッドからレスポンスを返した場合であっても、
+    同イベントの他のリスナ―が呼ばれるのを抑制することはしません。
+    明示的に :ref:`イベントを停止 <stopping-events>` しなければなりません。
 
-More on controllers
-===================
+.. php:method:: beforeRender(Event $event)
+
+    コントローラのアクションロジックの後、ビューが描画される前に発動する
+    ``Controller.beforeRender`` イベント中に呼ばれます。
+    このコールバックはそれほど使われませんが、もしアクション終了前に
+    :php:meth:`~Cake\\Controller\\Controller::render()` を手動で呼んでいれば
+    必要になるかもしれません。
+
+.. php:method:: afterFilter(Event $event)
+
+    コントローラの各アクションの後、ビューの描画が完了した後に発動される
+    ``Controller.shutdown`` イベント中に呼ばれます。
+    これが最後に走るコントローラのメソッドです。
+
+コントローラのライフサイクルのコールバックに加えて、 :doc:`/controllers/components` 
+も似たようなコールバックの一式を提供します。
+
+最良の結果を得るために、子コントローラのコールバック中で
+``AppController`` のコールバックを呼ぶのを忘れないでください。 ::
+
+    public function beforeFilter(Event $event)
+    {
+        parent::beforeFilter($event);
+    }
+
+
+
+コントローラのより詳細
+======================
 
 .. toctree::
     :maxdepth: 1
 
-    controllers/request-response
-    controllers/scaffolding
     controllers/pages-controller
     controllers/components
 

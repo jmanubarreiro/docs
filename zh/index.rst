@@ -1,8 +1,3 @@
-.. CakePHP Cookbook documentation master file, created by
-   sphinx-quickstart on Tue Jan 18 12:54:14 2011.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 欢迎
 #######
 
@@ -13,48 +8,33 @@ CakePHP CookBook 是一个公开地开发和社区可以编辑的文档项目。
 
     **在任何地方阅读本书**
 
+    .. image:: /_static/img/read-the-book.jpg
+
     您几乎可以在任何地方阅读本书，当前提供的格式有 PDF 和 EPUB，您可以在更多设备上阅读它，也可以(把它下载下来)离线阅读。
 
     - `PDF <../_downloads/en/CakePHPCookbook.pdf>`_
     - `EPUB <../_downloads/zh/CakePHPCookbook.epub>`_
     - `原文出处 <http://github.com/cakephp/docs>`_
 
-入门指南
-===============
-
-创建一个博客
-------------
-
-从 :doc:`博客教程</tutorials-and-examples/blog/blog>` 开始。您会了解 CakePHP 的基本知识，并在此过程中建立一
-个基本的博客。
-
-约定
------------
-
-了解驱动 CakePHP 的典型的 :doc:`CakePHP 请求 </getting-started/a-typical-cakephp-request>`
-和 :doc:`约定 </getting-started/cakephp-conventions>`。
-
-控制器(Controllers)
--------------------
-
-控制器用来处理请求，并且帮助协调和准备对客户端的响应。详情见 :doc:`/controllers`。
-
-视图(Views)
------------
-
-视图是 CakePHP 的表现层。它们负责把获取自模型的数据转换成客户所请求的输出格式。详情见 :doc:`/views`。
-
-模型(Models)
-------------
-
-模型是应用程序的核心, 它们负责数据的验证、存储和读取。详情见:doc:`/models`。
-
 获取帮助
 ============
 
-如果你遇到困难，有一些地方 :doc:`你可以获取帮助 </cakephp-overview/where-to-get-help>`。
+如果你遇到困难，有一些地方 :doc:`你可以获取帮助 </intro/where-to-get-help>`。
 
+第一步
+===========
 
+学习一个新的框架即富有挑战又令人兴奋.为了能够长期的帮助你,我们创建了包含很多例子
+和配方的食谱(cookbook for cake),去完成一些普通的任务.如果你是一个新手，你可以从
+:doc:`/quickstart` 开始,它会告诉你cakephp 会为你提供什么和它是怎么做到的.
+
+当你完成了Bookmarker的训练之后,你可以重点去关注cakephp 应用的以下几个重要部分。
+
+* The :ref:`CakePHP 请求处理周期 <request-cycle>`
+* The :doc:`CakePHP使用的一般约定 <intro/conventions>` .
+* :doc:`Controllers </controllers>` 处理请求、models协调、返回应用创建的响应输出.
+* :doc:`Views </views>` 应用的展示层. 提供了进行HTML, JSON以及应用所需其它格式要求的强大而丰富的工具.
+* :doc:`Models </orm>` 所有应用的核心组件. 控制了应用中所需的校验、域处理逻辑.
 
 .. meta::
     :title lang=zh: .. CakePHP Cookbook documentation master file, created by

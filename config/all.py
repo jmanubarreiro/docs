@@ -6,6 +6,7 @@
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'
+import datetime
 
 # Add any Sphinx extension module names here, as strings.
 # They can be extensions coming with Sphinx
@@ -31,17 +32,17 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'CakePHP Cookbook'
-copyright = u'2014, Cake Software Foundation, Inc'
+copyright = u'%d, Cake Software Foundation, Inc' % datetime.datetime.now().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '3.x'
+version = '3.4'
 
 # The full version, including alpha/beta/rc tags.
-release = '3.x'
+release = '3.4'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -53,7 +54,6 @@ release = '3.x'
 # directories to ignore when looking for source files.
 exclude_patterns = [
     'themes',
-    'core-libraries/components/email.rst'
 ]
 
 # The reST default role (used for this markup: `text`) to
@@ -165,11 +165,23 @@ htmlhelp_basename = 'CakePHPCookbookdoc'
 
 # -- Options for LaTeX output ------------------------------------------------
 
-# The paper size ('letter' or 'a4').
-#latex_paper_size = 'letter'
+latex_elements = {
+    # The paper size ('letterpaper' or 'a4paper').
+    #
+    'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-latex_font_size = '11pt'
+    # The font size ('10pt', '11pt' or '12pt').
+    #
+    'pointsize': '11pt',
+
+    # Additional stuff for the LaTeX preamble.
+    #
+    # 'preamble': '',
+
+    # Latex figure (float) alignment
+    #
+    # 'figure_align': 'htbp',
+}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author,
@@ -200,7 +212,7 @@ latex_show_urls = 'footnote'
 #latex_appendices = []
 
 # If false, no module index is generated.
-# latex_domain_indices = True
+latex_domain_indices = True
 
 
 preamb = ur'''
@@ -247,7 +259,8 @@ man_pages = [
 epub_title = u'CakePHP Cookbook'
 epub_author = u'Cake Software Foundation, Inc.'
 epub_publisher = u'Cake Software Foundation, Inc.'
-epub_copyright = u'2013, Cake Software Foundation, Inc.'
+epub_copyright = u'%d, Cake Software Foundation, Inc.' % datetime.datetime.now().year
+
 
 epub_theme = 'cakephp-epub'
 
@@ -263,7 +276,7 @@ epub_scheme = 'URL'
 
 # The unique identifier of the text. This can be a ISBN number
 # or the project homepage.
-epub_identifier = 'http://cakephp.org'
+epub_identifier = 'https://cakephp.org'
 
 # A unique identification for the text.
 epub_uid = 'cakephpcookbook1393624653'
@@ -294,7 +307,7 @@ epub_tocdup = False
 epub_use_index = False
 
 # Languages available.
-languages = ['en', 'pt', 'es', 'ja', 'ru', 'fr']
+languages = ['en', 'pt', 'es', 'ja', 'fr', 'zh', 'tr', 'ru']
 
 # The GitHub branch name for this version of the docs
 branch = '3.0'
@@ -304,3 +317,7 @@ from sphinx.highlighting import lexers
 from pygments.lexers.web import PhpLexer
 
 lexers['phpinline'] = PhpLexer(startinline=True)
+
+rst_epilog = """
+.. |minphpversion| replace:: 5.6.0
+"""

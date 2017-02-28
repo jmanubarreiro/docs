@@ -4,10 +4,14 @@ Documentation
 Contribuer à la documentation est simple. Les fichiers sont hébergés sur
 https://github.com/cakephp/docs. N'hésitez pas à forker le dépôt, ajoutez vos
 changements/améliorations/traductions et retournez les avec un pull request.
-Vous pouvez même modifier les documents en ligne avec github, sans télécharger
+Vous pouvez même modifier les documents en ligne avec GitHub, sans télécharger
 les fichiers -- le bouton "Improve this Doc" (Améliorer cette Doc) sur toutes
 les pages vous redirigera vers l'éditeur en ligne de Github pour la page
 correspondante.
+
+La documentation de CakePHP est `intégrée de façon continue
+<http://en.wikipedia.org/wiki/Continuous_integration>`_, et déployée après
+chaque pull request est fusionnée.
 
 Traductions
 ===========
@@ -16,7 +20,68 @@ Envoyez un Email à l'équipe docs (docs at cakephp dot org) ou venez
 discuter sur IRC (#cakephp on freenode) de tout effort de traduction auquel
 vous souhaitez participer.
 
-Astuces de traducteurs:
+Nouvelle Traduction d'une Langue
+--------------------------------
+
+Nous souhaitons créer des traductions aussi complètes que possible. Cependant,
+il peut arriver des fois où un fichier de traduction n'est pas à jour. Vous
+devriez toujours considérer la version anglais comme la version qui fait
+autorité.
+
+Si votre langue n'est pas dans les langues actuellement proposées, merci de
+nous contacter sur Github et nous envisagerons de créer un squelette de dossier
+pour cette langue. Les sections suivantes sont les premières par lesquelles vous
+devriez commencer puisque ce sont des fichiers qui ne changent pas souvent:
+
+- index.rst
+- intro.rst
+- quickstart.rst
+- installation.rst
+- dossier /intro
+- dossier /tutorials-and-examples
+
+Note pour les Administrateurs de la Doc
+---------------------------------------
+
+La structure de tous les dossiers de langue doivent refléter la structure du
+dossier anglais. Si la structure change pour la version anglaise, nous devrions
+appliquer ces changements dans les autres langues.
+
+Par exemple, si un nouveau fichier anglais est créé dans **en/file.rst**, nous
+devrions:
+
+- Ajouter le fichier dans les autres langues : **fr/file.rst**, **zh/file.rst**, ...
+- Supprimer le contenu, mais en gardant les ``title``, informations ``meta``
+  et d'éventuels éléments ``toc-tree``. La note suivante sera ajoutée en anglais
+  tant que personne n'a transmis le fichier::
+
+    File Title
+    ##########
+
+    .. note::
+        The documentation is not currently supported in XX language for this
+        page.
+
+        Please feel free to send us a pull request on
+        `Github <https://github.com/cakephp/docs>`_ or use the **Improve This Doc**
+        button to directly propose your changes.
+
+        You can refer to the English version in the select top menu to have
+        information about this page's topic.
+
+    // If toc-tree elements are in the English version
+    .. toctree::
+        :maxdepth: 1
+
+        one-toc-file
+        other-toc-file
+
+    .. meta::
+        :title lang=xx: File Title
+        :keywords lang=xx: title, description,...
+
+Astuces de traducteurs
+----------------------
 
 - Parcourez et modifiez le contenu à traduire dans le langage voulu - sinon
   vous ne verrez pas ce qui a déjà été traduit.
@@ -34,7 +99,7 @@ Astuces de traducteurs:
 - Ne soumettez pas de traductions partielles.
 - Ne modifiez pas une section avec un changement en attente.
 - N'utilisez pas d'
-  `entités html <http://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references>`_
+  `entités HTML <http://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references>`_
   pour les caractères accentués, le livre utilise UTF-8.
 - Ne changez pas les balises (HTML) de façon significative ou n'ajoutez pas
   de nouveau contenu.
@@ -70,7 +135,7 @@ caractères de ponctuation, avec une longueur de texte au moins aussi longue.
 - ``^`` Est utilisé pour les sous-sous-sous-sections.
 
 Les en-têtes ne doivent pas être imbriqués sur plus de 5 niveaux de profondeur.
-Les en-têtes doivent être précedés et suivis par une ligne vide.
+Les en-têtes doivent être précédés et suivis par une ligne vide.
 
 Les Paragraphes
 ---------------
@@ -83,19 +148,26 @@ Le balisage interne
 -------------------
 
 * Un astérisque: *text* pour une accentuation (italiques)
+  Nous les utiliserons pour mettre en exergue des infos générales.
 
-  * ``*text*``
+  * ``*text*``.
 
-* Two asterisks: **text** pour une forte accentuation (caractères gras)
+* Deux astérisques: **text** pour une forte accentuation (caractères gras)
+  Nous les utiliserons pour les répertoires de travail, les sujets de liste à
+  puce, les noms de table et en excluant le mot "table" suivant.
 
-  * ``**text**``
+  * ``**/config/Migrations**``, ``**articles**``, etc.
 
-* Two backquotes: ``text`` pour les exemples de code
+* Deux backquotes: ``text`` pour les exemples de code
+  Nous les utiliserons pour les noms d'options de méthode, les noms de colonne
+  des tables, les noms d'objet en excluant le mot "object" suivant et pour les
+  noms de méthode/fonction -- en incluant "()".
 
-  * ````text````
+  * ````cascadeCallbacks````, ````true````, ````id````,
+    ````PagesController````, ````config()````, etc.
 
 Si les astérisques ou les backquotes apparaissent dans le texte et peuvent être
-confondus avec les délimiteurs du balisage interne, ils doivent être echappés
+confondus avec les délimiteurs du balisage interne, ils doivent être échappés
 avec un backslash.
 
 Le balisage interne a quelques restrictions:
@@ -154,11 +226,11 @@ Il y a plusieurs types de liens, chacun avec ses propres utilisations.
 Liens externes
 ~~~~~~~~~~~~~~
 
-Les liens vers les documents externes peuvent être les suivants::
+Les liens vers les documents externes peuvent être faits avec ce qui suit::
 
-    `Lien externe <http://exemple.com>`_
+    `Lien externe vers php.net <http://php.net>`_
 
-Le lien ci-dessus générera un lien pointant vers http://example.com
+Le lien résultant ressemblerait à ceci: `Lien externe vers php.net <http://php.net>`_
 
 Lien vers les autres pages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -198,6 +270,17 @@ Les liens croisés de référencement
     ``:ref:`label-name```. Le texte du lien serait le titre qui précède le
     lien. Vous pouvez aussi fournir un texte de lien sur mesure en utilisant
     ``:ref:`Texte de lien <nom-label>```.
+
+Eviter l'Affichage d'Avertissements de Sphinx
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sphinx va afficher des avertissements si un fichier n'est pas référencé dans
+un toc-tree. C'est un bon moyen de s'assurer que tous les fichiers ont un
+lien pointé vers eux, mais parfois vous n'avez pas besoin d'insérer un lien
+pour un fichier, par exemple pour nos fichiers `epub-contents` et
+`pdf-contents`. Dans ces cas, vous pouvez ajouter ``:orphan:`` en haut du
+fichier pour supprimer les avertissements disant que le fichier n'est pas dans
+le toc-tree.
 
 Description des classes et de leur contenu
 ------------------------------------------
@@ -285,10 +368,26 @@ Chaque directive remplit l'index, et l'index des espaces de nom.
 
    Décrit une propriété/attribut sur une classe.
 
+Eviter l'Affichage d'Avertissements de Sphinx
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sphinx va afficher des avertissements si une fonction est référencée dans
+plusieurs fichiers. C'est un bon moyen de s'assurer que vous n'avez pas ajouté
+une fonction deux fois, mais parfois vous voulez en fait écrire une fonction
+dans deux ou plusieurs fichiers, par exemple `debug object` est référencé dans
+`/development/debugging` et dans
+`/core-libraries/global-constants-and-functions`. Dans ce cas, vous pouvez
+ajouter ``:noindex:`` sous la fonction debug pour supprimer les avertissements.
+Gardez uniquement une référence **sans** ``:no-index:`` pour que la fonction
+soit référencée::
+
+    .. php:function:: debug(mixed $var, boolean $showHtml = null, $showFrom = true)
+        :noindex:
+
 Référencement croisé
 ~~~~~~~~~~~~~~~~~~~~
 
-Les modèles suivants se réfèrent aux objets php et les liens sont générés
+Les modèles suivants se réfèrent aux objets PHP et les liens sont générés
 si une directive assortie est trouvée:
 
 .. rst:role:: php:func
@@ -330,7 +429,6 @@ si une directive assortie est trouvée:
 
    Référence une exception.
 
-
 Code source
 -----------
 
@@ -353,8 +451,8 @@ Notes et avertissements
 -----------------------
 
 Il y a souvent des fois où vous voulez informer le lecteur d'une astuce
-importante, une note spécials ou un danger potentiel. Les avertissements
-dans sphinx sont justement utilisés pour cela. Il y a trois types
+importante, une note spéciale ou un danger potentiel. Les avertissements
+dans sphinx sont justement utilisés pour cela. Il y a cinq types
 d'avertissements.
 
 * ``.. tip::`` Les astuces sont utilisées pour documenter ou ré-itérer des
@@ -369,12 +467,20 @@ d'avertissements.
   potentiellement dangereux, ou des informations relatives à la sécurité. Le
   contenu de la directive doit être écrite en phrases complètes et inclure
   toute la ponctuation appropriée.
+* ``.. versionadded:: X.Y.Z`` Les avertissements "ajouté en version X.Y.Z" sont
+  utilisés pour spécifier l'ajout de fonctionnalités dans une version
+  spécifique, ``X.Y.Z`` étant la version à laquelle l'ajout de la fonctionnalité
+  en question a eu lieu
+* ``.. deprecated:: X.Y.Z`` À la différence des avertissements "ajouté en
+  version", les avertissements "déprécié en version" servent à indiquer la
+  dépréciation d'une fonctionnalité à une version précise, ``X.Y.Z`` étant la
+  version à laquelle le retrait de la fonctionnalité en question a eu lieu.
 
 Tous les avertissements sont faits de la même façon::
 
     .. note::
 
-        Indenté, précedé et suivi par une ligne vide. Exactement comme
+        Indenté, précédé et suivi par une ligne vide. Exactement comme
         un paragraphe.
 
     Ce texte n'est pas une partie de la note.
@@ -394,6 +500,13 @@ Exemples
 
     Cela pourrait être dangereux.
 
+.. versionadded:: 2.6.3
+
+    Cette super fonctionnalité a été ajoutée à partir de la version 2.6.3.
+
+.. deprecated:: 2.6.3
+
+    Cette vieille fonctionnalité a été dépréciée à partir de la version 2.6.3.
 
 .. meta::
     :title lang=fr: Documentation

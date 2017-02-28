@@ -1,15 +1,12 @@
-.. _upgrade-shell:
-
 Upgrade Shell
 #############
 
-The upgrade shell will do most of the work to upgrade your CakePHP application
-from 2.x to 3.x.
+.. note::
+    Atualmente, a documentação desta página não é suportada em português.
 
-It is provided by a standalone
-`Upgrade plugin <https://github.com/cakephp/upgrade>`_. Please read the README
-file to get all information on how to upgrade your application.
+    Por favor, sinta-se a vontade para nos enviar um *pull request* para o
+    `Github <https://github.com/cakephp/docs>`_ ou use o botão
+    **IMPROVE THIS DOC** para propor suas mudanças diretamente.
 
-.. meta::
-    :title lang=en: Upgrade Shell
-    :keywords lang=en: api docs,shell,upgrade
+    Você pode consultar a versão em inglês deste tópico através do seletor de
+    idiomas localizado ao lado direito do campo de buscas da documentação.

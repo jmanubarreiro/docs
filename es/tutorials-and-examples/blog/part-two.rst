@@ -1,6 +1,16 @@
 Tutorial de desarrollo del Blog - Añadiendo una capa
 ####################################################
 
+.. note::
+    The documentation is currently partially supported in es language for this
+    page.
+
+    Por favor, siéntase libre de enviarnos un pull request en
+    `Github <https://github.com/cakephp/docs>`_ o utilizar el botón **Improve this Doc** para proponer directamente los cambios.
+
+    Usted puede hacer referencia a la versión en Inglés en el menú de selección superior
+    para obtener información sobre el tema de esta página.
+
 Crear un modelo Artículo (``Article``)
 ======================================
 
@@ -10,16 +20,18 @@ facilidad cada ítem de ese modelo.
 
 Los modelos están separados entre los objetos ``Tabla`` (``Table``) y ``Entidad``
 (``Entity``). Los objetos ``Tabla`` proporcionan acceso a la coleción de
-entidades almacenada en una tabla específica y va en ``/src/Model/Table``. El
-fichero que crearemos se guardará en ``/src/Model/Table/ArticlesTable.php``. El
+entidades almacenada en una tabla específica y va en **src/Model/Table**. El
+fichero que crearemos se guardará en **src/Model/Table/ArticlesTable.php**. El
 fichero completo debería tener este aspecto::
 
     namespace App\Model\Table;
 
     use Cake\ORM\Table;
 
-    class ArticlesTable extends Table {
-        public function initialize(array $config) {
+    class ArticlesTable extends Table
+    {
+        public function initialize(array $config)
+        {
             $this->addBehavior('Timestamp');
         }
     }
@@ -32,7 +44,7 @@ en nuestra base de datos llamada ``articles``.
 .. note::
 
     CakePHP creará dinámicamente un objeto para el modelo si no encuentra el
-    fichero correspondiente en /src/Model/Table. Esto significa que si te
+    fichero correspondiente en **src/Model/Table**. Esto significa que si te
     equivocas al nombrar el fichero (por ejemplo lo llamas articlestable.php —en
     minúscula— o ArticleTable.php —en singular) CakePHP no va a reconocer la
     configuración que escribas en ese fichero y utilizará valores por defecto.
@@ -48,12 +60,13 @@ Vamos a crear ahora un controlador para nuestros artículos. En el controlador e
 donde escribiremos el código para interactuar con nuestros artículos. Es donde
 se utilizan los modelos para llevar a cabo el trabajo que queramos hacer con
 nuestros artículos. Vamos a crear un nuevo fichero llamado
-``ArticlesController.php`` dentro del directorio ``/src/Controller``. A
+**ArticlesController.php** dentro del directorio **src/Controller**. A
 continuación puedes ver el aspecto básico que debería tener este controlador::
 
     namespace App\Controller;
 
-    class ArticlesController extends AppController {
+    class ArticlesController extends AppController
+    {
     }
 
 Vamos a añadir una acción a nuestro nuevo controlador. Las acciones representan
@@ -64,9 +77,11 @@ código para tal acción sería este::
 
     namespace App\Controller;
 
-    class ArticlesController extends AppController {
+    class ArticlesController extends AppController
+    {
 
-        public function index() {
+        public function index()
+        {
             $articles = $this->Articles->find('all');
             $this->set(compact('articles'));
         }
@@ -177,18 +192,16 @@ contrario, la crearemos ahora en nuestro controlador de artículos::
 
     namespace App\Controller;
 
-    use Cake\Error\NotFoundException;
+    class ArticlesController extends AppController
+    {
 
-    class ArticlesController extends AppController {
-
-        public function index() {
+        public function index()
+        {
              $this->set('articles', $this->Articles->find('all'));
         }
 
-        public function view($id = null) {
-            if (!$id) {
-                throw new NotFoundException(__('Invalid article'));
-            }
+        public function view($id = null)
+        {
             $article = $this->Articles->get($id);
             $this->set(compact('article'));
         }
@@ -213,7 +226,7 @@ solicitado no esté presente en la base de datos, el método ``get()`` lanzará
 una excepción ``NotFoundException``.
 
 Ahora vamos a definir la vista para esta nueva función 'view' ubicándola en
-``/src/Template/Articles/view.ctp``.
+**src/Template/Articles/view.ctp**.
 
 .. code-block:: php
 
@@ -237,27 +250,26 @@ ArticlesController::
 
     namespace App\Controller;
 
-    use Cake\Error\NotFoundException;
-
-    class ArticlesController extends AppController {
+    class ArticlesController extends AppController
+    {
         public $components = ['Flash'];
 
-        public function index() {
+        public function index()
+        {
             $this->set('articles', $this->Articles->find('all'));
         }
 
-        public function view($id) {
-            if (!$id) {
-                throw new NotFoundException(__('Invalid article'));
-            }
-
+        public function view($id)
+        {
             $article = $this->Articles->get($id);
             $this->set(compact('article'));
         }
 
-        public function add() {
-            $article = $this->Articles->newEntity($this->request->data);
+        public function add()
+        {
+            $article = $this->Articles->newEntity();
             if ($this->request->is('post')) {
+                $article = $this->Articles->patchEntity($article, $this->request->getData());
                 if ($this->Articles->save($article)) {
                     $this->Flash->success(__('Your article has been saved.'));
                     return $this->redirect(['action' => 'index']);
@@ -286,7 +298,7 @@ de nuestra aplicación. En este caso, utilizamos el método
 petición HTTP POST.
 
 Cuando un usuario utiliza un formulario y efectúa un POST a la aplicación, esta
-información está disponible en ``$this->request->data``. Puedes usar la función
+información está disponible en ``$this->request->getData()``. Puedes usar la función
 :php:func:`pr()` o :php:func:`debug()` para mostrar el contenido de esa variable
 y ver la pinta que tiene.
 
@@ -298,7 +310,7 @@ muestra el mensaje y elimina la correspondiente variable de sesión. El método
 hacia otra URL. El parámetro ``['action' => 'index']`` se traduce a la URL
 /articles (p.e. la acción index del controlador de artículos). Puedes echar un
 ojo al método :php:func:`Cake\\Routing\\Router::url()` en la `API
-<http://api.cakephp.org>`_ para ver los formatos en que puedes especificar una
+<https://api.cakephp.org>`_ para ver los formatos en que puedes especificar una
 URL para varias funciones de CakePHP.
 
 Al llamar al método ``save()``, comprobará si hay errores de validación primero
@@ -354,7 +366,7 @@ campos ocultos si la CSRF/prevención de manipulación de formularios ha sido
 habilitada.
 
 Volvamos atrás un minuto y actualicemos nuestra vista
-``src/Template/Articles/index.ctp`` para añadir un enlace de "Añadir Artículo".
+**src/Template/Articles/index.ctp** para añadir un enlace de "Añadir Artículo".
 Justo antes del tag <table> añade la siguiente línea::
 
     <?= $this->Html->link(
@@ -371,12 +383,15 @@ Volvamos al modelo ``Articles`` y hagamos algunos ajustes::
     use Cake\ORM\Table;
     use Cake\Validation\Validator;
 
-    class ArticlesTable extends Table {
-        public function initialize(array $config) {
+    class ArticlesTable extends Table
+    {
+        public function initialize(array $config)
+        {
             $this->addBehavior('Timestamp');
         }
 
-        public function validationDefault(Validator $validator) {
+        public function validationDefault(Validator $validator)
+        {
             $validator
                 ->notEmpty('title')
                 ->notEmpty('body');
@@ -405,14 +420,11 @@ Editando artículos: allá vamos. Ya eres un profesional de CakePHP, así que
 habrás cogido la pauta. Crear una acción, luego la vista. He aquí cómo debería
 ser la acción ``edit()`` del controlador ``ArticlesController``::
 
-    public function edit($id = null) {
-        if (!$id) {
-            throw new NotFoundException(__('Artículo no válido'));
-        }
-
+    public function edit($id = null)
+    {
         $article = $this->Articles->get($id);
         if ($this->request->is(['post', 'put'])) {
-            $this->Articles->patchEntity($article, $this->request->data);
+            $this->Articles->patchEntity($article, $this->request->getData());
             if ($this->Articles->save($article)) {
                 $this->Flash->success(__('Tu artículo ha sido actualizado.'));
                 return $this->redirect(['action' => 'index']);
@@ -496,7 +508,8 @@ Borrando Artículos
 Vamos a permitir a los usuarios que borren artículos. Empieza con una acción
 ``delete()`` en el controlador ``ArticlesController``::
 
-    public function delete($id) {
+    public function delete($id)
+    {
         $this->request->allowMethod(['post', 'delete']);
 
         $article = $this->Articles->get($id);
@@ -584,7 +597,7 @@ http://www.example.com) usando el controlador PagesController, mostrando una vis
 llamada "home". En lugar de eso, lo reemplazaremos con nuestro controlador
 ``ArticlesController`` creando una nueva ruta.
 
-Las reglas de enrutamiento están en ``/config/routes.php``. Querrás eliminar o
+Las reglas de enrutamiento están en **config/routes.php**. Querrás eliminar o
 comentar la línea que define la raíz por defecto. Dicha ruta se parece a esto:
 
 .. code-block:: php
@@ -622,10 +635,10 @@ aplicaciones.
 
 Ahora que ya has creado una aplicación CakePHP básica, estás listo para la vida
 real. Empieza tu nuevo proyecto y lee el resto del :doc:`Cookbook </index>` así
-como la `API <http://api.cakephp.org>`_.
+como la `API <https://api.cakephp.org>`_.
 
 Si necesitas ayuda, hay muchos modos de encontrar la ayuda que buscas - por
-favor, míralo en la página :doc:`/cakephp-overview/where-to-get-help`.
+favor, míralo en la página :doc:`/intro/where-to-get-help`.
 ¡Bienvenido a CakePHP!
 
 Lectura sugerida para continuar desde aquí
@@ -636,5 +649,5 @@ aprender después:
 
 1. :ref:`view-layouts`: Personaliza la plantilla *layout* de tu aplicación
 2. :ref:`view-elements` Incluír vistas y reutilizar trozos de código
-3. :doc:`/console-and-shells/code-generation-with-bake` Generación básica de CRUDs
+3. :doc:`/bake/usage`: Generación básica de CRUDs
 4. :doc:`/tutorials-and-examples/blog-auth-example/auth`: Tutorial de autenticación y permisos

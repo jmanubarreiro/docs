@@ -56,7 +56,7 @@ compatibility is ensured.
 
 In minor releases, new methods may be added to classes, and existing methods may
 have new arguments added. Any new arguments will have default values, but if
-you've overidden methods with a differing signature you may see fatal errors.
+you've overridden methods with a differing signature you may see fatal errors.
 Methods that have new arguments added will be documented in the migration guide
 for that release.
 
@@ -95,8 +95,9 @@ expect from CakePHP:
 | Add an argument               | No [1]_                  |
 | to an overridden method       |                          |
 +-------------------------------+--------------------------+
-| Add a default argument        | Yes                      |
+| Add a default argument value  | Yes                      |
 | to an existing method         |                          |
+| argument                      |                          |
 +-------------------------------+--------------------------+
 
 Working on CakePHP
@@ -150,17 +151,22 @@ In a minor release you can:
 +-------------------------------+--------------------------+
 | Change method name            | Yes [2]_                 |
 +-------------------------------+--------------------------+
-| Add argument with             | Yes                      |
+| Add a new argument with       | Yes                      |
 | default value                 |                          |
 +-------------------------------+--------------------------+
-| Add required argument         | No                       |
+| Add a new required argument   | No                       |
+| to an existing method.        |                          |
++-------------------------------+--------------------------+
+| Remove a default value from   | No                       |
+| an existing argument          |                          |
 +-------------------------------+--------------------------+
 
 
 .. [1] Your code *may* be broken by minor releases. Check the migration guide
        for details.
-.. [2] You can change a class/method name as long as the old name remains available.
-       This is generally avoided unless renaming has significant benefit.
+.. [2] You can change a class/method name as long as the old name remains
+       available. This is generally avoided unless renaming has significant
+       benefit.
 .. [3] Avoid whenever possible. Any removals need to be documented in
        the migration guide.
 

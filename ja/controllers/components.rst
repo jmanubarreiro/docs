@@ -1,252 +1,324 @@
 コンポーネント
 ##############
 
-コンポーネントはコントローラ間で共有されるロジックのパッケージです。もしコントローラ間でコピーアンドペーストしたい箇所があった場合、
-いくつかの機能をコンポーネントでラップできるかもしれません。
+コンポーネントはコントローラ間で共有されるロジックのパッケージです。
+CakePHP には、様々な共通のタスクを支援するための素晴らしいコアコンポーネントが
+用意されています。あなた独自のコンポーネントも作成できます。 もしコントローラ間で
+コピー＆ペーストしたい箇所があった場合、その機能を含むコンポーネントの作成を
+検討しましょう。コンポーネントを作成することで、コントローラのコードを綺麗に保ち、
+プロジェクト間のコードの再利用につながります。
 
-また、CakePHPには以下の目的で使える素晴らしいコアコンポーネントが準備されています。:
+CakePHP の中に含まれるコンポーネントの詳細については、各コンポーネントの章を
+チェックしてください。
 
-- セキュリティ
-- セッション
-- アクセスコントロール
-- メール
-- クッキー
-- 認証
-- リクエストハンドリング
-- ページ切替
+.. toctree::
+    :maxdepth: 1
 
-各コアコンポーネントの詳細は各章で説明します。ここでは、独自のコンポーネントを作成する方法を紹介します。
-コンポーネントを作成することでコントローラのコードがクリーンな状態に保たれ、プロジェクト間でコードを再利用し易くなります。
+    /controllers/components/authentication
+    /controllers/components/cookie
+    /controllers/components/csrf
+    /controllers/components/flash
+    /controllers/components/security
+    /controllers/components/pagination
+    /controllers/components/request-handling
 
 .. _configuring-components:
 
 コンポーネントの設定
 ====================
 
-コアコンポーネントの多くは設定を必要としています。コンポーネントが設定を必要としている例は、
-:doc:`/core-libraries/components/authentication` や :doc:`/core-libraries/components/cookie` などにあります。
-これらのコンポーネントと普通のコンポーネントの設定は大抵の場合、
-``$components`` 配列かコントローラの ``beforeFilter()`` メソッドで行われます。::
+コアコンポーネントの多くは設定を必要としています。コンポーネントが設定を
+必要としている例は、 :doc:`/controllers/components/authentication` や
+:doc:`/controllers/components/cookie` などにあります。これらのコンポーネントや
+一般的なコンポーネントの設定は、通常、お使いのコントローラの ``loadComponent()``
+メソッドまたは ``initialize()`` メソッド、 ``$components`` 配列を介して行われます。 ::
 
-    class PostsController extends AppController {
-        public $components = array(
-            'Auth' => array(
-                'authorize' => array('controller'),
-                'loginAction' => array('controller' => 'users', 'action' => 'login')
-            ),
-            'Cookie' => array('name' => 'CookieMonster')
-        );
+    class PostsController extends AppController
+    {
+        public function initialize()
+        {
+            parent::initialize();
+            $this->loadComponent('Auth', [
+                'authorize' => 'Controller',
+                'loginAction' => ['controller' => 'Users', 'action' => 'login']
+            ]);
+            $this->loadComponent('Cookie', ['expiry' => '1 day']);
+        }
 
-これは  ``$components`` 配列でコンポーネントを設定している例です。すべてのコアコンポーネントはこの方法で設定することができます。
-さらに、コントローラの ``beforeFilter()`` メソッドで設定することもできます。これは関数の結果をコンポーネントのプロパティに設定する時に役に立ちます。
-上記の例は次のように書き換えられます。::
-
-    public function beforeFilter() {
-        $this->Auth->authorize = array('controller');
-        $this->Auth->loginAction = array('controller' => 'users', 'action' => 'login');
-
-        $this->Cookie->name = 'CookieMonster';
     }
 
-しかし、コンポーネントのオプションをコントローラの ``beforeFilter()`` が実行される前に設定することが可能な場合もあります。
-つまり、コンポーネントの中には ``$components`` 配列にオプションを設定することができるものがあります。::
+``config()`` メソッドを使用して、実行時にコンポーネントを設定することができます。
+しばしば、コントローラの ``beforeFilter()`` メソッドで行われます。
+上記は、次のように表現することもできます。 ::
 
-    public $components = array(
-        'DebugKit.Toolbar' => array('panels' => array('history', 'session'))
-    );
+    public function beforeFilter(Event $event)
+    {
+        $this->Auth->config('authorize', ['controller']);
+        $this->Auth->config('loginAction', ['controller' => 'Users', 'action' => 'login']);
 
-各コンポーネントがどのような設定オプションを提供しているかは関連ドキュメントを参照してください。
+        $this->Cookie->config('name', 'CookieMonster');
+    }
 
-共通設定の一つに ``className`` オプションがあります。このオプションを使うとコンポーネントに別名をつけられます。
-この機能は ``$this->Auth`` や他のコンポーネントの参照を独自実装に置き換えたい時に便利です。::
+コンポーネントは、ヘルパーと同じように、コンポーネントのすべての設定データを
+取得および設定するために使用されている ``config()`` メソッドを実装しています。 ::
 
-    // app/Controller/PostsController.php
-    class PostsController extends AppController {
-        public $components = array(
-            'Auth' => array(
+    // 設定データの読み込み
+    $this->Auth->config('loginAction');
+
+    // 設定をセット
+    $this->Csrf->config('cookieName', 'token');
+
+コンポーネントは、ヘルパーと同じように、``config()`` でアクセス可能な
+``$_config`` プロパティを作成するためにコンストラクタの設定で自分の
+``$_defaultConfig`` プロパティを自動的にマージします。
+
+コンポーネントの別名
+--------------------
+
+共通設定の一つに ``className`` オプションがあります。このオプションを使うと
+コンポーネントに別名をつけられます。この機能は ``$this->Auth`` や
+他のコンポーネントの参照を独自実装に置き換えたい時に便利です。::
+
+    // src/Controller/PostsController.php
+    class PostsController extends AppController
+    {
+        public function initialize()
+        {
+            $this->loadComponent('Auth', [
                 'className' => 'MyAuth'
-            )
-        );
+            ]);
+        }
     }
 
-    // app/Controller/Component/MyAuthComponent.php
-    App::uses('AuthComponent', 'Controller/Component');
-    class MyAuthComponent extends AuthComponent {
-        // コアAuthComponentを上書きするコードを追加して
+    // src/Controller/Component/MyAuthComponent.php
+    use Cake\Controller\Component\AuthComponent;
+
+    class MyAuthComponent extends AuthComponent
+    {
+        // コア AuthComponent を上書きするコードを追加
     }
 
-上記の例ではコントローラにて ``MyAuthComponent`` に ``$this->Auth`` という *別名* をつけています。
+上記の例ではコントローラにて ``MyAuthComponent`` に ``$this->Auth`` という
+*別名* をつけています。
 
 .. note::
 
-    別名を付けられたコンポーネントはコンポーネントが使われるあらゆる場所のインスタンスを置き換えます。これは、他のコンポーネントの内部を含みます。
+    別名を付けられたコンポーネントはコンポーネントが使われるあらゆる場所の
+    インスタンスを置き換えます。これは、他のコンポーネントの内部を含みます。
+
+コンポーネントの動的ロード
+--------------------------
+
+すべてのコントローラアクションで全コンポーネントを使えるようにする必要は
+ないかもしれません。このような状況では、お使いのコントローラで
+``loadComponent()`` メソッドを使用して、実行時にコンポーネントを
+ロードすることができます。 ::
+
+    // コントローラのアクションの中で
+    $this->loadComponent('OneTimer');
+    $time = $this->OneTimer->getTime();
+
+.. note::
+
+    動的にロードされたコンポーネントはコールバックされないことに注意してください。
+    もし、 ``beforeFilter`` または ``startup`` コールバックに依存している場合、
+    あなたのコンポーネントをロードするときに手動でそれらを呼び出す必要があります。
 
 コンポーネントの使用
 ====================
 
 一旦、コンポーネントをコントローラに読込んでしまえば、使うのは非常に簡単です。
 使用中の各コンポーネントはコントローラのプロパティのように見えます。
-仮に、 :php:class:`SessionComponent` と :php:class:`CookieComponent` をコントローラに読込んだ場合、
-以下のようにアクセスすることができます。::
+もし、 :php:class:`Cake\\Controller\\Component\\FlashComponent` と
+:php:class:`Cake\\Controller\\Component\\CookieComponent` を
+コントローラに読込んだ場合、以下のようにアクセスすることができます。::
 
-    class PostsController extends AppController {
-        public $components = array('Session', 'Cookie');
+    class PostsController extends AppController
+    {
+        public function initialize()
+        {
+            parent::initialize();
+            $this->loadComponent('Flash');
+            $this->loadComponent('Cookie');
+        }
 
-        public function delete() {
-            if ($this->Post->delete($this->request->data('Post.id')) {
-                $this->Session->setFlash('Post deleted.');
-                return $this->redirect(array('action' => 'index'));
+        public function delete()
+        {
+            if ($this->Post->delete($this->request->getData('Post.id')) {
+                $this->Flash->success('Post deleted.');
+                return $this->redirect(['action' => 'index']);
             }
         }
 
 .. note::
 
-    モデルとコンポーネントの両方がコントローラにプロパティとして追加されるので、それらは同じ '名前空間' を共有します。
-    コンポーネントとモデルに同じ名前をつけないように注意して下さい。
+    モデルとコンポーネントの両方がプロパティとしてコントローラに追加されているので、
+    それらは同じ「名前空間」を共有しています。
+    コンポーネントとモデルに同じ名前を付けないように注意してください。
 
-コンポーネントの動的読込み
---------------------------
+.. _creating-a-component:
 
-すべてのコントローラアクションで全コンポーネントを使えるようにする必要はないかもしれません。
-このような状況では、実行時に :doc:`コンポーネントコレクション </core-libraries/collections>` を使ってコンポーネントを読込むことができます。
-コントローラ内部から以下のようにできます。::
+コンポーネントの作成
+====================
 
-    $this->OneTimer = $this->Components->load('OneTimer');
-    $this->OneTimer->getTime();
+アプリケーションの様々な箇所で複雑な数学的処理を必要としている
+オンラインアプリケーションを仮定して下さい。
+これから、コントローラの様々な箇所で使うための共有ロジックを集約するための
+コンポーネントを作成します。
 
-.. note::
+はじめに、新しいコンポーネントファイルとクラスを作成します。
+**src/Controller/Component/MathComponent.php** にファイルを作成します 。
+コンポーネントのための基本的な構造は次のようになります。 ::
 
-    コンポーネントを動的に読込みした場合、初期化メソッドが実行されないことを覚えておいて下さい。
-    このメソッドで読込んだ場合、ロード後に手動で実行する必要があります。
+    namespace App\Controller\Component;
 
+    use Cake\Controller\Component;
 
-コンポーネントのコールバック
-============================
-
-コンポーネントはまた、いくつかのリクエストライフサイクルにリクエストライフサイクルが増すようなコールバックを提供します。
-コンポーネントが提供するコンポーネントの詳細については、 :ref:`component-api` の基本を参照して下さい。
-
-コンポーネントを作成する
-========================
-
-アプリケーションの様々な箇所で複雑な数学的処理を必要としているオンラインアプリケーションを仮定して下さい。
-これから、コントローラの様々な箇所で使うための共有ロジックを集約するためのコンポーネントを作成します。
-
-はじめに、新しいコンポーネントファイルとクラスを作成します。 ``/app/Controller/Component/MathComponent.php`` にファイルを作成して下さい。
-コンポーネントの基本構造は以下のようになります。::
-
-    App::uses('Component', 'Controller');
-    class MathComponent extends Component {
-        public function doComplexOperation($amount1, $amount2) {
+    class MathComponent extends Component
+    {
+        public function doComplexOperation($amount1, $amount2)
+        {
             return $amount1 + $amount2;
         }
     }
 
 .. note::
 
-    すべてのコンポーネントは :php:class:`Component` を継承しなければなりません。継承されていない場合、例外が発生するでしょう。
+    すべてのコンポーネントは :php:class:`Cake\\Controller\\Component` を
+    継承しなければなりません。継承されていない場合、例外が発生します。
 
 コントローラの中にコンポーネントを読み込む
-------------------------------------------
+--------------------------------------------
 
-一旦コンポーネントが完成してしまえば、コントローラの ``$components`` 配列にあるコンポーネント名(Componentの部分を削除する)を置き換えることで使えるようになります。
-コントローラはそのコンポーネントに由来する新しいプロパティを自動的に与えられるでしょう。
-そのプロパティを通してインスタンスにアクセスできます。::
+一旦コンポーネントが完成してしまえば、コントローラの ``initialize()`` メソッド中で
+それをロードすることによって、アプリケーションのコントローラで使用することができます。
+ロードされた後、コントローラはそのコンポーネントに由来する名前の新しいプロパティを与えられ、
+そのプロパティを通してコンポーネントのインスタンスにアクセスできます。 ::
 
-    /* 標準の$this->Sessionと同様に新しいコンポーネントを $this->Math で利用できるようにします。*/
-    public $components = array('Math', 'Session');
+    // コントローラの中で
+    // 標準の $this->Csrf と同様に
+    // 新しいコンポーネントを $this->Math として利用可能にします。
+    public function initialize()
+    {
+        parent::initialize();
+        $this->loadComponent('Math');
+        $this->loadComponent('Csrf');
+    }
 
-``AppController`` の中で宣言されているコンポーネントは他のコントローラで宣言されているコンポーネントとマージされます。
-同じコンポーネントを二度宣言する必要はありません。
+コントローラの中でコンポーネントを読み込む時、コンポーネントのコンストラクタに渡す
+バラメータを宣言することもできます。
+このパラメータはコンポーネントによって処理することができます。 ::
 
-コントローラの中でコンポーネントを読み込む時、コンポーネントのコンストラクタに渡すバラメータを宣言することもできます。
-このパラメータはコンポーネントによってハンドリングされます。::
-
-    public $components = array(
-        'Math' => array(
+    // コントローラの中で
+    public function initialize()
+    {
+        parent::initialize();
+        $this->loadComponent('Math', [
             'precision' => 2,
             'randomGenerator' => 'srand'
-        ),
-        'Session', 'Auth'
-    );
+        ]);
+        $this->loadComponent('Csrf');
+    }
 
-上記の例ではprecisionとrandomGeneratorを含む配列が ``MathComponent::__construct()`` の第二引数として渡されます。
-コンポーネントのパブリックプロパティや引数として渡される設定はその配列に基づいた値になります。
+上記の例では precision と randomGenerator を含む配列が
+``MathComponent::initialize()`` の ``$config`` パラメータに渡されます。
+
 
 コンポーネントの中で他のコンポーネントを使用する
 ------------------------------------------------
 
-作成しているコンポーネントから他のコンポーネントを使いたい時がたまにあります。その場合、
-作成中のコンポーネントから他のコンポーネントを読み込むことができ、その方法はコントローラから
-``$components`` 変数を使って読み込む場合と同じです。::
+作成しているコンポーネントから他のコンポーネントを使いたい時がたまにあります。
+その場合、作成中のコンポーネントから他のコンポーネントを読み込むことができ、
+その方法はコントローラから ``$components`` 変数を使って読み込む場合と同じです。::
 
-    // app/Controller/Component/CustomComponent.php
-    App::uses('Component', 'Controller');
-    class CustomComponent extends Component {
-        // 実装中のコンポーネントが使っている他のコンポーネント
-        public $components = array('Existing');
+    // src/Controller/Component/CustomComponent.php
+    namespace App\Controller\Component;
 
-        public function initialize(Controller $controller) {
+    use Cake\Controller\Component;
+
+    class CustomComponent extends Component
+    {
+        // あなたのコンポーネントが使っている他のコンポーネント
+        public $components = ['Existing'];
+
+        // あなたのコンポーネントに必要な、その他の追加のセットアップを実行
+        public function initialize(array $config)
+        {
             $this->Existing->foo();
         }
 
-        public function bar() {
+        public function bar()
+        {
             // ...
        }
     }
 
-    // app/Controller/Component/ExistingComponent.php
-    App::uses('Component', 'Controller');
-    class ExistingComponent extends Component {
+    // src/Controller/Component/ExistingComponent.php
+    namespace App\Controller\Component;
 
-        public function foo() {
+    use Cake\Controller\Component;
+
+    class ExistingComponent extends Component
+    {
+
+        public function foo()
+        {
             // ...
         }
     }
 
-コントローラから読み込んだコンポーネントと違い、コンポーネントからコンポーネントを読み込んだ場合は、コールバックが呼ばれないことに注意して下さい。
+.. note::
 
-.. _component-api:
+    コントローラから読み込んだコンポーネントと違い、コンポーネントから
+    コンポーネントを読み込んだ場合は、コールバックが呼ばれないことに注意して下さい。
 
-コンポーネント API
-==================
 
-.. php:class:: Component
+コンポーネントのコントローラへのアクセス
+----------------------------------------
 
-    コンポーネントの基底クラスは :php:class:`ComponentCollection` を通して共通のハンドリング設定を扱うように他のコンポーネントを遅延読み込みするためのメソッドをいくつか提供しています。
-    また、コンポーネントのすべてのコールバックのプロトタイプを提供します。
+コンポーネント内から、_registry を介して現在のコントローラに
+アクセスすることができます。 ::
 
-.. php:method:: __construct(ComponentCollection $collection, $config = array())
+    $controller = $this->_registry->getController();
 
-    基底コンポーネントクラスのコンストラクタです。すべての ``$config`` 、またはパブリックプロパティは ``$config`` の中で一致した値に変更されます。
+任意のコールバックメソッドではイベントオブジェクトからコントローラに
+アクセスすることができます。 ::
 
-コールバック
-------------
+    $controller = $event->getSubject();
 
-.. php:method:: initialize(Controller $controller)
+コンポーネントのコールバック
+============================
 
-    initializeメソッドはコントローラの beforeFilter の前に呼び出されます。
+また、コンポーネントは、リクエストサイクルを増強することができる、
+いくつかのリクエストライフサイクルコールバックを提供しています。
 
-.. php:method:: startup(Controller $controller)
+.. php:method:: beforeFilter(Event $event)
 
-    startupメソッドはコントローラのbeforeFilterの後、コントローラの現在のアクションハンドラの前に呼び出されます。
+    コントローラの beforeFilter メソッドの前に呼び出されますが、
+    コントローラのinitialize() メソッドの *後* です。
 
-.. php:method:: beforeRender(Controller $controller)
+.. php:method:: startup(Event $event)
 
-    beforeRenderメソッドはコントローラが要求されたアクションのロジックを実行した後で、ビューとレイアウトが描画される前に呼び出されます。
+    コントローラの beforeFilter メソッドの後、コントローラの現在の
+    アクションハンドラの前に呼び出されます。
 
-.. php:method:: shutdown(Controller $controller)
+.. php:method:: beforeRender(Event $event)
 
-    shutdownメソッドは出力結果がブラウザに送信される前に呼び出されます。
+    コントローラがリクエストされたアクションのロジックを実行した後、
+    ビューとレイアウトが描画される前に呼び出されます。 
 
-.. php:method:: beforeRedirect(Controller $controller, $url, $status=null, $exit=true)
+.. php:method:: shutdown(Event $event)
 
-    beforeRedirectメソッドはコントローラのredirectメソッドが呼び出され時に、他のアクションより先に呼びだされます。
-    このメソッドがfalseを返す時、コントローラはリクエストのリダイレクトを中断します。
-    $url, $status と $exit 変数はコントローラのメソッドの場合と同じ意味です。また、
-    リダイレクト先のURL文字列を返すか、'url'と'status'と'exit'をキーに持つ連想配列を返すことができます。
-    'status'と'exit'は任意です。
+    出力結果がブラウザに送信される前に呼び出されます。
+
+.. php:method:: beforeRedirect(Event $event, $url, Response $response)
+
+    コントローラの redirect メソッドが呼び出された時に、
+    他のアクションより先に呼びだされます。このメソッドが ``false`` を返す時、
+    コントローラはリクエストのリダイレクトを中断します。
+    $url と $response パラメータを使用すると、リダイレクト先やレスポンスの
+    任意の他のヘッダを検査や変更することができます。
 
 .. meta::
-    :title lang=en: Components
-    :keywords lang=en: array controller,core libraries,authentication request,array name,access control lists,public components,controller code,core components,cookiemonster,login cookie,configuration settings,functionality,logic,sessions,cakephp,doc
+    :title lang=ja: コンポーネント
+    :keywords lang=ja: array controller,core libraries,authentication request,array name,access control lists,public components,controller code,core components,cookiemonster,login cookie,configuration settings,functionality,logic,sessions,cakephp,doc

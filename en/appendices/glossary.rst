@@ -18,7 +18,7 @@ Glossary
             // Would generate
             class="my-class" target="_blank"
 
-        If an option can be minimized or accepts it's name as the value, then ``true``
+        If an option can be minimized or accepts its name as the value, then ``true``
         can be used::
 
             // Given
@@ -73,6 +73,15 @@ Glossary
         reducing repetition of information of all kinds. In CakePHP DRY is used
         to allow you to code things once and re-use them across your
         application.
+
+    PaaS
+        Platform as a Service. Platform as a Service providers will provide
+        cloud based hosting, database and caching resources. Some popular
+        providers include Heroku, EngineYard and PagodaBox
+
+    DSN
+        Data Source Name. A connection string format that is formed like a URI.
+        CakePHP supports DSN's for Cache, Database, Log and Email connections.
 
 
 .. meta::

@@ -5,18 +5,18 @@ Xml
 
 .. php:class:: Xml
 
-The Xml class allows you to easily transform arrays into SimpleXMLElement or
+The Xml class allows you to transform arrays into SimpleXMLElement or
 DOMDocument objects, and back into arrays again.
 
 
 Importing Data to Xml Class
 ===========================
 
-.. php:staticmethod:: build($input, $options = [])
+.. php:staticmethod:: build($input, array $options = [])
 
-You can load XML-ish data do it using ``Xml::build()``. Depending on your
+You can load XML-ish data using ``Xml::build()``. Depending on your
 ``$options`` parameter, this method will return a SimpleXMLElement (default)
-or DOMDocument object. You can use ``Xml::build()``` to build XML
+or DOMDocument object. You can use ``Xml::build()`` to build XML
 objects from a variety of sources.  For example, you can load XML from
 strings::
 
@@ -35,20 +35,20 @@ You can also build Xml objects from local files::
 
 You can also build Xml objects using an array::
 
-    $data = array(
-        'post' => array(
+    $data = [
+        'post' => [
             'id' => 1,
             'title' => 'Best post',
             'body' => ' ... '
-        )
-    );
+        ]
+    ];
     $xml = Xml::build($data);
 
-If your input is invalid the Xml class will throw an Exception::
+If your input is invalid, the Xml class will throw an exception::
 
-    $xmlString = 'What is XML?'
+    $xmlString = 'What is XML?';
     try {
-        $xmlObject = Xml::build($xmlString); // Here will throw a Exception
+        $xmlObject = Xml::build($xmlString); // Here will throw an exception
     } catch (\Cake\Utility\Exception\XmlException $e) {
         throw new InternalErrorException();
     }
@@ -63,7 +63,7 @@ If your input is invalid the Xml class will throw an Exception::
 Transforming a XML String in Array
 ==================================
 
-.. php:staticmethod:: toArray($xml);
+.. php:staticmethod:: toArray($obj);
 
 Converting XML strings into arrays is simple with the Xml class as well. By
 default you'll get a SimpleXml object back::
@@ -78,38 +78,38 @@ Transforming an Array into a String of XML
 
 ::
 
-    $xmlArray = array('root' => array('child' => 'value'));
+    $xmlArray = ['root' => ['child' => 'value']];
     // You can use Xml::build() too.
-    $xmlObject = Xml::fromArray($xmlArray, array('format' => 'tags'));
+    $xmlObject = Xml::fromArray($xmlArray, ['format' => 'tags']);
     $xmlString = $xmlObject->asXML();
 
 Your array must have only one element in the "top level" and it can not be
-numeric. If the array is not in this format, Xml will throw a Exception.
+numeric. If the array is not in this format, Xml will throw an exception.
 Examples of invalid arrays::
 
     // Top level with numeric key
-    array(
-        array('key' => 'value')
-    );
+    [
+        ['key' => 'value']
+    ];
 
     // Multiple keys in top level
-    array(
+    [
         'key1' => 'first value',
         'key2' => 'other value'
-    );
+    ];
 
 
-By default array values will be output as XML tags, if you want to define
-attributes or text values you can should prefix the keys that are supposed to be
+By default array values will be output as XML tags. If you want to define
+attributes or text values you can prefix the keys that are supposed to be
 attributes with ``@``. For value text, use ``@`` as the key::
 
-    $xmlArray = array(
-        'project' => array(
+    $xmlArray = [
+        'project' => [
             '@id' => 1,
             'name' => 'Name of project, as tag',
             '@' => 'Value of project'
-        )
-    );
+        ]
+    ];
     $xmlObject = Xml::fromArray($xmlArray);
     $xmlString = $xmlObject->asXML();
 
@@ -122,39 +122,39 @@ The content of ``$xmlString`` will be::
 Using Namespaces
 ----------------
 
-To use XML Namespaces, in your array you must create a key with name ``xmlns:``
-to generic namespace or input the prefix ``xmlns:`` in a custom namespace. See
+To use XML Namespaces, create a key in your array with the name ``xmlns:``
+in a generic namespace or input the prefix ``xmlns:`` in a custom namespace. See
 the samples::
 
-    $xmlArray = array(
-        'root' => array(
-            'xmlns:' => 'http://cakephp.org',
+    $xmlArray = [
+        'root' => [
+            'xmlns:' => 'https://cakephp.org',
             'child' => 'value'
-        )
-    );
+        ]
+    ];
     $xml1 = Xml::fromArray($xmlArray);
 
     $xmlArray(
-        'root' => array(
-            'tag' => array(
-                'xmlns:pref' => 'http://cakephp.org',
-                'pref:item' => array(
+        'root' => [
+            'tag' => [
+                'xmlns:pref' => 'https://cakephp.org',
+                'pref:item' => [
                     'item 1',
                     'item 2'
-                )
-            )
-        )
+                ]
+            ]
+        ]
     );
     $xml2 = Xml::fromArray($xmlArray);
 
 The value of ``$xml1`` and ``$xml2`` will be, respectively::
 
     <?xml version="1.0"?>
-    <root xmlns="http://cakephp.org"><child>value</child>
+    <root xmlns="https://cakephp.org"><child>value</child>
 
 
     <?xml version="1.0"?>
-    <root><tag xmlns:pref="http://cakephp.org"><pref:item>item 1</pref:item><pref:item>item 2</pref:item></tag></root>
+    <root><tag xmlns:pref="https://cakephp.org"><pref:item>item 1</pref:item><pref:item>item 2</pref:item></tag></root>
 
 Creating a Child
 ----------------
@@ -169,14 +169,14 @@ your document type to add, remove, or manipulate child nodes::
 
     // Using DOMDocument
     $myXmlOriginal = '<?xml version="1.0"?><root><child>value</child></root>';
-    $xml = Xml::build($myXmlOriginal, array('return' => 'domdocument'));
+    $xml = Xml::build($myXmlOriginal, ['return' => 'domdocument']);
     $child = $xml->createElement('young', 'new value');
     $xml->firstChild->appendChild($child);
 
 .. tip::
 
-    After manipulate your XML using SimpleXMLElement or DomDocument you can use
-    ``Xml::toArray()`` without a problem.
+    After manipulating your XML using SimpleXMLElement or DomDocument you can
+    use ``Xml::toArray()`` without a problem.
 
 .. meta::
     :title lang=en: Xml

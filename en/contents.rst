@@ -9,39 +9,82 @@ Contents
 
 .. toctree::
     :maxdepth: 3
+    :caption: Preface
 
     intro
     quickstart
+    appendices/3-x-migration-guide
+    tutorials-and-examples
+    contributing
+
+.. toctree::
+    :maxdepth: 3
+    :caption: Getting Started
+
     installation
     development/configuration
     development/routing
     controllers/request-response
+    controllers/middleware
     controllers
     views
     orm
-    plugins
 
-    development/errors
+.. toctree::
+    :maxdepth: 3
+    :caption: Using CakePHP
+
+    controllers/components/authentication
+    bake
     core-libraries/caching
-    core-libraries/logging
-    core-libraries/events
-
-    development/sessions
-    development/dispatch-filters
-    development/rest
-    controllers/components/pagination
-    controllers/components/csrf
-    controllers/components/security
-    core-libraries/email
-    core-libraries/validation
-    core-libraries/internationalization-and-localization
-    development/testing
-    deployment
     console-and-shells
-    core-libraries
+    development/debugging
+    deployment
+    core-libraries/email
+    development/errors
+    core-libraries/events
+    core-libraries/internationalization-and-localization
+    core-libraries/logging
+    core-libraries/form
+    controllers/components/pagination
+    plugins
+    development/rest
+    security
+    development/sessions
+    development/testing
+    core-libraries/validation
 
-    contributing
-    tutorials-and-examples
+.. toctree::
+    :maxdepth: 3
+    :caption: Utility Classes
+
+    core-libraries/app
+    core-libraries/collections
+    core-libraries/file-folder
+    core-libraries/hash
+    core-libraries/httpclient
+    core-libraries/inflector
+    core-libraries/number
+    core-libraries/registry-objects
+    core-libraries/text
+    core-libraries/time
+    core-libraries/xml
+
+.. toctree::
+    :maxdepth: 3
+    :caption: Plugins
+
+    chronos
+    debug-kit
+    migrations
+    elasticsearch
+    upgrade-tool
+
+.. toctree::
+    :maxdepth: 3
+    :caption: Other
+
+    core-libraries/global-constants-and-functions
     appendices
 
 .. todolist::

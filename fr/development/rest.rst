@@ -3,7 +3,7 @@ REST
 
 Beaucoup de programmeurs néophytes d'application réalisent qu'ils ont
 besoin d'ouvrir leurs fonctionnalités principales à un public plus important.
-Fournir facilement, un accès sans entrave à votre API du coeur peut
+Fournir facilement, un accès sans entrave à votre API du cœur peut
 aider à ce que votre plateforme soit acceptée, et permettre les
 mashups et une intégration facile avec les autres systèmes.
 
@@ -26,75 +26,98 @@ dans nos actions de controller. Un controller basique pourrait ressembler
 à ceci::
 
     // src/Controller/RecipesController.php
-    class RecipesController extends AppController {
+    class RecipesController extends AppController
+    {
 
-        public $components = array('RequestHandler');
+        public function initialize()
+        {
+            parent::initialize();
+            $this->loadComponent('RequestHandler');
+        }
 
-        public function index() {
+        public function index()
+        {
             $recipes = $this->Recipes->find('all');
-            $this->set(array(
+            $this->set([
                 'recipes' => $recipes,
-                '_serialize' => array('recipes')
-            ));
+                '_serialize' => ['recipes']
+            ]);
         }
 
-        public function view($id) {
-            $recipe = $this->Recipes->findById($id);
-            $this->set(array(
+        public function view($id)
+        {
+            $recipe = $this->Recipes->get($id);
+            $this->set([
                 'recipe' => $recipe,
-                '_serialize' => array('recipe')
-            ));
+                '_serialize' => ['recipe']
+            ]);
         }
 
-        public function edit($id) {
+        public function add()
+        {
+            $recipe = $this->Recipes->newEntity($this->request->getData());
+            if ($this->Recipes->save($recipe)) {
+                $message = 'Saved';
+            } else {
+                $message = 'Error';
+            }
+            $this->set([
+                'message' => $message,
+                'recipe' => $recipe,
+                '_serialize' => ['message', 'recipe']
+            ]);
+        }
+
+        public function edit($id)
+        {
             $recipe = $this->Recipes->get($id);
             if ($this->request->is(['post', 'put'])) {
-                $this->Recipes->patchEntity($recipe, $this->request->data);
-                if ($this->Recipes->save($this->request->data)) {
+                $recipe = $this->Recipes->patchEntity($recipe, $this->request->getData());
+                if ($this->Recipes->save($recipe)) {
                     $message = 'Saved';
                 } else {
                     $message = 'Error';
                 }
             }
-            $this->set(array(
+            $this->set([
                 'message' => $message,
-                '_serialize' => array('message')
-            ));
+                '_serialize' => ['message']
+            ]);
         }
 
-        public function delete($id) {
+        public function delete($id)
+        {
             $recipe = $this->Recipes->get($id);
             $message = 'Deleted';
             if (!$this->Recipes->delete($recipe)) {
                 $message = 'Error';
             }
-            $this->set(array(
+            $this->set([
                 'message' => $message,
-                '_serialize' => array('message')
-            ));
+                '_serialize' => ['message']
+            ]);
         }
     }
 
 Les controllers RESTful utilisent souvent les extensions parsées pour servir
-différentes views basées sur différents types de requête. Puisque nous
-gérons les requêtes REST, nous ferons des views XML. Vous pouvez aussi
-facilement faire des views JSON en utilisant les
-:doc:`/views/json-and-xml-views` intégrées à CakePHP. En utilisant
-:php:class:`XmlView` intégré, nous pouvons définir une variable de vue
+différentes views basées sur différents types de requête. Puisque nous gérons
+les requêtes REST, nous ferons des views XML. Vous pouvez aussi faire des views
+JSON en utilisant les :doc:`/views/json-and-xml-views` intégrées à CakePHP. En
+utilisant :php:class:`XmlView` intégré, nous pouvons définir une variable de vue
 ``_serialize``. Cette variable de vue spéciale est utilisée pour définir les
 variables de vue que ``XmlView`` doit sérialiser en XML.
 
 Si nous voulons modifier les données avant qu'elles soient converties en XML,
 nous ne devons pas définir la variable de vue ``_serialize``, et à la place
-utiliser les fichiers de vue. Nous plaçons les vues REST pour notre
-RecipesController à l'intérieur de ``src/Template/Recipes/xml``. Nous pouvons aussi
-utiliser :php:class:`Xml` pour une sortie XML facile et rapide dans ces vues.
-Voici ce que notre vue index pourrait ressembler à::
+utiliser les fichiers de template. Nous plaçons les vues REST pour notre
+RecipesController à l'intérieur de **src/Template/Recipes/xml**. Nous pouvons
+aussi utiliser :php:class:`Xml` pour une sortie XML facile et rapide dans ces
+vues. Voici ce que notre vue index pourrait ressembler à::
 
     // src/Template/Recipes/xml/index.ctp
     // Faire du formatage et de la manipulation sur le tableau
     // $recipes.
-    $xml = Xml::fromArray(array('response' => $recipes));
+    $xml = Xml::fromArray(['response' => $recipes]);
     echo $xml->asXML();
 
 Quand vous servez le type de contenu spécifique en utilisant parseExtensions(),
@@ -133,7 +156,7 @@ classe :php:class:`Xml` de CakePHP, et la representation en tableau des données
 est assigné à `$this->request->data`. Avec cette fonctionnalité, la gestion
 de XML et les données POST en parallèle est seamless: aucun changement n'est
 nécessaire pour le code du controller ou du model.
-Tout ce dont vous avez besoin devrait se trouver dans ``$this->request->data``.
+Tout ce dont vous avez besoin devrait se trouver dans ``$this->request->getData()``.
 
 Accepter l'Input dans d'Autres Formats
 ======================================
@@ -147,6 +170,11 @@ des requêtes POST/PUT et fournir la version du tableau de ces données dans
 supplémentaires dans des formats alternatifs si vous avez besoin d'eux en
 utilisant :php:meth:`RequestHandler::addInputType()`
 
+RESTful Routing
+===============
+
+Le Router de CakePHP facilite la connection des routes pour les ressources
+RESTful. Consultez la section :ref:`resource-routes` pour plus d'informations.
 
 .. meta::
     :title lang=fr: REST

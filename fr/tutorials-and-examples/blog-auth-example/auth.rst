@@ -1,18 +1,18 @@
-Application avec une Authentification Simple et des Autorisations
-#################################################################
+Tutoriel d'un Blog - Authentification et Autorisations
+######################################################
 
 Suivez notre exemple :doc:`/tutorials-and-examples/blog/blog`, imaginons que
-nous souhaitions sécuriser l'accès de certaines URLs, basées sur la connexion
-de l'utilisateur. Nous avons aussi un autre impératif : permettre à notre
-blog d'avoir plusieurs auteurs, afin que chacun d'eux puisse créer ses propres
+nous souhaitions sécuriser l'accès de certaines URLs, basées sur la connexion de
+l'utilisateur. Nous avons aussi un autre impératif : permettre à notre blog
+d'avoir plusieurs auteurs, afin que chacun d'eux puisse créer ses propres
 articles, les modifier et les supprimer mais ne laisser la possibilité de ne
 modifier que ses propres messages.
 
 Créer le code lié à tous les utilisateurs
 =========================================
 
-Premièrement, créons une nouvelle table dans notre base de données blog
-pour enregistrer les données de notre utilisateur::
+Premièrement, créons une nouvelle table dans notre base de données blog pour
+enregistrer les données de notre utilisateur::
 
     CREATE TABLE users (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -23,14 +23,14 @@ pour enregistrer les données de notre utilisateur::
         modified DATETIME DEFAULT NULL
     );
 
-Nous avons respecté les conventions de CakePHP pour le nommage des tables,
-mais nous profitons d'une autre convention: en utilisant les colonnes du
-nom d'utilisateur et du mot de passe dans une table users, CakePHP sera
-capable de configurer automatiquement la plupart des choses pour nous quand nous
+Nous avons respecté les conventions de CakePHP pour le nommage des tables, mais
+nous profitons d'une autre convention: en utilisant les colonnes du nom
+d'utilisateur et du mot de passe dans une table users, CakePHP sera capable de
+configurer automatiquement la plupart des choses pour nous quand nous
 réaliserons la connexion de l'utilisateur.
 
-La prochaine étape est de créer notre table Users, qui a la
-responsablilité de trouver, sauvegarder et valider toute donnée d'utilisateur::
+La prochaine étape est de créer notre classe ``UsersTable``, qui a la
+responsabilité de trouver, sauvegarder et valider toute donnée d'utilisateur::
 
     // src/Model/Table/UsersTable.php
     namespace App\Model\Table;
@@ -38,9 +38,11 @@ responsablilité de trouver, sauvegarder et valider toute donnée d'utilisateur:
     use Cake\ORM\Table;
     use Cake\Validation\Validator;
 
-    class UsersTable extends Table {
+    class UsersTable extends Table
+    {
 
-        public function validationDefault(Validator $validator) {
+        public function validationDefault(Validator $validator)
+        {
             return $validator
                 ->notEmpty('username', "Un nom d'utilisateur est nécessaire")
                 ->notEmpty('password', 'Un mot de passe est nécessaire')
@@ -54,40 +56,40 @@ responsablilité de trouver, sauvegarder et valider toute donnée d'utilisateur:
     }
 
 Créons aussi notre UsersController, le contenu suivant correspond à la
-classe `cuisinée` basique UsersController en utilisant les utilitaires
-de génération de code fournis par CakePHP::
+classe obtenue grâce à l'utilitaire de génération de code fournis par CakePHP::
 
     // src/Controller/UsersController.php
 
     namespace App\Controller;
 
     use App\Controller\AppController;
-    use Cake\Error\NotFoundException;
     use Cake\Event\Event;
 
-    class UsersController extends AppController {
+    class UsersController extends AppController
+    {
 
-        public function beforeFilter(Event $event) {
+        public function beforeFilter(Event $event)
+        {
             parent::beforeFilter($event);
             $this->Auth->allow('add');
         }
 
-         public function index() {
+         public function index()
+         {
             $this->set('users', $this->Users->find('all'));
         }
 
-        public function view($id) {
-            if (!$id) {
-                throw new NotFoundException(__('utilisateur non valide'));
-            }
-
+        public function view($id)
+        {
             $user = $this->Users->get($id);
             $this->set(compact('user'));
         }
 
-        public function add() {
-            $user = $this->Users->newEntity($this->request->data);
+        public function add()
+        {
+            $user = $this->Users->newEntity();
             if ($this->request->is('post')) {
+                $user = $this->Users->patchEntity($user, $this->request->getData());
                 if ($this->Users->save($user)) {
                     $this->Flash->success(__("L'utilisateur a été sauvegardé."));
                     return $this->redirect(['action' => 'index']);
@@ -99,13 +101,14 @@ de génération de code fournis par CakePHP::
 
     }
 
-De la même façon, nous avons créé les vues pour nos articles de blog ou en
-utilisant l'outil de génération de code, nous pouvons ajouter les vues. Dans
+De la même façon, nous avons créé les vues pour nos articles de blog en
+utilisant l'outil de génération de code. Dans
 le cadre de ce tutoriel, nous allons juste montrer le add.ctp:
 
 .. code-block:: php
 
     <!-- src/Template/Users/add.ctp -->
+
     <div class="users form">
     <?= $this->Form->create($user) ?>
         <fieldset>
@@ -120,7 +123,7 @@ le cadre de ce tutoriel, nous allons juste montrer le add.ctp:
     <?= $this->Form->end() ?>
     </div>
 
-Authentification (Connexion et Deconnexion)
+Authentification (Connexion et Déconnexion)
 ===========================================
 
 Nous sommes maintenant prêt à ajouter notre couche d'authentification. Dans
@@ -130,7 +133,7 @@ la connexion et la déconnexion, et aussi d'autoriser aux utilisateurs connecté
 les actions que l'on souhaite leur voir autorisées.
 
 Pour ajouter ce component à votre application, ouvrez votre fichier
-``src/Controller/AppController.php`` et ajoutez les lignes suivantes::
+**src/Controller/AppController.php** et ajoutez les lignes suivantes::
 
     // src/Controller/AppController.php
 
@@ -139,12 +142,14 @@ Pour ajouter ce component à votre application, ouvrez votre fichier
     use Cake\Controller\Controller;
     use Cake\Event\Event;
 
-    class AppController extends Controller {
+    class AppController extends Controller
+    {
         //...
 
-        public $components = [
-            'Flash',
-            'Auth' => [
+        public function initialize()
+        {
+            $this->loadComponent('Flash');
+            $this->loadComponent('Auth', [
                 'loginRedirect' => [
                     'controller' => 'Articles',
                     'action' => 'index'
@@ -154,11 +159,12 @@ Pour ajouter ce component à votre application, ouvrez votre fichier
                     'action' => 'display',
                     'home'
                 ]
-            ]
-        ];
+            ]);
+        }
 
-        public function beforeFilter(Event $event) {
-            $this->Auth->allow(['index', 'view']);
+        public function beforeFilter(Event $event)
+        {
+            $this->Auth->allow(['index', 'view', 'display']);
         }
         //...
     }
@@ -168,9 +174,9 @@ conventions pour la table users. Nous avons juste configuré les
 URLs qui seront chargées après que la connexion et la déconnexion des actions
 sont effectuées, dans notre cas, respectivement à ``/articles/`` et ``/``.
 
-Ce que nous avons fait dans la fonction ``beforeFilter`` a été de dire au
-AuthComponent de ne pas exiger un login pour toutes les actions ``index``
-et ``view``, dans chaque controller. Nous voulons que nos visiteurs soient
+Ce que nous avons fait dans la fonction ``beforeFilter()`` a été de dire au
+AuthComponent de ne pas exiger un login pour toutes les actions ``index()``
+et ``view()``, dans chaque controller. Nous voulons que nos visiteurs soient
 capables de lire et lister les entrées sans s'inscrire sur le site.
 
 Maintenant, nous avons besoin d'être capable d'inscrire des nouveaux
@@ -178,46 +184,68 @@ utilisateurs, de sauvegarder leur nom d'utilisateur et mot de passe, et plus
 important de hasher leur mot de passe afin qu'il ne soit pas stocké en
 clair dans notre base de données. Disons à AuthComponent de laisser
 certains utilisateurs non-authentifiés accéder à la fonction add des
-utilisateurs et de réaliser l'action connexion et deconnexion::
+utilisateurs et de réaliser l'action connexion et déconnexion::
 
     // src/Controller/UsersController.php
+    namespace App\Controller;
 
-    public function beforeFilter(Event $event) {
-        parent::beforeFilter($event);
-        // Permet aux utilisateurs de s'enregistrer et de se déconnecter.
-        $this->Auth->allow(['add', 'logout']);
-    }
+    use App\Controller\AppController;
+    use Cake\Event\Event;
 
-    public function login() {
-        if ($this->request->is('post')) {
-            $user = $this->Auth->identify();
-            if ($user) {
-                $this->Auth->setUser($user);
-                return $this->redirect($this->Auth->redirectUrl());
-            }
-            $this->Flash->error(__("Nom d'utilisateur ou mot de passe incorrect, essayez à nouveau."));
+    class UsersController extends AppController
+    {
+        // Other methods..
+
+        public function beforeFilter(Event $event)
+        {
+            parent::beforeFilter($event);
+            // Allow users to register and logout.
+            // You should not add the "login" action to allow list. Doing so would
+            // cause problems with normal functioning of AuthComponent.
+            $this->Auth->allow(['add', 'logout']);
         }
-    }
 
-    public function logout() {
-        return $this->redirect($this->Auth->logout());
+        public function login()
+        {
+            if ($this->request->is('post')) {
+                $user = $this->Auth->identify();
+                if ($user) {
+                    $this->Auth->setUser($user);
+                    return $this->redirect($this->Auth->redirectUrl());
+                }
+                $this->Flash->error(__('Invalid username or password, try again'));
+            }
+        }
+
+        public function logout()
+        {
+            return $this->redirect($this->Auth->logout());
+        }
     }
 
 Le hash du mot de passe n'est pas encore fait, nous avons besoin d'une classe
 Entity pour notre User afin de gérer sa propre logique spécifique. Créons
-fichier entity dans ``src/Model/Entity/User.php`` et ajoutons ce qui suit::
+fichier entity dans **src/Model/Entity/User.php** et ajoutons ce qui suit::
 
     // src/Model/Entity/User.php
     namespace App\Model\Entity;
 
-    use Cake\ORM\Entity;
     use Cake\Auth\DefaultPasswordHasher;
+    use Cake\ORM\Entity;
 
-    class User extends Entity {
+    class User extends Entity
+    {
+
+        // Rend les champs assignables en masse sauf pour le champ clé primaire "id".
+        protected $_accessible = [
+            '*' => true,
+            'id' => false
+        ];
 
         // ...
 
-        protected function _setPassword($password) {
+        protected function _setPassword($password)
+        {
             return (new DefaultPasswordHasher)->hash($password);
         }
 
@@ -227,14 +255,14 @@ fichier entity dans ``src/Model/Entity/User.php`` et ajoutons ce qui suit::
 Ainsi, maintenant à chaque fois qu'un utilisateur est sauvegardé, le mot de
 passe est hashé en utilisant la classe ``DefaultPasswordHasher``. Il nous
 manque juste un fichier template de vue pour la fonction de connexion. Ouvrez
-votre fichier ``src/Template/Users/login.ctp`` et ajoutez les lignes suivantes:
+votre fichier **src/Template/Users/login.ctp** et ajoutez les lignes suivantes:
 
 .. code-block:: php
 
-    // src/Template/Users/login.ctp
+    <!-- src/Template/Users/login.ctp -->
 
     <div class="users form">
-    <?= $this->Flash->render('auth') ?>
+    <?= $this->Flash->render() ?>
     <?= $this->Form->create() ?>
         <fieldset>
             <legend><?= __("Merci de rentrer vos nom d'utilisateur et mot de passe") ?></legend>
@@ -252,23 +280,23 @@ qui n'a pas été explicitement autorisée telle que ``/articles/add``, vous ver
 que l'application vous redirige automatiquement vers la page de connexion.
 
 Et c'est tout! Cela semble trop simple pour être vrai. Retournons en arrière un
-peu pour expliquer ce qui s'est passé. La fonction ``beforeFilter`` dit au
-component AuthComponent de ne pas exiger de connexion pour l'action ``add``
-en plus des actions ``index`` et ``view`` qui étaient déjà autorisées dans
-la fonction ``beforeFilter`` de l'AppController.
+peu pour expliquer ce qui s'est passé. La fonction ``beforeFilter()`` dit au
+component AuthComponent de ne pas exiger de connexion pour l'action ``add()``
+en plus des actions ``index()`` et ``view()`` qui étaient déjà autorisées dans
+la fonction ``beforeFilter()`` de l'AppController.
 
-L'action ``login`` appelle la fonction ``$this->Auth->identify()`` dans
+L'action ``login()`` appelle la fonction ``$this->Auth->identify()`` dans
 AuthComponent, et cela fonctionne sans autre config car nous suivons les
 conventions comme mentionnées plus tôt. C'est-à-dire, avoir un model
 User avec les colonnes username et password, et
 utiliser un formulaire posté à un controller avec les données d'utilisateur.
 Cette fonction retourne si la connexion a réussi ou non, et en cas de succès,
-alors nous redirigeons l'utilisateur vers l'URL configuré de redirection que
+alors nous redirigeons l'utilisateur vers l'URL de redirection configurée que
 nous utilisions quand nous avons ajouté AuthComponent à notre application.
 
 La déconnexion fonctionne juste en allant à l'URL ``/users/logout`` et
 redirigera l'utilisateur vers l'Url de Déconnexion configurée décrite
-précedemment. Cette URL est le résultat de la fonction
+précédemment. Cette URL est le résultat de la fonction
 ``AuthComponent::logout()`` en cas de succès.
 
 Autorisation (Qui est autorisé à accéder à quoi)
@@ -284,11 +312,16 @@ Aussi, un petit changement dans ArticlesController est nécessaire pour stocker
 l'utilisateur connecté courant en référence pour l'article créé::
 
     // src/Controller/ArticlesController.php
-    public function add() {
-        $article = $this->Articles->newEntity($this->request->data);
+    public function add()
+    {
+        $article = $this->Articles->newEntity();
         if ($this->request->is('post')) {
+            $article = $this->Articles->patchEntity($article, $this->request->getData());
             // Ajout de cette ligne
             $article->user_id = $this->Auth->user('id');
+            // Vous pourriez aussi faire ce qui suit
+            //$newData = ['user_id' => $this->Auth->user('id')];
+            //$article = $this->Articles->patchEntity($article, $newData);
             if ($this->Articles->save($article)) {
                 $this->Flash->success(__('Votre article a été sauvegardé.'));
                 return $this->redirect(['action' => 'index']);
@@ -296,6 +329,11 @@ l'utilisateur connecté courant en référence pour l'article créé::
             $this->Flash->error(__("Impossible d'ajouter votre article."));
         }
         $this->set('article', $article);
+
+        // Ajoute seulement la liste des catégories pour pouvoir choisir
+        // une catégorie pour un article
+        $categories = $this->Articles->Categories->find('treeList');
+        $this->set(compact('categories'));
     }
 
 La fonction ``user()`` fournie par le component retourne toute colonne à partir
@@ -311,9 +349,11 @@ config de Auth::
 
     // src/Controller/AppController.php
 
-    public $components = [
-        'Flash',
-        'Auth' => [
+    public function initialize()
+    {
+        $this->loadComponent('Flash');
+        $this->loadComponent('Auth', [
+            'authorize' => ['Controller'], // Ajout de cette ligne
             'loginRedirect' => [
                 'controller' => 'Articles',
                 'action' => 'index'
@@ -322,12 +362,12 @@ config de Auth::
                 'controller' => 'Pages',
                 'action' => 'display',
                 'home'
-            ],
-            'authorize' => ['Controller'] // Ajout de cette ligne
-        ]
-    ];
+            ]
+        ]);
+    }
 
-    public function isAuthorized($user) {
+    public function isAuthorized($user)
+    {
         // Admin peuvent accéder à chaque action
         if (isset($user['role']) && $user['role'] === 'admin') {
             return true;
@@ -337,30 +377,31 @@ config de Auth::
         return false;
     }
 
-Nous venons de créer un mécanisme très simple d'autorisation. Dans ce cas, les
-utilisateurs avec le role ``admin`` sera capable d'accéder à tout URL dans le
-site quand ils sont connectés, mais les autres (par ex le role ``author``) ne
-peut rien faire d'autre par rapport aux utilisateurs non connectés.
+Nous venons de créer un mécanisme très simple d'autorisation. Les utilisateurs
+avec le role ``admin`` pourront accéder à toutes les URL du site quand ils
+sont connectés. Tous les autres utilisateurs -- ceux avec le role ``author`` --
+auront le même accès que les utilisateurs qui ne sont pas loggés.
 
-Ce n'est pas exactement ce que nous souhaitions, donc nous avons besoin de
-déterminer et fournir plus de règles à notre méthode ``isAuthorized()``. Mais
-plutôt que de le faire dans AppController, déleguons à chaque controller la
-gestion de ces règles supplémentaires. Les règles que nous allons ajouter
-à ArticlesController permettront aux auteurs de créer des articles mais
-empêcheront l'édition des articles si l'auteur ne correspond pas. Ouvrez le
-fichier ``ArticlesController.php`` et ajoutez le contenu suivant::
+Ce n'est pas exactement ce que nous souhaitons. Nous devons fournir plus de
+règles à notre méthode ``isAuthorized()``. Cependant au lieu de le faire
+dans AppController, nous déléguons la gestion de ces règles supplémentaires
+à chaque controller individuellement. Les règles que nous allons ajouter à
+ArticlesController devraient permettre aux auteurs de créer des articles mais
+évitent aux auteurs de modifier les articles qui ne leur appartiennent pas.
+Ajoutez le contenu suivant à votre ``ArticlesController.php``::
 
     // src/Controller/ArticlesController.php
 
-    public function isAuthorized($user) {
+    public function isAuthorized($user)
+    {
         // Tous les utilisateurs enregistrés peuvent ajouter des articles
-        if ($this->request->action === 'add') {
+        if ($this->request->getParam('action') === 'add') {
             return true;
         }
 
         // Le propriétaire d'un article peut l'éditer et le supprimer
-        if (in_array($this->request->action, ['edit', 'delete'])) {
-            $articleId = (int)$this->request->params['pass'][0];
+        if (in_array($this->request->getParam('action'), ['edit', 'delete'])) {
+            $articleId = (int)$this->request->getParam('pass.0');
             if ($this->Articles->isOwnedBy($articleId, $user['id'])) {
                 return true;
             }
@@ -372,7 +413,7 @@ fichier ``ArticlesController.php`` et ajoutez le contenu suivant::
 Nous surchargeons maintenant l'appel ``isAuthorized()`` de AppController's et
 vérifions à l'intérieur si la classe parente autorise déjà l'utilisateur.
 Si elle ne le fait pas, alors nous ajoutons juste l'autorisation d'accéder
-à l'action add, et éventuellement autorisons l'accés pour modifier et supprimer.
+à l'action add, et éventuellement autorisons l'accès pour modifier et supprimer.
 Une dernière chose à que nous avons oubliée de faire est de dire si
 l'utilisateur à l'autorisation ou non de modifier l'article, nous appelons
 une fonction ``isOwnedBy()`` dans la table Articles. Intégrons la fonction
@@ -380,7 +421,8 @@ suivante::
 
     // src/Model/Table/ArticlesTable.php
 
-    public function isOwnedBy($articleId, $userId) {
+    public function isOwnedBy($articleId, $userId)
+    {
         return $this->exists(['id' => $articleId, 'user_id' => $userId]);
     }
 
@@ -400,7 +442,7 @@ personnalisée, et bien plus encore.
 Lectures suivantes suggérées
 ----------------------------
 
-#. :doc:`/console-and-shells/code-generation-with-bake` Génération basique CRUD de code
+#. :doc:`/bake/usage` Génération basique CRUD de code
 #. :doc:`/controllers/components/authentication`: Inscription d'utilisateur et connexion
 
 

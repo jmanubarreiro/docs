@@ -1,51 +1,61 @@
-3.0 Migration Guide
-###################
+3.0 - Guia de migração
+######################
 
-This page summarizes the changes from CakePHP 2.x that will assist in migrating
-a project to 3.0, as well as a reference to get up to date with the changes made
-to the core since the CakePHP 2.x branch. Be sure to read the other pages in
-this guide for all the new features and API changes.
+Esta página resume as alterações do CakePHP 2.x e irá auxiliar na migração
+do seu projeto para a versão 3.0, e também será uma referência para atualizá-lo
+quanto às principais mudanças do branch 2.x. Certifique-se de ler também as
+outras páginas nesse guia para conhecer todas as novas funcionalidades e
+mudanças na API.
 
+Requerimentos
+=============
 
-Requirements
-============
-
-- CakePHP 3.x supports PHP Version 5.4.19 and above.
-- CakePHP 3.x requires the mbstring extension.
-- CakePHP 3.x requires the mcrypt extension.
-- CakePHP 3.x requires the intl extension.
+- O CakePHP 3.x suporta o PHP 5.4.16 e acima.
+- O CakePHP 3.x precisa da extensão mbstring.
+- O CakePHP 3.x precisa da extensão intl.
 
 .. warning::
 
-    CakePHP 3.0 will not work if you do not meet the above requirements.
+    O CakePHP 3.0 não irá funcionar se você não atender aos requisitos acima.
 
-Application Directory Layout
-============================
+Ferramenta de atualização
+=========================
 
-The application directory layout has changed and now follows
-`PSR-4 <http://www.php-fig.org/psr/psr-4/>`_. You should use the
-`app skeleton <https://github.com/cakephp/app>`_ project as a reference point
-when updating your application.
+Enquanto este documento cobre todas as alterações e melhorias feitas no
+CakePHP 3.0, nós também criamos uma aplicação de console para ajudar você
+a completar mais facilmente algumas das alterações mecânicas que consomem tempo.
+Você pode `pegar a ferramenta de atualização no GitHub <https://github
+.com/cakephp/upgrade>`_.
 
-CakePHP should be installed with Composer
+Layout do diretório da aplicação
+================================
+
+O Layout do diretório da aplicação mudou e agora segue o
+`PSR-4 <http://www.php-fig.org/psr/psr-4/>`_. Você deve usar o projeto do
+`esqueleto da aplicação <https://github.com/cakephp/app>`_ como um
+ponto de referência quando atualizar sua aplicação.
+
+O CakePHP deve ser instalado via Composer
 =========================================
 
-Since CakePHP can no longer easily be installed via PEAR, or in a shared
-directory, those options are no longer supported. Instead you should use
-`Composer <http://getcomposer.org>`_ to install CakePHP into your application.
+Como o CakePHP não pode mais ser instalado facilmente via PEAR, ou em um
+diretório compartilhado, essas opções não são mais suportadas. Ao invés disso,
+você deve usar o `Composer <http://getcomposer.org>`_ para instalar o
+CakePHP em sua aplicação.
 
 Namespaces
 ==========
 
-All of CakePHP's core classes are now namespaced and follow PSR-4 autoloading
-specifications. For example ``src/Cache/Cache.php`` is namespaced as
-``Cake\Cache\Cache``.  Global constants and helper methods like :php:meth:`__()`
-and :php:meth:`debug()` are not namespaced for convenience sake.
+Todas as classes do core do CakePHP agora usam namespaces e seguem as
+especificações de autoload (auto-carregamento) do PSR-4. Por exemplo
+**src/Cache/Cache.php** tem o namespace ``Cake\Cache\Cache``.  Constantes
+globais e métodos de helpers como :php:meth:`__()` e :php:meth:`debug()` não
+usam namespaces por questões de conveniência.
 
-Removed Constants
-=================
+Constantes removidas
+====================
 
-The following deprecated constants have been removed:
+As seguintes constantes obsoletas foram removidas:
 
 * ``IMAGES``
 * ``CSS``
@@ -55,78 +65,89 @@ The following deprecated constants have been removed:
 * ``CSS_URL``
 * ``DEFAULT_LANGUAGE``
 
-Configuration
-=============
+Configuração
+============
 
-Configuration in CakePHP 3.0 is significantly different than in previous
-versions. You should read the :doc:`/development/configuration` documentation
-for how configuration is done in 3.0.
+As configurações no CakePHP 3.0 estão significativamente diferentes que nas
+versões anteriores. Você deve ler a documentação :doc:`/development/configuration`
+para ver como a configuração é feita.
 
-You can no longer use ``App::build()`` to configure additional class paths.
-Instead you should map additional paths using your application's autoloader. See
-the section on :ref:`additional-class-paths` for more information.
+Você não pode mais usar o ``App::build()`` para configurar caminhos adicionais
+de classes. Ao invés disso, você deve mapear caminhos adicionais usando o
+autoloader da sua aplicação. Veja a seção
+:ref:`Caminhos de Classes Adicionais <additional-class-paths>` para mais
+informações.
 
-Two new configure variables provide the path configuration for plugins, and
-views. You can add multiple paths to ``App.paths.templates`` and
-``App.paths.plugins`` to configure multiple paths for templates & plugins.
+Três novas variáveis de configuração fornecem o caminho de configuração para
+plugins, views e arquivos de localização. Você pode adicionar vários caminhos em
+``App.paths.templates``, ``App.paths.plugins``, ``App.paths.locales`` para
+configurar múltiplos caminhos para templates, plugins e arquivos de localização
+respectivamente.
 
-New ORM
-=======
+A chave de configuração ``www_root`` mudou para ``wwwRoot`` devido a
+consistência. Por favor, ajuste seu arquivo de configuração ``app.php`` assim
+como qualquer uso de ``Configure::read('App.wwwRoot')``.
 
-CakePHP 3.0 features a new ORM that has been re-built from the ground up. The
-new ORM is significantly different and incompatible with the previous one.
-Upgrading to the new ORM will require extensive changes in any application that
-is being upgraded. See the new :doc:`/orm` documentation for information on how
-to use the new ORM.
+Novo ORM
+========
 
+O CakePHP 3.0 possui um novo ORM que foi refeito do zero. O novo ORM é
+significativamente diferente e incompatível com o anterior. Migrar para o novo
+ORM necessita de alterações extensas em qualquer aplicação que esteja sendo
+atualizada. Veja a nova documentação :doc:`/orm` para informações de como usar
+o novo ORM.
 
-Basics
+Básico
 ======
 
-* ``LogError()`` was removed, it provided no benefit and is rarely/never used.
-* The following global functions have been removed: ``config()``, ``cache()``,
+* O ``LogError()`` foi removido, ele não tinha vantagens e era raramente ou
+  mesmo, nunca usado.
+* As seguintes funções globais foram removidas: ``config()``, ``cache()``,
   ``clearCache()``, ``convertSlashes()``, ``am()``, ``fileExistsInPath()``,
   ``sortByKey()``.
 
-Debugging
-=========
+Debug
+=====
 
-* ``Configure::write('debug', $bool)`` does not support 0/1/2 anymore. A simple boolean
-  is used instead to switch debug mode on or off.
+* A função ``Configure::write('debug', $bool)`` não suporta mais 0/1/2. Um
+  boleano simples é usado para mudar o modo de debug para ligado ou desligado.
 
-Object settings/configuration
-=============================
+Especificações/Configurações de objetos
+=======================================
 
-* Objects used in CakePHP now have a consistent instance-configuration storage/retrieval
-  system. Code which previously accessed for example: ``$object->settings`` should instead
-  be updated to use ``$object->config()``.
+* Os objetos usados no CakePHP agora tem um sistema consistente de armazenamento/recuperação
+  de configuração-de-instância. Os códigos que anteriormente acessavam, por exemplo
+  ``$object->settings``, devem ser atualizados para usar ``$object->config()``
+  alternativamente.
 
 Cache
 =====
 
-* ``Memcache`` engine has been removed, use :php:class:`Cake\\Cache\\Cache\\Engine\\Memcached` instead.
-* Cache engines are now lazy loaded upon first use.
-* :php:meth:`Cake\\Cache\\Cache::engine()` has been added.
-* :php:meth:`Cake\\Cache\\Cache::enabled()` has been added. This replaced the
-  ``Cache.disable`` configure option.
-* :php:meth:`Cake\\Cache\\Cache::enable()` has been added.
-* :php:meth:`Cake\\Cache\\Cache::disable()` has been added.
-* Cache configurations are now immutable. If you need to change configuration
-  you must first drop the configuration and then re-create it. This prevents
-  synchronization issues with configuration options.
-* ``Cache::set()`` has been removed. It is recommended that you create multiple
-  cache configurations to replace runtime configuration tweaks previously
-  possible with ``Cache::set()``.
-* All ``CacheEngine`` subclasses now implement a ``config()`` method.
-* :php:meth:`Cake\\Cache\\Cache::readMany()`, :php:meth:`Cake\\Cache\\Cache::deleteMany()`,
-  and :php:meth:`Cake\\Cache\\Cache::writeMany()` were added.
+* ``Memcache`` foi removido, use
+  :php:class:`Cake\\Cache\\Cache\\Engine\\Memcached` alternativamente.
+* Cache engines são carregados sob demanda no primeiro uso.
+* :php:meth:`Cake\\Cache\\Cache::engine()` foi adicionado.
+* :php:meth:`Cake\\Cache\\Cache::enabled()` foi adicionado. Substituindo a
+  opção de configuração ``Cache.disable``.
+* :php:meth:`Cake\\Cache\\Cache::enable()` foi adicionado.
+* :php:meth:`Cake\\Cache\\Cache::disable()` foi adicionado.
+* Configuração de cache agora é imutável. Se você precisa alterar a
+  configuração, será necessário desfazer-se da configuração e recriá-la. Isso
+  previne problemas de sincronização com as opções de configuração.
+* ``Cache::set()`` foi removido. É recomendado criar múltiplas configurações de
+  cache para substituir ajustes de configuração em tempo de execução
+  anteriormente possíveis com ``Cache::set()``.
+* Todas as subclasses ``CacheEngine`` agora implementam um método ``config()``.
+* :php:meth:`Cake\\Cache\\Cache::readMany()`,
+  :php:meth:`Cake\\Cache\\Cache::deleteMany()`,
+  e :php:meth:`Cake\\Cache\\Cache::writeMany()` foram adicionados.
 
-All :php:class:`Cake\\Cache\\Cache\\CacheEngine` methods now honor/are responsible for handling the
-configured key prefix. The :php:meth:`Cake\\Cache\\CacheEngine::write()` no longer permits setting
-the duration on write - the duration is taken from the cache engine's runtime config. Calling a
-cache method with an empty key will now throw an :php:class:`InvalidArgumentException`, instead
-of returning ``false``.
-
+Todos os métodos :php:class:`Cake\\Cache\\Cache\\CacheEngine` agora são
+responsáveis por manipular o prefixo chave configurado. O
+:php:meth:`Cake\\Cache\\CacheEngine::write()` não mais permite definir a
+duração na escrita, a duração é captada pela configuração de tempo de execução
+do mecanismo de cache. Chamar um método cache com uma chuva vazia irá lançar
+uma :php:class:`InvalidArgumentException` ao invés de retornar ``false``.
 
 Core
 ====
@@ -134,316 +155,365 @@ Core
 App
 ---
 
-- ``App::pluginPath()`` has been removed. Use ``CakePlugin::path()`` instead.
-- ``App::build()`` has been removed.
-- ``App::location()`` has been removed.
-- ``App::paths()`` has been removed.
-- ``App::load()`` has been removed.
-- ``App::objects()`` has been removed.
-- ``App::RESET`` has been removed.
-- ``App::APPEND`` has been removed.
-- ``App::PREPEND`` has been removed.
-- ``App::REGISTER`` has been removed.
+- ``App::pluginPath()`` foi removido. Use ``CakePlugin::path()``
+  alternativamente.
+- ``App::build()`` foi removido.
+- ``App::location()`` foi removido.
+- ``App::paths()`` foi removido.
+- ``App::load()`` foi removido.
+- ``App::objects()`` foi removido.
+- ``App::RESET`` foi removido.
+- ``App::APPEND`` foi removido.
+- ``App::PREPEND`` foi removido.
+- ``App::REGISTER`` foi removido.
 
 Plugin
 ------
 
-- :php:meth:`Cake\\Core\\Plugin::load()` does not setup an autoloader unless
-  you set the ``autoload`` option to ``true``.
-- When loading plugins you can no longer provide a callable.
-- When loading plugins you can no longer provide an array of config files to
-  load.
+- O :php:meth:`Cake\\Core\\Plugin::load()` não configura a carga automática 
+  a menos que você defina a opção ``autoload`` como ``true``.
+- Quanto estiver carregando plugins você não pode mais fornecer um ``callable``.
+- Quanto estiver carregando plugins você não pode mais fornecer um array de
+  arquivos de configuração para carregar.
+  
 
 Configure
 ---------
 
-The config reader classes have been renamed:
-
-- ``Cake\Configure\PhpReader`` renamed to :php:class:`Cake\\Core\\Configure\\Engine\PhpConfig`
-- ``Cake\Configure\IniReader`` renamed to :php:class:`Cake\\Core\\Configure\\Engine\IniConfig`
-- ``Cake\Configure\ConfigReaderInterface`` renamed to :php:class:`Cake\\Core\\Configure\\ConfigEngineInterface`
-- :php:meth:`Cake\\Core\\Configure::consume()` was added.
+- O ``Cake\Configure\PhpReader`` foi renomeado para
+  :php:class:`Cake\\Core\\Configure\\Engine\PhpConfig`
+- O ``Cake\Configure\IniReader`` foi renomeado para
+  :php:class:`Cake\\Core\\Configure\\Engine\IniConfig`
+- O ``Cake\Configure\ConfigReaderInterface`` foi renomeado para
+  :php:class:`Cake\\Core\\Configure\\ConfigEngineInterface`
+- O :php:meth:`Cake\\Core\\Configure::consume()` foi adicionado.
+- O :php:meth:`Cake\\Core\\Configure::load()` agora espera o nome de arquivo 
+  sem o sufixo de extensão como isso pode ser derivado do mecanismo.
+  Ex.: para usar o PhpConfig use ``app`` para carregar ``app.php``.
+- Definir uma variável ``$config`` no arquivo PHP config está obsoleto.
+  :php:class:`Cake\\Core\\Configure\\Engine\PhpConfig` agora espera que o
+  arquivo de configuração retorne um array.
+- Um novo mecanismo de configuração :php:class:`Cake\\Core\\Configure\\Engine\JsonConfig` 
+  foi adicionado.
 
 Object
 ------
 
-The ``Object`` class has been removed. It formerly contained a grab bag of
-methods that were used in various places across the framework. The most useful
-of these methods have been extracted into traits. You can use the
-:php:trait:`Cake\\Log\\LogTrait` to access the ``log()`` method. The
-:php:trait:`Cake\\Routing\\RequestActionTrait` provides ``requestAction()``.
+A classe ``Object`` foi removida. Ela anteriormente continha 
+um monte de métodos que eram utilizados em vários locais no framework. 
+O mais útil destes métodos foi extraido como um ``trait``.
+Você pode usar o :php:trait:`Cake\\Log\\LogTrait` para acessar o método
+``log()``. O :php:trait:`Cake\\Routing\\RequestActionTrait` fornece o
+método ``requestAction()``.
 
 Console
 =======
 
-The ``cake`` executable has been moved from the ``app/Console`` directory to the
-``bin`` directory within the application skeleton. You can now invoke CakePHP's
-console with ``bin/cake``.
+O executável ``cake`` foi movido do diretório ``app/Console`` para o diretório
+``bin`` dentro do esqueleto da aplicação. Você pode agora invocar o console do
+CakePHP com ``bin/cake``.
 
-TaskCollection Replaced
------------------------
+TaskCollection Substituído
+--------------------------
 
-This class has been renamed to :php:class:`Cake\\Console\\TaskRegistry`.
-See the section on :doc:`/core-libraries/registry-objects` for more information
-on the features provided by the new class. You can use the ``cake upgrade
-rename_collections`` to assist in upgrading your code. Tasks no longer have
-access to callbacks, as there were never any callbacks to use.
+Essa classe foi renomeada para :php:class:`Cake\\Console\\TaskRegistry`.
+Veja a seção em :doc:`/core-libraries/registry-objects` para mais informações
+sobre funcionalidades fornecidas pela nova classe. Você pode usar o ``cake 
+upgrade rename_collections`` para ajuda ao atualizar seu código. Tarefas não
+tem mais acesso a callbacks, como nunca houve nenhum callback para se usar.
 
 Shell
 -----
 
-- ``Shell::__construct()`` has changed. It now takes an instance of
+- O ``Shell::__construct()`` foi alterado. Ele agora usa uma instância de
   :php:class:`Cake\\Console\\ConsoleIo`.
-- ``Shell::param()`` has been added as convenience access to the params.
+- O ``Shell::param()`` foi adicionado como um acesso conveniente aos parâmetros.
 
-Additionally all shell methods will be transformed to camel case when invoked.
-For example, if you had a ``hello_world()`` method inside a shell and invoked it
-with ``bin/cake my_shell hello_world``, you will need to rename the method
-to ``helloWorld``. There are no changes required in the way you invoke commands.
+Adicionalmente todos os métodos shell serão transformados em camel case quando 
+invocados. Por exemplo, se você tem um método ``hello_world()`` dentro de um
+shell e chama ele com ``bin/cake my_shell hello_world``, você terá que renomear
+o método para ``helloWorld``. Não há necessidade de mudanças no modo que você
+chama os métodos/comandos.
 
+ConsoleOptionParser
+-------------------
 
-Shell / Task
-============
+- O ``ConsoleOptionParser::merge()`` foi adicionado para mesclar os parsers.
 
-Shells and Tasks have been moved from ``Console/Command`` and ``Console/Command/Task``
-to ``Shell`` and ``Shell/Task``.
+ConsoleInputArgument
+--------------------
 
-ApiShell Removed
-----------------
+- O ``ConsoleInputArgument::isEqualTo()`` foi adicionado para comparar dois argumentos.
 
-The ApiShell was removed as it didn't provide any benefit over the file source itself
-and the online documentation/`API <http://api.cakephp.org/>`_.
+Shell / Tarefa
+==============
+
+Os Shells e Tarefas foram movidas de ``Console/Command`` e
+``Console/Command/Task`` para ``Shell`` e ``Shell/Task``, respectivamente.
+
+ApiShell Removido
+-----------------
+
+O ApiShell foi removido pois ele não fornecia nenhum beneficio além do
+próprio arquivo fonte e da documentação/`API <https://api.cakephp.org/>`_ online.
+
+SchemaShell Removido
+--------------------
+
+O SchemaShell foi removido como ele nunca foi uma implementação completa de migração de
+banco de dados e surgiram ferramentas melhores como o `Phinx <https://phinx.org/>`_. 
+Ele foi substituído pelo `CakePHP Migrations Plugin <https://github.com/cakephp/migrations>`_ 
+que funciona como um empacotamento entre o CakePHP e o `Phinx <https://phinx.org/>`_.
 
 ExtractTask
 -----------
 
-- ``bin/cake i18n extract`` no longer includes untranslated validation
-  messages. If you want translated validation messages you should wrap those
-  messages in `__()` calls like any other content.
+- O ``bin/cake i18n extract`` não inclui mais mensagens de validação sem tradução.
+  Se você quiser mensagens de validação traduzidas você deve encapsula-las com
+  chamadas `__()` como qualquer outro conteúdo.
 
 BakeShell / TemplateTask
 ------------------------
 
-- Bake templates have been moved under ``src/Template/Bake``. Also, the ``theme``
-  option, used for selecting a bake template, has been renamed to ``template``.
+- O Bake não faz mais parte do fonte do núcleo e é suplantado pelo 
+  `CakePHP Bake Plugin <https://github.com/cakephp/bake>`_
+- Os templates do Bake foram movidos para **src/Template/Bake**.
+- A sintaxe dos templates do Bake agora usam tags estilo erb (``<% %>``) para denotar
+  lógica de template, permitindo código php ser tratado como texto plano.
+- O comando ``bake view`` foi renomeado para ``bake template``.
 
-Event
-=====
 
-The ``getEventManager()`` method,  was removed on all objects that had it.  An
-``eventManager()`` method is now provided by the ``EventManagerTrait``. The
-``EventManagerTrait`` contains the logic of instantiating and keeping
-a reference to a local event manager.
+Eventos
+=======
 
-The Event subsystem has had a number of optional features removed. When
-dispatching events you can no longer use the following options:
+O método ``getEventManager()``, foi removido de todos os objetos que continham.
+Um método ``eventManager()`` é agora fornecido pelo ``EventManagerTrait``. O
+``EventManagerTrait`` contém a lógica de instanciação e manutenção de uma
+referência para um gerenciador local de eventos.
 
-  * ``passParams`` This option is now enabled always implicitly. You
-    cannot turn it off.
-  * ``break`` This option has been removed. You must now stop events.
-  * ``breakOn`` This option has been removed. You must now stop events.
+O subsistema ``Event`` teve um monte de funcionalidades opcionais removidas.
+Quando despachar eventos você não poderá mais usar as seguintes opções:
+
+* ``passParams`` Essa opção está agora ativada sempre implicitamente. Você
+  não pode desliga-la.
+* ``break`` Essa opção foi removida. Você deve agora parar os eventos.
+* ``breakOn`` Essa opção foi removida. Você deve agora parar os eventos.
 
 Log
 ===
 
-* Log configurations are now immutable. If you need to change configuration
-  you must first drop the configuration and then re-create it. This prevents
-  synchronization issues with configuration options.
-* Log engines are now lazily loaded upon the first write to the logs.
-* :php:meth:`Cake\\Log\\Log::engine()` has been added.
-* The following methods have been removed from :php:class:`Cake\\Log\\Log` ::
+* As configurações do Log agora não imutáveis. Se você precisa alterar a configuração
+  você deve primeiro derrubar a configuração e então recria-la. Isso previne problemas
+  de sincronização com opções de configuração.
+* Os mecanismos de Log agora são carregados tardiamente após a primeira escrita nos logs.
+* O :php:meth:`Cake\\Log\\Log::engine()` foi adicionado.
+* Os seguintes métodos foram removidos de :php:class:`Cake\\Log\\Log` ::
   ``defaultLevels()``, ``enabled()``, ``enable()``, ``disable()``.
-* You can no longer create custom levels using ``Log::levels()``.
-* When configuring loggers you should use ``'levels'`` instead of ``'types'``.
-* You can no longer specify custom log levels.  You must use the default set of
-  log levels.  You should use logging scopes to create custom log files or
-  specific handling for different sections of your application. Using
-  a non-standard log level will now throw an exception.
-* :php:trait:`Cake\\Log\\LogTrait` was added. You can use this trait in your classes to
-  add the ``log()`` method.
-* The logging scope passed to :php:meth:`Cake\\Log\\Log::write()` is now forwarded
-  to the log engines' ``write()`` method in order to provide better context to
-  the engines.
-* Log engines are now required to implement ``Psr\Log\LogInterface`` instead of
-  Cake's own ``LogInterface``. In general, if you extended  :php:class:`Cake\\Log\\Engine\\BaseEngine`
-  you just need to rename the ``write()`` method to ``log()``.
+* Você não pode mais criar níveis personalizados usando ``Log::levels()``.
+* Quando configurar os loggers você deve usar ``'levels'`` ao invés de ``'types'``.
+* Você não pode mais especificar níveis personalizados de log. Você deve usar o conjunto
+  padrão de níveis de log. Você deve usar escopos de log para criar arquivos de log
+  personalizados ou manipulações específicas para diferentes seções de sua aplicação.
+  Usando um nível de log não padrão irá lançar uma exceção.
+* O :php:trait:`Cake\\Log\\LogTrait` foi adicionado. Você pode usar este trait em suas
+  classes para adicionar o método ``log()``.
+* O escopo de log passado para :php:meth:`Cake\\Log\\Log::write()` é agora
+  encaminhado para o método ``write()`` dos mecanismos de log de maneira a fornecer
+  um melhor contexto para os mecanismos.
+* Os mecanismos de Log agora são necessários para implementar ``Psr\Log\LogInterface`` invés do
+  próprio ``LogInterface`` do Cake. Em geral, se você herdou o :php:class:`Cake\\Log\\Engine\\BaseEngine`
+  você só precisa renomear o método ``write()`` para ``log()``.
+* O :php:meth:`Cake\\Log\\Engine\\FileLog` agora grava arquivos em ``ROOT/logs`` no lugar de ``ROOT/tmp/logs``.
 
-Routing
-=======
+Roteamento
+==========
 
-Named Parameters
-----------------
+Parâmetros Nomeados
+-------------------
 
-Named parameters were removed in 3.0. Named parameters were added in 1.2.0 as
-a 'pretty' version of query string parameters.  While the visual benefit is
-arguable, the problems named parameters created are not.
+Os parâmetros nomeados foram removidos no 3.0. Os parâmetros nomeados foram
+adicionados no 1.2.0 como uma versão 'bonita' de parâmetros de requisição.
+Enquanto o benefício visual é discutível, os problemas criados pelos parâmetros
+nomeados não são.
 
-Named parameters required special handling in CakePHP as well as any PHP or
-JavaScript library that needed to interact with them, as named parameters are
-not implemented or understood by any library *except* CakePHP.  The additional
-complexity and code required to support named parameters did not justify their
-existence, and they have been removed.  In their place you should use standard
-query string parameters or passed arguments.  By default ``Router`` will treat
-any additional parameters to ``Router::url()`` as query string arguments.
+Os parâmetros nomeados necessitam manipulação especial no CakePHP assim como
+em qualquer biblioteca PHP ou JavaScript que necessite interagir com eles,
+os parâmetros nomeados não são implementados ou entendidos por qualquer biblioteca
+*exceto* o CakePHP.  A complexidade adicionada e o código necessário para dar suporte
+aos parâmetros nomeados não justificam a sua existência, e eles foram removidos.
+No lugar deles, você deve agora usar o padrão de parâmetros de requisição
+(querystring) ou argumentos passados configurados nas rotas. Por padrão 
+o ``Router`` irá tratar qualquer parâmetro adicional ao ``Router::url()`` 
+como argumentos de requisição.
 
-Since many applications will still need to parse incoming URLs containing named
-parameters.  :php:meth:`Cake\\Routing\\Router::parseNamedParams()` has
-been added to allow backwards compatibility with existing URLs.
+Como muitas aplicações ainda precisarão analisar URLs contendo parâmetros nomeados,
+o :php:meth:`Cake\\Routing\\Router::parseNamedParams()` foi adicionado para
+permitir compatibilidade com URLs existentes.
 
 
 RequestActionTrait
 ------------------
 
-- :php:meth:`Cake\\Routing\\RequestActionTrait::requestAction()` has had
-  some of the extra options changed:
+- O :php:meth:`Cake\\Routing\\RequestActionTrait::requestAction()` teve algumas de 
+  suas opções extras alteradas:
 
-  - ``options[url]`` is now ``options[query]``.
-  - ``options[data]`` is now ``options[post]``.
-  - Named parameters are no longer supported.
+  - o ``options[url]`` é agora ``options[query]``.
+  - o ``options[data]`` é agora ``options[post]``.
+  - os parâmetros nomeados não são mais suportados.
 
-Router
-------
+Roteador
+--------
 
-* Named parameters have been removed, see above for more information.
-* The ``full_base`` option has been replaced with the ``_full`` option.
-* The ``ext`` option has been replaced with the ``_ext`` option.
-* ``_scheme``, ``_port``, ``_host``, ``_base``, ``_full``, ``_ext`` options added.
-* String URLs are no longer modified by adding the plugin/controller/prefix names.
-* The default fallback route handling was removed.  If no routes
-  match a parameter set ``/`` will be returned.
-* Route classes are responsible for *all* URL generation including
-  query string parameters. This makes routes far more powerful and flexible.
-* Persistent parameters were removed. They were replaced with
-  :php:meth:`Cake\\Routing\\Router::urlFilter()` which allows
-  a more flexible way to mutate URLs being reverse routed.
-* ``Router::parseExtensions()`` has been removed.
-  Use :php:meth:`Cake\\Routing\\Router::extensions()` instead. This method
-  **must** be called before routes are connected. It won't modify existing
-  routes.
-* ``Router::setExtensions()`` has been removed.
-  Use :php:meth:`Cake\\Routing\\Router::extensions()` instead.
-* ``Router::resourceMap()`` has been removed.
-* The ``[method]`` option has been renamed to ``_method``.
-* The ability to match arbitrary headers with ``[]`` style parameters has been
-  removed. If you need to parse/match on arbitrary conditions consider using
-  custom route classes.
-* ``Router::promote()`` has been removed.
-* ``Router::parse()`` will now raise an exception when a URL cannot be handled
-  by any route.
-* ``Router::url()`` will now raise an exception when no route matches a set of
-  parameters.
-* Routing scopes have been introduced. Routing scopes allow you to keep your
-  routes file DRY and give Router hints on how to optimize parsing & reverse
-  routing URLs.
+* Os parâmetros nomeados foram removidos, veja acima para mais informações.
+* A opção ``full_base`` foi substituída com a opção ``_full``.
+* A opção ``ext`` foi substituída com a opção ``_ext``.
+* As opções ``_scheme``, ``_port``, ``_host``, ``_base``, ``_full``, ``_ext`` 
+  foram adicionadas.
+* As URLs em strings não são mais modificados pela adição de 
+  plugin/controller/nomes de prefixo.
+* A manipulação da rota padrão de ``fallback`` foi removida. Se nenhuma rota
+  combinar com o conjunto de parâmetros, o ``/`` será retornado.
+* As classes de rota são responsáveis por *toda* geração de URLs
+  incluindo parâmetros de requisição (query string). Isso faz com que as
+  rotas sejam muito mais poderosas e flexíveis.
+* Parâmetros persistentes foram removidos. Eles foram substituídos pelo
+  :php:meth:`Cake\\Routing\\Router::urlFilter()` que permite um jeito
+  mais flexível para mudar URLs sendo roteadas reversamente.
+* O ``Router::parseExtensions()`` foi removido. Use o 
+  :php:meth:`Cake\\Routing\\Router::extensions()` no lugar. Esse método
+  **deve** ser chamado antes das rotas serem conectadas. Ele não irá modificar
+  rotas existentes.
+* O ``Router::setExtensions()`` foi removido. Use o
+  :php:meth:`Cake\\Routing\\Router::extensions()` no lugar.
+* O ``Router::resourceMap()`` foi removido.
+* A opção ``[method]`` foi renomeada para ``_method``.
+* A habilidade de combinar cabeçalhos arbitrários com parâmetros no estilo
+  ``[]`` foi removida. Se você precisar combinar/analisar em condições 
+  arbitrárias considere usar classes personalizadas de roteamento.
+* O ``Router::promote()`` foi removido.
+* O ``Router::parse()`` irá agora lançar uma exceção quando uma URL não puder
+  ser atendida por nenhuma rota.
+* O ``Router::url()`` agora irá lançar uma exceção quando nenhuma rota combinar
+  com um conjunto de parâmetros.
+* Os escopos de rotas foram adicionados. Escopos de rotas permitem você
+  manter seu arquivo de rotas limpo e dar dicas de rotas em como otimizar
+  análise e reversão de rotas de URL.
 
 Route
 -----
 
-* ``CakeRoute`` was re-named to ``Route``.
-* The signature of ``match()`` has changed to ``match($url, $context = array())``
-  See :php:meth:`Cake\\Routing\\Route::match()` for information on the new signature.
+* O ``CakeRoute`` foi renomeado para ``Route``.
+* A assinatura de ``match()`` mudou para ``match($url, $context = [])``.
+  Veja :php:meth:`Cake\\Routing\\Route::match()` para mais informações sobre
+  a nova assinatura.
 
-Dispatcher Filters Configuration Changed
-----------------------------------------
+Configuração de Filtros do Despachante Mudaram
+----------------------------------------------
 
-Dispatcher filters are no longer added to your application using ``Configure``.
-You now append them with :php:class:`Cake\\Routing\\DispatcherFactory`. This
-means if your application used ``Dispatcher.filters``, you should now use
-php:meth:`Cake\\Routing\\DispatcherFactory::add()`.
+Os filtros do despachante não são mais adicionados em sua aplicação usando
+o ``Configure``. Você deve agora anexa-los com 
+:php:class:`Cake\\Routing\\DispatcherFactory`. Isso significa que sua 
+aplicação usava ``Dispatcher.filters``, você deve usar agora o método
+:php:meth:`Cake\\Routing\\DispatcherFactory::add()`.
 
-In addition to configuration changes, dispatcher filters have had some
-conventions updated, and features added. See the
-:doc:`/development/dispatch-filters` documentation for more information.
+Além das mudanças de configuração, os filtros do despachante tiveram algumas
+convenções atualizadas e novas funcionalidades. Veja a documentação em
+:doc:`/development/dispatch-filters` para mais informações.
 
 Filter\AssetFilter
 ------------------
 
-* Plugin & theme assets handled by the AssetFilter are no longer read via
-  ``include`` instead they are treated as plain text files.  This fixes a number
-  of issues with JavaScript libraries like TinyMCE and environments with
-  short_tags enabled.
-* Support for the ``Asset.filter`` configuration and hooks were removed. This
-  feature can easily be replaced with a plugin or dispatcher filter.
+* Os itens de plugins e temas manipulados pelo AssetFilter não são mais lidos via
+  ``include``, ao invés disso eles são tratados como arquivos de texto plano.
+  Isso corrige um número de problemas com bibliotecas javascript como 
+  TinyMCE e ambientes com short_tags ativadas.
+* O suporte para a configuração ``Asset.filter`` e ganchos foram removidos. Essa
+  funcionalidade pode ser facilmente substituída  com um plugin ou filtro de despachante.
 
+Rede
+====
 
-Network
-=======
+Requisição
+----------
 
-Request
--------
+* O ``CakeRequest`` foi renomeada para :php:class:`Cake\\Network\\Request`.
+* O :php:meth:`Cake\\Network\\Request::port()` foi adicionado.
+* O :php:meth:`Cake\\Network\\Request::scheme()` foi adicionado.
+* O :php:meth:`Cake\\Network\\Request::cookie()` foi adicionado.
+* O :php:attr:`Cake\\Network\\Request::$trustProxy` foi adicionado. Isso torna mais fácil
+  colocar aplicações CakePHP atrás de balanceadores de carga.
+* O :php:attr:`Cake\\Network\\Request::$data` não é mais mesclado com a chave de dados
+  prefixada, pois esse prefixo foi removido.
+* O :php:meth:`Cake\\Network\\Request::env()` foi adicionado.
+* O :php:meth:`Cake\\Network\\Request::acceptLanguage()` mudou de um método estático
+  para não-estático.
+* O detector de requisição para dispositivos móveis foi removido do núcleo. Agora o app
+  template adiciona detectores para dispositivos móveis usando a biblioteca ``MobileDetect``.
+* O método ``onlyAllow()`` foi renomeado para ``allowMethod()`` e não aceita mais "argumentos var".
+  Todos os nomes de métodos precisam ser passados como primeiro argumento,
+  seja como string ou como array de strings.
 
-* ``CakeRequest`` has been renamed to :php:class:`Cake\\Network\\Request`.
-* :php:meth:`Cake\\Network\\Request::port()` was added.
-* :php:meth:`Cake\\Network\\Request::scheme()` was added.
-* :php:meth:`Cake\\Network\\Request::cookie()` was added.
-* :php:attr:`Cake\\Network\\Request::$trustProxy` was added.  This makes it easier to put
-  CakePHP applications behind load balancers.
-* :php:attr:`Cake\\Network\\Request::$data` is no longer merged with the prefixed data
-  key, as that prefix has been removed.
-* :php:meth:`Cake\\Network\\Request::env()` was added.
-* :php:meth:`Cake\\Network\\Request::acceptLanguage()` was changed from static method
-  to non-static.
-* Request detector for "mobile" has been removed from the core. Instead the app
-  template adds detectors for "mobile" and "tablet" using ``MobileDetect`` lib.
-* The method ``onlyAllow()`` has been renamed to ``allowMethod()`` and no longer accepts "var args".
-  All method names need to be passed as first argument, either as string or array of strings.
-
-Response
+Resposta
 --------
 
-* The mapping of mimetype ``text/plain`` to extension ``csv`` has been removed.
-  As a consequence :php:class:`Cake\\Controller\\Component\\RequestHandlerComponent`
-  doesn't set extension to ``csv`` if ``Accept`` header contains mimetype ``text/plain``
-  which was a common annoyance when receiving a jQuery XHR request.
+* O mapeamento do mimetype ``text/plain`` para extensão ``csv`` foi removido.
+  Como consequência o :php:class:`Cake\\Controller\\Component\\RequestHandlerComponent`
+  não define a extensão para ``csv`` se o cabeçalho ``Accept`` tiver o mimetype ``text/plain``
+  que era um problema comum quando recebia uma requisição XHR do jQuery.
+  
 
-Sessions
-========
+Sessões
+=======
 
-The session class is no longer static, instead the session can be accessed
-through the request object. See the :doc:`/development/sessions` documentation
-for using the session object.
+A classe de sessão não é mais estática, agora a sessão (session) pode ser
+acessada através do objeto de requisição (request). Veja a documentação em
+:doc:`/development/sessions` para ver como usar o objeto de sessão.
 
-* :php:class:`Cake\\Network\\Session` and related session classes have been
-  moved under the ``Cake\Network`` namespace.
-* ``SessionHandlerInterface`` has been removed in favor of the one provided by
-  PHP itself.
-* The property ``Session::$requestCountdown`` has been removed.
-* The session checkAgent feature has been removed. It caused a number of bugs
-  when chrome frame, and flash player are involved.
-* The conventional sessions database table name is now ``sessions`` instead of
-  ``cake_sessions``.
-* The session cookie timeout is automatically updated in tandem with the timeout
-  in the session data.
-* The path for session cookie now defaults to app's base path instead of "/".
-  Also new config variable ``Session.cookiePath`` has been added to easily
-  customize the cookie path.
+* O :php:class:`Cake\\Network\\Session` e classes de sessão relacionadas 
+  foram movidas para o namespace ``Cake\Network``.
+* O ``SessionHandlerInterface`` foi removido em favor ao fornecido pelo
+  próprio PHP.
+* A propriedade ``Session::$requestCountdown`` foi removida.
+* O funcionalidade de sessão ``checkAgent`` foi removida. Ela causava um 
+  monte de bugs quando quadros do chrome e o flash player estavam envolvidos.
+* A convenção de nome para a tabela de sessão no banco de dados agora é
+  ``sessions`` ao invés de ``cake_sessions``.
+* O cookie de tempo limite da sessão é atualizado automaticamente em conjunto 
+  com o tempo limite dos dados de sessão.
+* O caminho padrão para o cookie de sessão agora é o caminho base da aplicação,
+  ao invés de "/". Além disso, uma nova variável de configuração ``Session.cookiePath`` 
+  foi adicionada para facilitar a personalização do caminho para os cookies.
+* Um novo método conveniente :php:meth:`Cake\\Network\\Session::consume()` foi adicionado
+  para permitir a leitura e exclusão de dados de sessão em um único passo.
+* O valor padrão do argumento ``$renew`` de :php:meth:`Cake\\Network\\Session::clear()`
+  mudou de ``true`` para ``false``.
 
 Network\\Http
 =============
 
-* ``HttpSocket`` is now :php:class:`Cake\\Network\\Http\\Client`.
-* Http\Client has been re-written from the ground up. It has a simpler/easier to
-  use API, support for new authentication systems like OAuth, and file uploads.
-  It uses PHP's stream APIs so there is no requirement for cURL. See the
-  :doc:`/core-libraries/httpclient` documentation for more information.
+* O ``HttpSocket`` agora é :php:class:`Cake\\Network\\Http\\Client`.
+* O Http\Client foi reescrito do zero. Ele tem uma API mais simples/fácil
+  de usar, suporta novos sistemas de autenticação como OAuth, e uploads de arquivos.
+  Ele usa as API de stream do PHP de modo que não há requerimentp para o cURL. Veja a
+  documentação :doc:`/core-libraries/httpclient` para mais informações.
 
 Network\\Email
 ==============
 
-* :php:meth:`Cake\\Network\\Email\\Email::config()` is now used to define
-  configuration profiles. This replaces the ``EmailConfig`` classes in previous
-  versions.
-* :php:meth:`Cake\\Network\\Email\\Email::profile()` replaces ``config()`` as
-  the way to modify per instance configuration options.
-* :php:meth:`Cake\\Network\\Email\\Email::drop()` has been added to allow the
-  removal of email configuration.
-* :php:meth:`Cake\\Network\\Email\\Email::configTransport()` has been added to allow the
-  definition of transport configurations. This change removes transport options
-  from delivery profiles and allows you to easily re-use transports across email
-  profiles.
-* :php:meth:`Cake\\Network\\Email\\Email::dropTransport()` has been added to allow the
-  removal of transport configuration.
-
+* O :php:meth:`Cake\\Network\\Email\\Email::config()` agora é usado para definir
+  perfis de configuração. Isso substitui as classes ``EmailConfig`` nas versões
+  anteriores.
+* O :php:meth:`Cake\\Network\\Email\\Email::profile()` substitui o ``config()`` 
+  como modo de modificar opções de configuração por instância.
+* O :php:meth:`Cake\\Network\\Email\\Email::drop()` foi adicionado para permitir a 
+  remoção de configurações de email.
+* O :php:meth:`Cake\\Network\\Email\\Email::configTransport()` foi adicionado para
+  permitir a definição de configurações de transporte. Essa mudança retira as opções
+  de transporte dos perfis de entrega e permite a você reusar facilmente os transportes
+  através de perfis de e-mails.
+* O :php:meth:`Cake\\Network\\Email\\Email::dropTransport()` foi adicionado para permitir
+  a remoção de configurações de transporte.
+  
 
 Controller
 ==========
@@ -451,70 +521,85 @@ Controller
 Controller
 ----------
 
-- The ``$helpers``, ``$components`` properties are now merged
-  with **all** parent classes not just ``AppController`` and the plugin
-  AppController. The properties are merged differently now as well. Instead of
-  all settings in all classes being merged together, the configuration defined
-  in the child class will be used. This means that if you have some
-  configuration defined in your AppController, and some configuration defined in
-  a subclass, only the configuration in the subclass will be used.
-- ``Controller::httpCodes()`` has been removed, use
-  :php:meth:`Cake\\Network\\Response::httpCodes()` instead.
-- ``Controller::disableCache()`` has been removed, use
-  :php:meth:`Cake\\Network\\Response::disableCache()` instead.
-- ``Controller::flash()`` has been removed. This method was rarely used in real
-  applications and served no purpose anymore.
-- ``Controller::validate()`` and ``Controller::validationErrors()`` have been
-  removed. They were left over methods from the 1.x days where the concerns of
-  models + controllers were far more intertwined.
-- ``Controller::loadModel()`` now loads table objects.
-- The ``Controller::$scaffold`` property has been removed. Dynamic scaffolding
-  has been removed from CakePHP core, and will be provided as a standalone
-  plugin.
-- The ``Controller::$ext`` property has been removed. You now have to extend and
-  override the ``View::$_ext`` property if you want to use a non-default view file
-  extension.
-- The ``Controller::$Components`` property has been removed and replaced with
-  ``_components``. If you need to load components at runtime you should use
-  ``$this->loadComponent()`` on your controller.
-- The signature of :php:meth:`Cake\\Controller\\Controller::redirect()` has been
-  changed to ``Controller::redirect(string|array $url, int $status = null)``.
-  The 3rd argument ``$exit`` has been dropped. The method can no longer send
-  response and exit script, instead it returns a ``Response`` instance with
-  appropriate headers set.
-- The ``base``, ``webroot``, ``here``, ``data``,  ``action``, and ``params``
-  magic properties have been removed. You should access all of these properties
-  on ``$this->request`` instead.
-- Underscore prefixed controller methods like ``_someMethod()`` are no longer
-  treated as private methods. Use proper visibility keywords instead. Only
-  public methods can be used as controller actions.
+- As propriedades ``$helpers`` e ``$components`` agora estão mescladas
+  com **todas** classes pai, não apenas a ``AppController`` e o plugin de
+  AppController. As propriedades são mescladas de modo diferente agora também.
+  No lugar de todas as configurações em todas as classes serem mescladas juntas, 
+  as configurações definidas nas classes filho serão usadas. Isso quer dizer 
+  que se você tem alguma configurações definida no seu AppController, 
+  e alguma configuração definida em uma a subclasse, apenas a configuração na
+  subclasse será usada.
+- O ``Controller::httpCodes()`` foi removido, use o
+  :php:meth:`Cake\\Network\\Response::httpCodes()` no lugar.
+- O ``Controller::disableCache()`` foi removido, use o
+  :php:meth:`Cake\\Network\\Response::disableCache()` no lugar.
+- O ``Controller::flash()`` foi removido. Esse método era raramente usado em
+  aplicações reais e não tinha mais propósito algum.
+- O ``Controller::validate()`` e ``Controller::validationErrors()`` foram
+  removidos. Eles eram restos dos dias do 1.x onde as preocupações com os
+  models + controllers eram muito mais entrelaçados.
+- O ``Controller::loadModel()`` agora carrega uma tabela de objetos.
+- A propriedade ``Controller::$scaffold`` foi removida. O scaffolding dinâmico
+  foi removido do núcleo do CakePHP.  Um plugin de scaffolding melhorado, 
+  chamado CRUD, pode ser encontrado em: https://github.com/FriendsOfCake/crud
+- A propriedade ``Controller::$ext`` foi removida. Você deve agora estender e
+  sobrescrever a propriedade ``View::$_ext`` se você deseja usar uma extensão
+  de  arquivo de visão não padrão.
+- A propriedade ``Controller::$methods`` foi removida. Você deve usar o
+  ``Controller::isAction()`` para determinar quando ou não um nome de método
+  é uma ação. Essa mudança foi feita para permitir personalizações mais fáceis
+  do que vai contar ou não como uma ação.
+- A propriedade ``Controller::$Components`` foi removida e substituída pelo
+  ``_components``. Se você precisar carregar componentes em tempo de execução
+  você deve usar o ``$this->loadComponent()`` em seu controller.
+- A assinatura do :php:meth:`Cake\\Controller\\Controller::redirect()` mudou
+  para ``Controller::redirect(string|array $url, int $status = null)``.
+  O terceiro argumento ``$exit`` foi removido. O método não pode mais enviar
+  resposta e sair do script, no lugar ele retorna uma instância de ``Response``
+  com os cabeçalhos apropriados definidos.
+- As propriedades mágicas ``base``, ``webroot``, ``here``, ``data``,  ``action``,
+  e ``params`` foram removidas. Você deve acessar todas essas propriedades em 
+  ``$this->request`` no lugar.
+- Métodos de controlar prefixados com sublinhado como ``_someMethod()`` não são
+  mais tratados como métodos privados. Use as palavras chaves de visibilidade
+  apropriadas no lugar. Somente métodos públicos podem ser usados como ação
+  de controllers.
 
-Scaffold Removed
-----------------
+Scaffold Removido
+-----------------
 
-The dynamic scaffolding in CakePHP has been removed from CakePHP core. It was
-infrequently used, and never intended for production use. It will be replaced by
-a standalone plugin that people requiring that feature can use.
+O scaffolding dinâmico no CakePHP foi removido do núcleo do CakePHP. Ele não era
+usado com frequência, e não era voltado para uso em produção. Um plugin melhorado
+de scaffolding, chamado CRUD, pode ser encontrado em:
+https://github.com/FriendsOfCake/crud
 
-ComponentCollection Replaced
-----------------------------
+ComponentCollection Substituído
+-------------------------------
 
-This class has been renamed to :php:class:`Cake\\Controller\\ComponentRegistry`.
-See the section on :doc:`/core-libraries/registry-objects` for more information
-on the features provided by the new class. You can use the ``cake upgrade
-rename_collections`` to assist in upgrading your code.
+Essa classe foi renomeada para :php:class:`Cake\\Controller\\ComponentRegistry`.
+Veja a seção em :doc:`/core-libraries/registry-objects` para mais informações
+sobre as funcionalidades fornecidas pela nova classe. Você pode usar o 
+``cake upgrade rename_collections`` para ajudar você a atualizar o seu
+código.
 
-Component
----------
+Components
+----------
 
-* The ``_Collection`` property is now ``_registry``. It contains an instance
-  of :php:class:`Cake\\Controller\\ComponentRegistry` now.
-* All components should now use the ``config()`` method to get/set
-  configuration.
-* Default configuration for components should be defined in the
-  ``$_defaultConfig`` property. This property is automatically merged with any
-  configuration provided to the constructor.
-* Configuration options are no longer set as public properties.
+* A propriedade ``_Collection`` é agora ``_registry``. Ela contém uma instância 
+  do :php:class:`Cake\\Controller\\ComponentRegistry` agora.
+* Todos components devem agora usar o método ``config()`` para obter/definir
+  configurações.
+* A configuração padrão para components deve ser definido na propriedade
+  ``$_defaultConfig``. Essa propriedade é automaticamente mesclada com qualquer 
+  configuração fornecida pelo construtor.
+* Opções de configuração não são mais definidas como propriedades públicas.
+* O método ``Component::initialize()`` não é mais um ``event listener``
+  (ouvinte de eventos).
+  Ao invés disso, ele é um gancho pós-construtor como o ``Table::initialize()`` e
+  ``Controller::initialize()``. O novo método ``Component::beforeFilter()`` é
+  ligado ao mesmo evento que o ``Component::initialize()`` costumava ser. O
+  método de inicialização deve ter a seguinte assinatura ``initialize(array
+  $config)``.
 
 Controller\\Components
 ======================
@@ -522,272 +607,293 @@ Controller\\Components
 CookieComponent
 ---------------
 
-- Uses :php:meth:`Cake\\Network\\Request::cookie()` to read cookie data,
-  this eases testing, and allows for ControllerTestCase to set cookies.
-- Cookies encrypted in previous versions of CakePHP using the ``cipher`` method
-  are now un-readable because ``Security::cipher()`` has been removed. You will
-  need to re-encrypt cookies with the ``rijndael`` or ``aes`` method before upgrading.
-- ``CookieComponent::type()`` has been removed and replaced with configuration
-  data accessed through ``config()``.
-- ``write()`` no longer takes ``encryption`` or ``expires`` parameters. Both of
-  these are now managed through config data. See
-  :doc:`/controllers/components/cookie` for more information.
-- The path for cookies now defaults to app's base path instead of "/".
-
+- Ele usa o :php:meth:`Cake\\Network\\Request::cookie()` para ler os dados de
+  cookies, isso facilita os testes, e permite o ControllerTestCase definir os
+  cookies.
+- Os Cookies encriptados pelas versões anteriores do CakePHP usando o método 
+  ``cipher()``, agora não podem ser lidos, pois o ``Security::cipher()`` foi 
+  removido. Você precisará reencriptar os cookies com o método ``rijndael()`` ou 
+  ``aes()`` antes de atualizar.
+- O ``CookieComponent::type()`` foi removido e substituído com dados de 
+  configuração acessados através de ``config()``.
+- O ``write()`` não aceita mais os parâmetros ``encryption`` ou ``expires``.
+  Os dois agora são gerenciados através de dados de configuração.
+  Veja :doc:`/controllers/components/cookie` para mais informações.
+- O caminho padrão para os cookies agora é o caminho base da aplicação, ao 
+  invés de "/".
 
 AuthComponent
 -------------
 
-- ``Default`` is now the default password hasher used by authentication classes.
-  It uses exclusively the bcrypt hashing algorithm. If you want to continue using
-  SHA1 hashing used in 2.x use ``'passwordHasher' => 'Weak'`` in your authenticator configuration.
-- ``BaseAuthenticate::_password()`` has been removed. Use a ``PasswordHasher``
-  class instead.
-- A new ``FallbackPasswordHasher`` was added to help users migrate old passwords
-  from one algorithm to another. Check AuthComponent's documentation for more
-  info.
-- ``BlowfishAuthenticate`` class has been removed. Just use ``FormAuthenticate``
-- ``BlowfishPasswordHasher`` class has been removed. Use
-  ``DefaultPasswordHasher`` instead.
-- The ``loggedIn()`` method has been removed. Use ``user()`` instead.
-- Configuration options are no longer set as public properties.
-- The methods ``allow()`` and ``deny()`` no longer accept "var args". All method names need
-  to be passed as first argument, either as string or array of strings.
-- The method ``login()`` has been removed and replaced by ``setUser()`` instead.
-  To login a user you now have to call ``identify()`` which returns user info upon
-  successful identification and then use ``setUser()`` to save the info to
-  session for persistence across requests.
+- O ``Default`` é agora o hasher de senhas padrão usado pelas classes de 
+  autenticação. Ele usa exclusivamente o algoritmo de hash bcrypt. Se você
+  desejar continuar usando o hash SHA1 usado no 2.x, use ``'passwordHasher' => 'Weak'`` nas configurações de seu autenticador.
+- O novo ``FallbackPasswordHasher`` foi adicionado para ajudar os usuários
+  migrar senhas antigas de um algoritmo para o outro. Veja a documentação do
+  AuthComponent para mais informações.
+- A classe ``BlowfishAuthenticate`` foi removida. Apenas use ``FormAuthenticate``.
+- A classe ``BlowfishPasswordHasher`` foi removida. Use o 
+  ``DefaultPasswordHasher`` no lugar.
+- O método ``loggedIn()`` foi removido. Use o ``user()`` no lugar.
+- As opções de configuração não são mais definidas como propriedades públicas.
+- Os métodos ``allow()`` e ``deny()`` não aceitam mais "var args". Todos os 
+  nomes de métodos precisam ser passados como primeiro argumento, seja como 
+  string ou array de strings.
+- O método ``login()`` foi removido e substituído por ``setUser()``.
+  Para logar um usuário agora você deve chamar ``identify()`` que retorna
+  as informações do usuário caso identificado com sucesso e então usar 
+  ``setUser()`` para salvar as informações na sessão de maneira persistente 
+  entre as requisições.
+- O ``BaseAuthenticate::_password()`` foi removido. Use a classe ``PasswordHasher``
+  no lugar.
+- O ``BaseAuthenticate::logout()`` foi removido.
+- O ``AuthComponent`` agora dispara dois eventos ``Auth.afterIdentify`` e
+  ``Auth.logout`` após um usuário ser identificado e antes de um usuário ser
+  deslogado respectivamente. Você pode definir funções de callback para esses 
+  eventos retornando um array mapeado no método ``implementedEvents()`` de
+  sua classe de autenticação.
 
-ACL related classes were moved to a separate plugin. Password hashers, Authentication and
-Authorization providers where moved to the ``\Cake\Auth`` namespace. You are
-required to move your providers and hashers to the ``App\Auth`` namespace as
-well.
+Classes relacionadas a ACL foram movidas para um plugin separado. 
+Hashers de senha, fornecedores de Autenticação e Autorização foram
+movidos para o namespace ``\Cake\Auth``. Você DEVE mover seus fornecedores
+e hashers para o namespace ``App\Auth`` também.
 
 RequestHandlerComponent
 -----------------------
 
-- The following methods have been removed from RequestHandler component::
+- Os seguintes métodos foram removidos do componente RequestHandler:
   ``isAjax()``, ``isFlash()``, ``isSSL()``, ``isPut()``, ``isPost()``, ``isGet()``, ``isDelete()``.
-  Use the :php:meth:`Cake\\Network\\Request::is()` method instead with relevant argument.
-- ``RequestHandler::setContent()`` was removed, use :php:meth:`Cake\\Network\\Response::type()` instead.
-- ``RequestHandler::getReferer()`` was removed, use :php:meth:`Cake\\Network\\Request::referer()` instead.
-- ``RequestHandler::getClientIP()`` was removed, use :php:meth:`Cake\\Network\\Request::clientIp()` instead.
-- ``RequestHandler::getAjaxVersion()`` was removed.
-- ``RequestHandler::mapType()`` was removed, use :php:meth:`Cake\\Network\\Response::mapType()` instead.
-- Configuration options are no longer set as public properties.
+  Use o método :php:meth:`Cake\\Network\\Request::is()` no lugar com o argumento relevante.
+- O ``RequestHandler::setContent()`` foi removido, use :php:meth:`Cake\\Network\\Response::type()` no lugar.
+- O ``RequestHandler::getReferer()`` foi removido, use :php:meth:`Cake\\Network\\Request::referer()` no lugar.
+- O ``RequestHandler::getClientIP()`` foi removido, use :php:meth:`Cake\\Network\\Request::clientIp()` no lugar.
+- O ``RequestHandler::getAjaxVersion()`` foi removido.
+- O ``RequestHandler::mapType()`` foi removido, use :php:meth:`Cake\\Network\\Response::mapType()` no lugar.
+- As opções de configuração não são mais definidas como propriedades públicas.
 
 SecurityComponent
 -----------------
 
-- The following methods and their related properties have been removed from Security component:
-  ``requirePost()``, ``requireGet()``, ``requirePut()``, ``requireDelete()``.
-  Use the :php:meth:`Cake\\Network\\Request::allowMethod()` instead.
-- ``SecurityComponent::$disabledFields()`` has been removed, use
+- Os seguintes métodos e as propriedades relacionadas foram removidas do componente
+  Security: ``requirePost()``, ``requireGet()``, ``requirePut()``, ``requireDelete()``.
+  Use o :php:meth:`Cake\\Network\\Request::allowMethod()` no lugar.
+- ``SecurityComponent::$disabledFields()`` foi removido, use o
   ``SecurityComponent::$unlockedFields()``.
-- The CSRF related features in SecurityComponent have been extracted and moved
-  into a separate CsrfComponent. This allows you more easily use CSRF protection
-  without having to use form tampering prevention.
-- Configuration options are no longer set as public properties.
-- The methods ``requireAuth()`` and ``requireSecure()`` no longer accept "var args".
-  All method names need to be passed as first argument, either as string or array of strings.
+- As funções relacionadas ao CSRF no SecurityComponent foram extraídas e movidas em
+  separado no CsrfComponent. Isso permite que você use a proteção CSRF facilmente
+  sem ter que usar prevenção de adulteração de formulários.
+- As opções de configuração não são mais definidas como propriedades públicas.
+- Os métodos ``requireAuth()`` e ``requireSecure()`` não aceitam mais "var args".
+  Todos os nomes de métodos precisam ser passados como primeiro argumento, seja como 
+  string ou array de strings.
 
 SessionComponent
 ----------------
 
-- ``SessionComponent::setFlash()`` is deprecated. You should use
-  :doc:`/controllers/components/flash` instead.
+- O ``SessionComponent::setFlash()`` está obsoleto. Você deve usar o
+  :doc:`/controllers/components/flash` no lugar.
 
 Error
 -----
 
-Custom ExceptionRenderers are now expected to either return
-a :php:class:`Cake\\Network\\Response` object or string when rendering errors. This means
-that any methods handling specific exceptions must return a response or string
-value.
+ExceptionRenderers personalizados agora espera-se que retornem ou um objeto
+:php:class:`Cake\\Network\\Response` ou uma string quando renderizando erros. 
+Isso significa que qualquer método que manipule exceções específicas devem retornar
+uma resposta ou valor de string.
 
 Model
 =====
 
-The Model layer in 2.x has been entirely re-written and replaced. You should
-review the :doc:`/appendices/orm-migration` for information on how to use the
-new ORM.
+A camada de model do 2.x foi completamente reescrita e substituída.
+Você deve revisar o :doc:`/appendices/orm-migration` para saber como
+usar o novo ORM.
 
-- The ``Model`` class has been removed.
-- The ``BehaviorCollection`` class has been removed.
-- The ``DboSource`` class has been removed.
-- The ``Datasource`` class has been removed.
-- The various datasource classes have been removed.
+- A classe ``Model`` foi removida.
+- A classe ``BehaviorCollection`` foi removida.
+- A classe ``DboSource`` foi removida.
+- A classe ``Datasource`` foi removida.
+- As várias classes de fonte de dados foram removidas.
 
 ConnectionManager
 -----------------
 
-- ConnectionManager has been moved to the ``Cake\Database`` namespace.
-- ConnectionManager has had the following methods removed:
+- O ConnectionManager (gerenciador de conexão) foi movido para o namespace
+  ``Cake\Datasource``.
+- O ConnectionManager teve os seguintes métodos removidos:
 
   - ``sourceList``
   - ``getSourceName``
   - ``loadDataSource``
   - ``enumConnectionObjects``
 
-- :php:meth:`~Cake\\Database\\ConnectionManager::config()` has been added and is
-  now the only way to configure connections.
-- :php:meth:`~Cake\\Database\\ConnectionManager::get()` has been added. It
-  replaces ``getDataSource()``.
-- :php:meth:`~Cake\\Database\\ConnectionManager::configured()` has been added. It
-  and ``config()`` replace ``sourceList()`` & ``enumConnectionObjects()`` with
-  a more standard and consistent API.
-- ``ConnectionManager::create()`` has been removed.
-  It can be replaced by ``config($name, $config)`` and ``get($name)``.
+- O :php:meth:`~Cake\\Database\\ConnectionManager::config()` foi adicionado e
+  é agora o único jeito de configurar conexões.
+- O :php:meth:`~Cake\\Database\\ConnectionManager::get()` foi adicionado. Ele
+  substitui o ``getDataSource()``.
+- O :php:meth:`~Cake\\Database\\ConnectionManager::configured()` foi adicionado.
+  Ele junto com ``config()`` substitui o ``sourceList()`` e ``enumConnectionObjects()`` 
+  com uma API mais padrão e consistente.
+- O ``ConnectionManager::create()`` foi removido.
+  Ele pode ser substituído por ``config($name, $config)`` e ``get($name)``.
 
 Behaviors
 ---------
-- Underscore prefixed behavior methods like ``_someMethod()`` are no longer
-  treated as private methods. Use proper visibility keywords instead.
+- Os métodos de comportamentos (behaviors) prefixados com sublinhado como ``_someMethod()``
+  não são mais tratados como métodos privados. Use as palavras chaves de visibilidade.
 
 TreeBehavior
 ------------
 
-The TreeBheavior was completely re-written to use the new ORM. Although it works
-the same as in 2.x, a few methods were renamed or removed::
+O TreeBehavior foi completamente reescrito para usar o novo ORM. Embora ele funcione
+do mesmo modo que no 2.x, alguns métodos foram renomeados ou removidos:
 
-- ``TreeBehavior::children()`` is now a custom finder ``find('children')``.
-- ``TreeBehavior::generateTreeList()`` is now a custom finder ``find('treeList')``.
-- ``TreeBehavior::getParentNode()`` was removed.
-- ``TreeBehavior::getPath()`` is now a custom finder ``find('path')``.
-- ``TreeBehavior::reorder()`` was removed.
-- ``TreeBehavior::verify()`` was removed.
+- ``TreeBehavior::children()`` é agora uma busca personalizada ``find('children')``.
+- ``TreeBehavior::generateTreeList()`` é agora uma busca personalizada ``find('treeList')``.
+- ``TreeBehavior::getParentNode()`` foi removido.
+- ``TreeBehavior::getPath()`` é agora uma busca personalizada ``find('path')``.
+- ``TreeBehavior::reorder()`` foi removido.
+- ``TreeBehavior::verify()`` foi removido.
 
-TestSuite
-=========
 
-TestCase
---------
+Suíte de Testes
+===============
 
-- ``_normalizePath()`` has been added to allow path comparison tests to run across all
-  operation systems regarding their DS settings (``\`` in Windows vs ``/`` in UNIX, for example).
+Casos de Teste
+--------------
 
-The following assertion methods have been removed as they have long been deprecated and replaced by
-their new PHPUnit counterpart:
+- O ``_normalizePath()`` foi adicionado para permitir testes de comparação de caminhos
+  para executar em todos os sistemas operacionais, independente de sua configuração
+  (``\`` no Windows vs ``/`` no UNIX, por exemplo).
 
-- ``assertEqual()`` in favor of ``assertEquals()``
-- ``assertNotEqual()`` in favor of ``assertNotEquals()``
-- ``assertIdentical()`` in favor of ``assertSame()``
-- ``assertNotIdentical()`` in favor of ``assertNotSame()``
-- ``assertPattern()`` in favor of ``assertRegExp()``
-- ``assertNoPattern()`` in favor of ``assertNotRegExp()``
-- ``assertReference()`` if favor of ``assertSame()``
-- ``assertIsA()`` in favor of ``assertInstanceOf()``
+Os seguintes métodos de asserção foram removidos já que eles estavam há muito obsoletos
+e foram substituídos pelo seu equivalente no PHPUnit:
 
-Note that some methods have switched the argument order, e.g. ``assertEqual($is, $expected)`` should now be
-``assertEquals($expected, $is)``.
+- ``assertEqual()`` é substituído por ``assertEquals()``
+- ``assertNotEqual()`` é substituído por ``assertNotEquals()``
+- ``assertIdentical()`` é substituído por ``assertSame()``
+- ``assertNotIdentical()`` é substituído por ``assertNotSame()``
+- ``assertPattern()`` é substituído por ``assertRegExp()``
+- ``assertNoPattern()`` é substituído por ``assertNotRegExp()``
+- ``assertReference()`` é substituído por ``assertSame()``
+- ``assertIsA()`` é substituído por ``assertInstanceOf()``
 
-The following assertion methods have been deprecated and will be removed in the future:
+Note que alguns métodos tiveram a ordem dos argumentos trocada, ex. ``assertEqual($is, $expected)`` 
+deve ser agora ``assertEquals($expected, $is)``.
 
-- ``assertWithinMargin()`` in favor of ``assertWithinRange()``
-- ``assertTags()`` in favor of ``assertHtml()``
+Os seguintes métodos de asserção estão obsoletos e serão removidos no futuro:
 
-Both method replacements also switched the argument order for a consistent assert method API
-with ``$expected`` as first argument.
+- ``assertWithinMargin()`` é substituído por ``assertWithinRange()``
+- ``assertTags()`` é substituído por ``assertHtml()``
 
-ControllerTestCase
-------------------
+Em ambas as substituições dos métodos também mudaram a ordem dos argumentos para manter a
+consistência na API com ``$expected`` como primeiro argumento.
 
-- You can now simulate query strings, POST data and cookie values when using ``testAction()``.
-  The default method for ``testAction()`` is now ``GET``.
+Os seguintes métodos de asserção foram adicionados:
+
+- ``assertNotWithinRange()`` em contrapartida ao ``assertWithinRange()``
+
 
 View
 ====
 
-Themes are now Basic Plugins
-----------------------------
+Temas são agora Plugins Básicos
+-------------------------------
 
-Having themes and plugins as ways to create modular application components has
-proven to be limited, and confusing. In CakePHP 3.0, themes no longer reside
-**inside** the application. Instead they are standalone plugins. This solves
-a few problems with themes:
+Ter os temas e plugins de modo a criar components modulares da aplicação
+se provou limitado e confuso. No CakePHP 3.0, temas não residem mais
+**dentro** da aplicação. Ao invés disso, eles são plugins independentes.
+Isso resolveu alguns problemas com temas:
 
-- You could not put themes *in* plugins.
-- Themes could not provide helpers, or custom view classes.
+- Você não podia colocar temas *nos* plugins.
+- Temas não podiam fornecer helpers (helpers), ou classes de visão personalizadas.
 
-Both these issues are solved by converting themes into plugins.
+Esses dois problemas foram resolvidos ao converter os temas em plugins.
 
-View Folders Renamed
---------------------
-
-The folders containing view files now go under ``src/Template`` instead of ``src/View``.
-This was done to separate the view files from files containing php classes (eg. Helpers, View classes).
-
-The following View folders have been renamed to avoid naming collisions with controller names:
-
-- ``Layouts`` is now ``Layout``
-- ``Elements`` is now ``Element``
-- ``Scaffolds`` is now ``Scaffold``
-- ``Errors`` is now ``Error``
-- ``Emails`` is now ``Email`` (same for ``Email`` inside ``Layout``)
-
-HelperCollection Replaced
+Pasta das views renomeada
 -------------------------
 
-This class has been renamed to :php:class:`Cake\\View\\HelperRegistry`.
-See the section on :doc:`/core-libraries/registry-objects` for more information
-on the features provided by the new class. You can use the ``cake upgrade
-rename_collections`` to assist in upgrading your code.
+As pastas contendo os arquivos de views agora ficam em **src/Template** no lugar de
+**src/View**. Isso foi feito para separar os arquivos de visão dos arquivos contendo
+classes php. (ex. helpers, Classes de visão).
 
-View Class
-----------
+As seguintes pastas de Visão foram renomeadas para evitar colisão de nomes com nomes
+de controllers:
 
-- The ``plugin`` key has been removed from ``$options`` argument of :php:meth:`Cake\\View\\View::element()`.
-  Specify the element name as ``SomePlugin.element_name`` instead.
-- ``View::getVar()`` has been removed, use :php:meth:`Cake\\View\\View::get()` instead.
-- ``View::$ext`` has been removed and instead a protected property ``View::$_ext``
-  has been added.
-- ``View::addScript()`` has been removed. Use :ref:`view-blocks` instead.
-- The ``base``, ``webroot``, ``here``, ``data``,  ``action``, and ``params``
-  magic properties have been removed. You should access all of these properties
-  on ``$this->request`` instead.
-- ``View::start()`` no longer appends to an existing block. Instead it will
-  overwrite the block content when end is called. If you need to combine block
-  contents you should fetch the block content when calling start a second time,
-  or use the capturing mode of ``append()``.
-- ``View::prepend()`` no longer has a capturing mode.
-- ``View::startIfEmpty()`` has been removed. Now that start() always overwrites
-  startIfEmpty serves no purpose.
-- The ``View::$Helpers`` property has been removed and replaced with
-  ``_helpers``. If you need to load helpers at runtime you should use
-  ``$this->addHelper()`` in your view files.
+- ``Layouts`` agora é ``Layout``
+- ``Elements`` agora é ``Element``
+- ``Errors`` agora é ``Error``
+- ``Emails`` agora é ``Email`` (o mesmo para ``Email`` dentro de ``Layout``)
+
+Coleção de Helpers Substituída
+------------------------------
+
+Essa classe foi renomeada para :php:class:`Cake\\View\\HelperRegistry`.
+Veja a seção em :doc:`/core-libraries/registry-objects` para mais informações
+sobre as funcionalidades fornecidas pela nova classe. Você pode usar o 
+``cake upgrade rename_collections`` para ajudar você a atualizar seu código.
+
+Classe View
+-----------
+
+- A chave ``plugin`` foi removida do argumento ``$options`` de 
+  :php:meth:`Cake\\View\\View::element()`. Especifique o nome do elemento
+  como ``AlgumPlugin.nome_do_elemento`` no lugar.
+- O ``View::getVar()`` foi removido, use o :php:meth:`Cake\\View\\View::get()` no lugar.
+- O ``View::$ext`` foi removido e no lugar uma propriedade protegida ``View::$_ext``
+  foi adicionada.
+- O ``View::addScript()`` foi removido. Use o :ref:`view-blocks` no lugar.
+- As propriedades mágicas ``base``, ``webroot``, ``here``, ``data``,  ``action``, 
+  e ``params`` foram removidas. Ao invés disso, você deve acessar todas essas 
+  propriedades no ``$this->request``.
+- O ``View::start()`` não se liga mais a um bloco existente. Ao invés disso ele irá
+  sobrescrever o conteúdo do bloco quando o ``end()`` for chamado. Se você precisa
+  combinar o conteúdo de um bloco você deverá buscar o conteúdo do bloco quando 
+  chamar o start uma segunda vez, ou usar o modo de captura de ``append()``.
+- O ``View::prepend()`` não tem mais um modo de captura.
+- O ``View::startIfEmpty()`` foi removido. Agora que o start() sempre sobrescreve,
+  o startIfEmpty não tem mais propósito.
+- A propriedade ``View::$Helpers`` foi removida e substituída com ``_helpers``. 
+  Se você precisar carregar helpers em tempo de execução você deve usar o 
+  ``$this->addHelper()`` em seus arquivos de visão.
+- O ``View`` agora irá lançar ``Cake\View\Exception\MissingTemplateException`` quando
+  templates estiverem faltando, ao invés de ``MissingViewException``.
 
 ViewBlock
 ---------
 
-- ``ViewBlock::append()`` has been removed, use :php:meth:`Cake\\View\ViewBlock::concat()` instead. However,
-  ``View::append()`` still exists.
+- O ``ViewBlock::append()`` foi removido, use o :php:meth:`Cake\\View\ViewBlock::concat()` 
+  no lugar. Entretanto o ``View::append()`` ainda existe.
 
 JsonView
 --------
 
-- By default JSON data will have HTML entities encoded now. This prevents
-  possible XSS issues when JSON view content is embedded in HTML files.
-- :php:class:`Cake\\View\\JsonView` now supports the ``_jsonOptions`` view
-  variable. This allows you to configure the bit-mask options used when generating
-  JSON.
+- Agora os dados JSON terão as entidades HTML codificadas por padrão. Isso previne
+  possíveis problemas de XSS quando o conteúdo de visão JSON está encapsulado em arquivos HTML.
+- O :php:class:`Cake\\View\\JsonView` agora suporta a variável de visão ``_jsonOptions``.
+  Isso permite a você configurar as opções de máscara de bits usadas ao gerar JSON.
 
+XmlView
+-------
+
+- A :php:class:`Cake\\View\\XmlView` agora suporta a variável de visão ``_xmlOptions``.
+  Isso permite a você configurar as opções usadas quando gerar XML.
 
 View\\Helper
 ============
 
-- The ``$settings`` property is now called ``$_config`` and should be accessed
-  through the ``config()`` method.
-- Configuration options are no longer set as public properties.
-- ``Helper::clean()`` was removed. It was never robust enough
-  to fully prevent XSS. instead you should escape content with :php:func:`h` or
-  use a dedicated library like htmlPurifier.
-- ``Helper::output()`` was removed. This method was
-  deprecated in 2.x.
-- Methods ``Helper::webroot()``, ``Helper::url()``, ``Helper::assetUrl()``,
-  ``Helper::assetTimestamp()`` have been moved to new :php:class:`Cake\\View\\Helper\\UrlHelper`
-  helper. ``Helper::url()`` is now available as :php:meth:`Cake\\View\\Helper\\UrlHelper::build()`.
-- Magic accessors to deprecated properties have been removed. The following
-  properties now need to be accessed from the request object:
+- A propriedade ``$settings`` é agora chamada ``$_config`` e deve ser acessada 
+  através do método ``config()``.
+- As opções de configuração não são mais definidas como propriedades públicas.
+- O ``Helper::clean()`` foi removido. Ele nunca foi robusto o suficiente para 
+  prevenir completamente XSS. Ao invés disso você deve escapar o conteúdo com 
+  :php:func:`h` ou ou usar uma biblioteca dedicada como o htmlPurifier.
+- O ``Helper::output()`` foi removido. Esse método estava obsoleto no 2.x.
+- Os métodos ``Helper::webroot()``, ``Helper::url()``, ``Helper::assetUrl()``,
+  ``Helper::assetTimestamp()`` foram movidos para o novo ajudante 
+  :php:class:`Cake\\View\\Helper\\UrlHelper`. O ``Helper::url()`` está agora
+  disponível como :php:meth:`Cake\\View\\Helper\\UrlHelper::build()`.
+- Os Assessores Mágicos a propriedades obsoletas foram removidos. A seguinte
+  propriedade agora deve ser acessada a partir do objeto de requisição:
 
   - base
   - here
@@ -796,400 +902,438 @@ View\\Helper
   - action
   - params
 
+Helpers
+-------
 
-Helper
-------
+A classe Helper teve os seguintes métodos removidos:
 
-Helper has had the following methods removed:
+* ``Helper::setEntity()``
+* ``Helper::entity()``
+* ``Helper::model()``
+* ``Helper::field()``
+* ``Helper::value()``
+* ``Helper::_name()``
+* ``Helper::_initInputField()``
+* ``Helper::_selectedArray()``
 
-* Helper::setEntity()
-* Helper::entity()
-* Helper::model()
-* Helper::field()
-* Helper::value()
-* Helper::_name()
-* Helper::_initInputField()
-* Helper::_selectedArray()
+Esses métodos eram partes usadas apenas pelo FormHelper, e parte de uma
+funcionalidade de persistência de campos que se mostrou problemática com
+o tempo. O FormHelper não precisa mais destes métodos e a complexidades 
+que eles provêm não é mais necessária.
 
-These methods were part used only by FormHelper, and part of the persistent
-field features that have proven to be problematic over time. FormHelper no
-longer relies on these methods and the complexity they provide is not necessary
-anymore.
+Os seguintes métodos foram removidos:
 
-The following methods have been removed:
+* ``Helper::_parseAttributes()``
+* ``Helper::_formatAttribute()``
 
-* Helper::_parseAttributes()
-* Helper::_formatAttribute()
-
-These methods can now be found on the ``StringTemplate`` class that helpers
-frequently use. See the ``StringTemplateTrait`` for an easy way to integrate
-string templates into your own helpers.
+Esses métodos podem agora ser encontrados na classe ``StringTemplate`` 
+que os helpers usam com frequência. Veja o ``StringTemplateTrait`` 
+para um jeito fácil de integrar os templates de string em seus 
+próprios helpers.
 
 FormHelper
 ----------
 
-FormHelper has been entirely rewritten for 3.0. It features a few large changes:
+O FormHelper foi completamente reescrito para o 3.0. 
+Ele teve algumas grandes mudanças:
 
-* FormHelper works with the new ORM. But has an extensible system for
-  integrating with other ORMs or datasources.
-* FormHelper features an extensible widget system that allows you to create new
-  custom input widgets and easily augment the built-in ones.
-* String templates are the foundation of the helper. Instead of munging arrays
-  together everywhere, most of the HTML FormHelper generates can be customized
-  in one central place using template sets.
+* O FormHelper trabalha junto com o novo ORM. Mas também possui um sistema 
+  extensível para integrar com outros ORMs e fontes de dados.
+* O FormHelper possui um sistema de widgets extensível que permite a você
+  criar novos widgets de entrada personalizados e expandir facilmente aqueles
+  inclusos no framework.
+* Os Templates de String são a fundação deste ajudante. Ao invés de encher de
+  arrays por toda parte, a maioria do HTML que o FormHelper gera pode ser
+  personalizado em um lugar central usando conjuntos de templates.  
 
-In addition to these larger changes, some smaller breaking changes have been
-made as well. These changes should help streamline the HTML FormHelper generates
-and reduce the problems people had in the past:
 
-- The ``data[`` prefix was removed from all generated inputs.  The prefix serves no real purpose anymore.
-- The various standalone input methods like ``text()``, ``select()`` and others
-  no longer generate id attributes.
-- The ``inputDefaults`` option has been removed from ``create()``.
-- Options ``default`` and ``onsubmit`` of ``create()`` have been removed. Instead
-  one should use javascript event binding or set all required js code for ``onsubmit``.
-- ``end()`` can no longer make buttons. You should create buttons with
-  ``button()`` or ``submit()``.
-- ``FormHelper::tagIsInvalid()`` has been removed. Use ``isFieldError()``
-  instead.
-- ``FormHelper::inputDefaults()`` has been removed. You can use ``templates()``
-  to define/augment the templates FormHelper uses.
-- The ``wrap`` and ``class`` options have been removed from the ``error()``
-  method.
-- The ``showParents`` option has been removed from select().
-- The ``div``, ``before``, ``after``, ``between`` and ``errorMessage`` options
-  have been removed from ``input()``.  You can use templates to update the
-  wrapping HTML. The ``templates`` option allows you to override the loaded
-  templates for one input.
-- The ``separator``, ``between``, and ``legend`` options have been removed from
-  ``radio()``. You can use templates to change the wrapping HTML now.
-- The ``format24Hours`` parameter has been removed from ``hour()``.
-  It has been replaced with the ``format`` option.
-- The ``minYear``, and ``maxYear`` parameters have been removed from ``year()``.
-  Both of these parameters can now be provided as options.
-- The ``dateFormat`` and ``timeFormat`` parameters have been removed from
-  ``datetime()``. You can use the template to define the order the inputs should
-  be displayed in.
-- The ``submit()`` has had the ``div``, ``before`` and ``after`` options
-  removed. You can customize the ``submitContainer`` template to modify this
-  content.
-- The ``inputs`` method no longer accepts ``legend`` and ``fieldset`` in the
-  ``$fields`` parameter, you must use the ``$options`` parameter.
-  It now also requires ``$fields`` parameter to be an array. The ``$blacklist``
-  parameter has been removed, the functionality has been replaced by specifying
-  ``'field' => false`` in the ``$fields`` parameter.
-- The ``inline`` parameter has been removed from postLink() method.
-  You should use the ``block`` option instead. Setting ``block => true`` will
-  emulate the previous behavior.
-- The ``timeFormat`` parameter for ``hour()``, ``time()`` and ``dateTime()`` now
-  defaults to 24, complying with ISO 8601.
-- The ``$confirmMessage`` argument of :php:meth:`Cake\\View\\Helper\\FormHelper::postLink()`
-  has been removed. You should now use key ``confirm`` in ``$options`` to specify
-  the message.
+Além dessas grandes mudanças, foram feitas algumas mudanças menores que
+causaram rompendo algumas coisas da versão anterior.
+Essas mudanças devem simplificar o HTML que o FormHelper gera e reduzir
+os problemas que as pessoas tinham no passado:
 
-It is recommended that you review the :doc:`/views/helpers/form`
-documentation for more details on how to use the FormHelper in 3.0.
+- O prefixo ``data[`` foi removido de todas as entradas geradas. O prefixo não 
+  tem mais propósito.
+- Os vários métodos de entradas independentes, como ``text()``, ``select()`` e 
+  outros, não geram mais atributos id.
+- A opção ``inputDefaults`` foi removida de ``create()``.
+- As opções ``default`` e ``onsubmit`` do ``create()`` foram removidas. No lugar
+  você deve usar JavaScript event binding ou definir todos os códigos js necessários
+  para o ``onsubmit``.
+- O ``end()`` não gerará mais botões. Você deve criar botões com ``button()`` 
+  ou ``submit()``.
+- O ``FormHelper::tagIsInvalid()`` foi removido. Use ``isFieldError()``
+  no lugar.
+- O ``FormHelper::inputDefaults()`` foi removido. Você pode usar ``templates()``
+  para definir/expandir os templates que o FormHelper usa.
+- As opções ``wrap`` e ``class`` foram removidas do método ``error()``.
+- A opção ``showParents`` foi removida do select().
+- As opções ``div``, ``before``, ``after``, ``between`` e ``errorMessage`` 
+  foram removidas do ``input()``. Você pode usar templates para atualizar o
+  HTML envoltório. A opção ``templates`` permite você sobrescrever os 
+  templates carregados para uma entrada.
+- As opções ``separator``, ``between``, e ``legend`` foram removidas do
+  ``radio()``. Você pode usar templates para mudar o HTML envoltório agora.
+- O parâmetro ``format24Hours`` foi removido de ``hour()``.
+  Ele foi substituído pela opção ``format``.
+- Os parâmetros ``minYear`` e ``maxYear`` foram removidos do ``year()``.
+  Ambos podem ser fornecidos como opções.
+- Os parâmetros ``dateFormat`` e ``timeFormat`` foram removidos do
+  ``datetime()``. Você pode usar o template para definir a ordem que
+  as entradas devem ser exibidas.
+- O ``submit()`` teve as opções ``div``, ``before`` e ``after`` removidas.
+  Você pode personalizar o template ``submitContainer`` para modificar esse
+  conteúdo.
+- O método ``inputs()`` não aceita mais ``legend`` e ``fieldset`` no parâmetro
+  ``$fields``, você deve usar o parâmetro ``$options``.
+  Ele também exige que o parâmetro ``$fields`` seja um array. O parâmetro
+  ``$blacklist`` foi removido, a funcionalidade foi substituída pela especificação
+  de ``'field' => false`` no parâmetro ``$fields``.
+- O parâmetro ``inline`` foi removido do método postLink().
+  Você deve usar a opção ``block`` no lugar. Definindo ``block => true`` irá
+  emular o comportamento anterior.
+- O parâmetro ``timeFormat`` para ``hour()``, ``time()`` e ``dateTime()`` agora é
+  24 por padrão, em cumprimento ao ISO 8601.
+- O argumento ``$confirmMessage`` de :php:meth:`Cake\\View\\Helper\\FormHelper::postLink()`
+  foi removido. Você deve usar agora a chave ``confirm`` no ``$options`` para
+  especificar a mensagem.
+- As entradas do tipo Checkbox e radio são agora renderizadas *dentro* de elementos
+  do tipo label por padrão. Isso ajuda a aumentar a compatibilidade com bibliotecas CSS 
+  populares como `Bootstrap <http://getbootstrap.com/>`_ e `Foundation <http://foundation.zurb.com/>`_.
+- As tags de template agora são todas camelBacked (primeira letra minúscula e inicio de 
+  novas palavras em maiúsculo). As tags pré-3.0 ``formstart``, ``formend``, ``hiddenblock``
+  e ``inputsubmit`` são agora ``formStart``, ``formEnd``, ``hiddenBlock`` e ``inputSubmit``.
+  Certifique-se de altera-las se elas estiverem personalizando sua aplicação.
+
+É recomendado que você revise a documentação :doc:`/views/helpers/form`
+para mais detalhes sobre como usar o FormHelper no 3.0.
 
 HtmlHelper
 ----------
 
-- ``HtmlHelper::useTag()`` has been removed, use ``tag()`` instead.
-- ``HtmlHelper::loadConfig()`` has been removed. Customizing the tags can now be
-  done using ``templates()`` or the ``templates`` setting.
-- The second parameter ``$options`` for ``HtmlHelper::css()`` now always requires an array as documented.
-- The first parameter ``$data`` for ``HtmlHelper::style()`` now always requires an array as documented.
-- The ``inline`` parameter has been removed from meta(), css(), script(), scriptBlock()
-  methods. You should use the ``block`` option instead. Setting ``block =>
-  true`` will emulate the previous behavior.
-- ``HtmlHelper::meta()`` now requires ``$type`` to be a string. Additional options can
-  further on be passed as ``$options``.
-- ``HtmlHelper::nestedList()`` now requires ``$options`` to be an array. The forth argument for the tag type
-  has been removed and included in the ``$options`` array.
-- The ``$confirmMessage`` argument of :php:meth:`Cake\\View\\Helper\\HtmlHelper::link()`
-  has been removed. You should now use key ``confirm`` in ``$options`` to specify
-  the message.
+- O ``HtmlHelper::useTag()`` foi removido, use ``tag()`` no lugar.
+- O ``HtmlHelper::loadConfig()`` foi removido. As tags podem ser personalizadas
+  usando ``templates()`` ou as configurações de ``templates``.
+- O segundo parâmetro ``$options`` para ``HtmlHelper::css()`` agora sempre irá exigir um array.
+- O primeiro parâmetro ``$data`` para ``HtmlHelper::style()`` agora sempre irá exigir um array.
+- O parâmetro ``inline`` foi removido dos métodos meta(), css(), script() e scriptBlock().
+  Ao invés disso, você deve usar a opção ``block``. Definindo ``block =>
+  true`` irá emular o comportamento anterior.
+- O ``HtmlHelper::meta()`` agora exige que o ``$type`` seja uma string. Opções adicionais podem
+  ser passadas como ``$options``.
+- O ``HtmlHelper::nestedList()`` agora exige que o ``$options`` seja um array. O quarto
+  argumento para o tipo tag foi removido e incluido no array ``$options``.
+- O argumento ``$confirmMessage`` de :php:meth:`Cake\\View\\Helper\\HtmlHelper::link()`
+  foi removido. Você deve usar agora a chave ``confirm`` no ``$options`` para especificar
+  a menssagem.
 
 PaginatorHelper
 ---------------
 
-- ``link()`` has been removed. It was no longer used by the helper internally.
-  It had low usage in user land code, and no longer fit the goals of the helper.
-- ``next()`` no longer has 'class', or 'tag' options. It no longer has disabled
-  arguments. Instead templates are used.
-- ``prev()`` no longer has 'class', or 'tag' options. It no longer has disabled
-  arguments. Instead templates are used.
-- ``first()`` no longer has 'after', 'ellipsis', 'separator', 'class', or 'tag' options.
-- ``last()`` no longer has 'after', 'ellipsis', 'separator', 'class', or 'tag' options.
-- ``numbers()`` no longer has 'separator', 'tag', 'currentTag', 'currentClass',
-  'class', 'tag', 'ellipsis' options. These options are now facilitated through
-  templates. It also requires the ``$options`` parameter to be an array now.
-- The ``%page%`` style placeholders have been removed from :php:meth:`Cake\\View\\Helper\\PaginatorHelper::counter()`.
-  Use ``{{page}}`` style placeholders instead.
-- ``url()`` has been renamed to ``generateUrl()`` to avoid method declaration clashes with ``Helper::url()``.
+- O ``link()`` foi removido. Ele não era mais usado internamente pelo ajudante.
+  Ele era pouco usado em códigos de usuários e não se encaixava mais nos objetivos do ajudante.
+- O ``next()`` não tem mais as opções 'class' ou 'tag'. Ele não tem mais argumentos
+  desabilitados. Ao invés disso são usados templates.
+- O ``prev()`` não tem mais as opções 'class' ou 'tag'. Ele não tem mais argumentos
+  desabilitados. Ao invés disso são usados templates.
+- O ``first()`` não tem mais as opções 'after', 'ellipsis', 'separator', 'class' ou 'tag'.
+- O ``last()`` não tem mais as opções 'after', 'ellipsis', 'separator', 'class' ou 'tag'.
+- O ``numbers()`` não tem mais as opções 'separator', 'tag', 'currentTag', 'currentClass',
+  'class', 'tag' e 'ellipsis'. Essas opções são agora facilitadas pelos templates.
+  Ele também exige que agora o parâmetro ``$options``  seja um array.
+- O espaço reservado de estilo ``%page%`` foi removido de :php:meth:`Cake\\View\\Helper\\PaginatorHelper::counter()`.
+  Use o espaço reservado de estilo ``{{page}}`` no lugar.
+- O ``url()`` foi renomeada para ``generateUrl()`` para evitar colisão de declaração de 
+  método com ``Helper::url()``.
 
-By default all links and inactive texts are wrapped in ``<li>`` elements. This
-helps make CSS easier to write, and improves compatibility with popular CSS
-frameworks.
+Por padrão todos os links e textos inativos são encapsulados em elementos ``<li>``. Isso
+ajuda a fazer o CSS mais fácil de escrever, e aumenta a compatibilidade com frameworks
+de CSS populares.
 
-Instead of the various options in each method, you should use the templates
-feature. See the :ref:`paginator-templates` documentation for
-information on how to use templates.
+Ao invés de várias opções em cada método, você deve usar a funcionalidade de templates.
+Veja a documentação :ref:`paginator-templates` para informações de como se usar templates.
 
 TimeHelper
 ----------
 
-- ``TimeHelper::__set()``, ``TimeHelper::__get()``, and  ``TimeHelper::__isset()`` were
-  removed. These were magic methods for deprecated attributes.
-- ``TimeHelper::serverOffset()`` has been removed.  It promoted incorrect time math practices.
-- ``TimeHelper::niceShort()`` has been removed.
+- ``TimeHelper::__set()``, ``TimeHelper::__get()``, e  ``TimeHelper::__isset()`` foram
+  removidos. Eles eram métodos mágicos para atributos obsoletos.
+- O ``TimeHelper::serverOffset()`` foi removido. Ele provia práticas incorretas de operações
+  com tempo.
+- O ``TimeHelper::niceShort()`` foi removido.
 
 NumberHelper
 ------------
 
-- :php:meth:`NumberHelper::format()` now requires ``$options`` to be an array.
+- O :php:meth:`NumberHelper::format()` agora exige que ``$options`` seja um array.
 
 SessionHelper
 -------------
 
-- ``SessionHelper::flash()`` is deprecated. You should use
-  :doc:`/views/helpers/flash` instead.
+- O ``SessionHelper`` está obsoleto. Você pode usar ``$this->request->session()`` diretamente,
+  e a funcionalidade de mensagens flash foi movida para :doc:`/views/helpers/flash`.
+
 
 JsHelper
 --------
 
-- ``JsHelper`` and all associated engines have been removed. It could only
-  generate a very small subset of javascript code for selected library and
-  hence trying to generate all javascript code using just the helper often
-  became an impediment. It's now recommended to directly use javascript library
-  of your choice.
+- O ``JsHelper`` e todos motores associados foram removidos. Ele podia gerar
+  somente um subconjunto muito pequeno de códigos JavaScript para biblioteca
+  selecionada e consequentemente tentar gerar todo código JavaScript usando
+  apenas o ajudante se tornava um impedimento com frequência. É recomendado
+  usar diretamente sua biblioteca JavaScript preferida.
 
-CacheHelper Removed
--------------------
+CacheHelper Removido
+--------------------
 
-CacheHelper has been removed. The caching functionality it provided was
-non-standard, limited and incompatible with non-html layouts and data views.
-These limitations meant a full rebuild would be necessary. Edge Side Includes
-have become a standardized way to implement the functionality CacheHelper used
-to provide. However, implementing `Edge Side Includes
-<http://en.wikipedia.org/wiki/Edge_Side_Includes>`_ in PHP has a number of
-limitations and edge cases. Instead of building a sub-par solution, we recommend
-that developers needing full response caching use `Varnish
-<http://varnish-cache.org>`_ or `Squid <http://squid-cache.org>`_ instead.
+O CacheHelper foi removido. A funcionalidade de cache que ele fornecia
+não era padrão, limitada e incompatível com layouts não-HTML e views de dados.
+Essas limitações significavam que uma reconstrução completa era necessária.
+O ESI (Edge Side Includes) se tornou uma maneira padronizada para implementar
+a funcionalidade que o CacheHelper costumava fornecer. Entretanto, implementando
+`Edge Side Includes <http://en.wikipedia.org/wiki/Edge_Side_Includes>`_ em PHP 
+tem várias limitações e casos. Ao invés de construir uma solução ruim,
+é recomendado que os desenvolvedores que precisem de cache de resposta completa
+use o `Varnish <http://varnish-cache.org>`_ ou `Squid <http://squid-cache.org>`_ 
+no lugar.
 
 I18n
 ====
 
-The I18n subsystem was completely rewritten. In general, you can expect the same
-behavior as in previous versions, specifically if you are using the ``__()``
-family of functions.
+O subsistema de internacionalização foi completamente reescrito. Em geral, 
+você pode esperar o mesmo comportamento que nas versões anteriores,
+especialmente se você está usando a família de funções ``__()``.
 
-Internally, the ``I18n`` class uses ``Aura\Intl``, and appropriate methods are
-exposed to access the specific features of this library. For this reason most
-methods inside ``I18n`` were removed or renamed.
+Internamente, a classe ``I18n`` usa ``Aura\Intl``, e métodos apropriados são
+expostos para dar acesso a funções específicas da biblioteca. Por esta razão
+a maior parte dos métodos dentro de ``I18n`` foram removidos ou renomeados.
 
-Due to the use of ``ext/intl``, the L10n class was completely removed. It
-provided outdated and incomplete data in comparison to the data available from
-the ``Locale`` class in PHP.
+Devido ao uso do ``ext/intl``, a classe L10n foi removida completamente. 
+Ela fornecia dados incompletos e desatualizados em comparação com os dados
+disponíveis na classe ``Locale`` do PHP.
 
-The default application language will no longer be changed automatically by the
-browser accepted language nor by having the ``Config.language`` value set in the
-browser session. You can, however, use a dispatcher filter to get automatic
-language switching from the ``Accept-Language`` header sent by the browser::
+O idioma padrão da aplicação não será mais alterado automaticamente pelos
+idiomas aceitos pelo navegador nem por ter o valor ``Config.language`` definido
+na sessão do navegador. Você pode, entretanto, usar um filtro no despachante 
+para trocar o idioma automaticamente a partir do cabeçalho ``Accept-Language``
+enviado pelo navegador::
 
-    // In config/bootstrap.php
+    // No config/bootstrap.php
     DispatcherFactory::addFilter('LocaleSelector');
 
-There is no built-in replacement for automatically selecting the language by
-setting a value in the user session.
+Não há nenhum substituto incluso para selecionar automaticamente o idioma
+a partir de um valor configurado na sessão do usuário.
 
-The default formatting function for translated messages is no longer
-``sprintf``, but the more advanced and feature rich ``MessageFormatter`` class.
-In general you can rewrite placeholders in messages as follows::
+A função padrão para formatação de mensagens traduzidas não é mais a 
+``sprintf``, mas a mais avançada e funcional classe ``MessageFormatter``.
+Em geral você pode reescrever os espaços reservados nas mensagens como
+segue::
 
-    // Before:
-    __('Today is a %s day in %s', 'Sunny', 'Spain');
+    // Antes:
+    __('Hoje é um dia %s na %s', 'Ensolarado', 'Espanha');
 
-    // After:
-    __('Today is a {0} day in {1}', 'Sunny', 'Spain');
+    // Depois:
+    __('Hoje é um dia {0} na {1}', 'Ensolarado', 'Espanha');
 
-You can avoid rewriting your messages by using the old ``sprintf`` formatter::
+Você pode evitar ter de reescrever suas mensagens usando o antigo formatador
+``sprintf``::
 
     I18n::defaultFormatter('sprintf');
 
-Additionally, the ``Config.language`` value was removed and it can no longer be
-used to control the current language of the application. Instead, you can use
-the ``I18n`` class::
+Adicionalmente, o valor ``Config.language`` foi removido e ele não pode mais
+ser usado para controlar o idioma atual da aplicação. Ao invés disso, você
+pode usar a classe ``I18n``::
 
-    // Before
+    // Antes
     Configure::write('Config.language', 'fr_FR');
 
-    // Now
+    // Agora
     I18n::locale('en_US');
 
-- The methods below have been moved:
+- Os métodos abaixo foram movidos:
 
-    - From ``Cake\I18n\Multibyte::utf8()`` to ``Cake\Utility\String::utf8()``
-    - From ``Cake\I18n\Multibyte::ascii()`` to ``Cake\Utility\String::ascii()``
-    - From ``Cake\I18n\Multibyte::checkMultibyte()`` to ``Cake\Utility\String::isMultibyte()``
+    - De ``Cake\I18n\Multibyte::utf8()`` para ``Cake\Utility\Text::utf8()``
+    - De ``Cake\I18n\Multibyte::ascii()`` para ``Cake\Utility\Text::ascii()``
+    - De ``Cake\I18n\Multibyte::checkMultibyte()`` para ``Cake\Utility\Text::isMultibyte()``
 
-- Since CakePHP now requires the mbstring extension, the
-  ``Multibyte`` class has been removed.
-- Error messages throughout CakePHP are no longer passed through I18n
-  functions. This was done to simplify the internals of CakePHP and reduce
-  overhead. The developer facing messages are rarely, if ever, actually translated -
-  so the additional overhead reaps very little benefit.
+- Como agora o CakePHP requer a extensão mbstring, a classe
+  ``Multibyte`` foi removida.
+- As mensagens de erro por todo o CakePHP não passam mais através das funções
+  de internacionalização. Isso foi feito para simplificar o núcleo do CakePHP e
+  reduzir a sobrecarga. As mensagens apresentadas aos desenvolvedores são raramente,
+  isso quando, são de fato traduzidas - de modo que essa sobrecarga adicional 
+  trás pouco beneficio.
 
-L10n
-====
+Localização
+===========
 
-- :php:class:`Cake\\I18n\\L10n` 's constructor now takes a :php:class:`Cake\\Network\\Request` instance as argument.
+- Agora o construtor de :php:class:`Cake\\I18n\\L10n` recebe uma instância de
+  :php:class:`Cake\\Network\\Request` como argumento.
 
 
-Testing
-=======
+Testes
+======
 
-- The ``TestShell`` has been removed. CakePHP, the application skeleton and
-  newly baked plugins all use ``phpunit`` to run tests.
-- The webrunner (webroot/test.php) has been removed. CLI adoption has greatly
-  increased since the initial release of 2.x. Additionaly, CLI runners offer
-  superior integration with IDE's and other automated tooling.
+- O ``TestShell`` foi removido. O CakePHP, o esqueleto da aplicação e novos
+  plugins "cozinhados", todos usam o ``phpunit`` para rodar os testes.
+- O webrunner (webroot/test.php) foi removido. A adoção do CLI aumentou
+  grandemente desde o release inicial do 2.x. Adicionalmente, os CLI de execução
+  oferecem integração superior com IDE's e outras ferramentas automáticas.
 
-  If you find yourself in need of a way to run tests from a browser you should
-  checkout `VisualPHPUnit <https://github.com/NSinopoli/VisualPHPUnit>`_. It
-  offers many additional features over the old webrunner.
-- ``ControllerTestCase`` is deprecated and will be removed for CakePHP 3.0.0.
-  You should use the new :ref:`integration-testing` features instead.
-- The fixtures should now be referenced by plural form::
+  Se você sentir necessidade de um jeito de executar os testes a partir de um
+  navegador, você deve verificar o `VisualPHPUnit <https://github.com/NSinopoli/VisualPHPUnit>`_.
+  Ele oferece muitas funcionalidades adicionais que o antigo webrunner.
+- O ``ControllerTestCase`` está obsoleto e será removido no CakePHP 3.0.0.
+  Ao invés disso, você deve usar a nova funcionalidade :ref:`integration-testing`.
+- As Fixtures devem agora ser referenciadas usando sua forma no plural::
 
-    // Instead of
-    $fixtures = ['app.article'];
+    // No lugar de
+    $fixtures = ['app.artigo'];
 
-    // You should use
-    $fixtures = ['app.articles'];
+    // Você deve usar
+    $fixtures = ['app.artigos'];
 
-Utility
-=======
+Utilitários
+===========
 
-Set Class Removed
+Classe Set Removida
+-------------------
+
+A classe Set foi removida, agora você deve usar a classe Hash no lugar dela.
+
+Pastas & Arquivos
 -----------------
 
-The Set class has been removed, you should use the Hash class instead now.
+As classes de pastas e arquivos foram renomeadas:
 
-Folder & File
--------------
+- O ``Cake\Utility\File`` foi renomeado para :php:class:`Cake\\Filesystem\\File`
+- O ``Cake\Utility\Folder`` foi renomeado para :php:class:`Cake\\Filesystem\\Folder`
 
-The folder and file classes have been renamed:
+Inflexão
+--------
 
-- ``Cake\Utility\File`` renamed to :php:class:`Cake\\Filesystem\\File`
-- ``Cake\Utility\Folder`` renamed to :php:class:`Cake\\Filesystem\\Folder`
+- O valor padrão para o argumento ``$replacement`` do :php:meth:`Cake\\Utility\\Inflector::slug()`
+  foi alterado do sublinhado (``_``) para o traço (``-``). Usando traços para 
+  separar palavras nas URLs é a escolha popular e também recomendada pelo Google.
 
-Inflector
----------
+- As transliterações para :php:meth:`Cake\\Utility\\Inflector::slug()` foram alteradas.
+  Se você usa transliterações personalizadas você terá que atualizar seu código.
+  No lugar de expressões regulares, as transliterações usam simples substituições de
+  string. Isso rendeu melhorias de performance significativas::
 
-- Transliterations for :php:meth:`Cake\\Utility\\Inflector::slug()` have changed.
-  If you use custom transliterations you will need to update your code. Instead
-  of regular expressions, transliterations use simple string replacement. This
-  yielded significant performance improvements::
-
-    // Instead of
-    Inflector::rules('transliteration', array(
+    // No lugar de
+    Inflector::rules('transliteration', [
         '/ä|æ/' => 'ae',
         '/å/' => 'aa'
-    ));
+    ]);
 
-    // You should use
+    // Você deve usar
     Inflector::rules('transliteration', [
         'ä' => 'ae',
         'æ' => 'ae',
         'å' => 'aa'
     ]);
 
-- Separate set of uninflected and irregular rules for pluralization and
-  singularization have been removed. Instead we now have a common list for each.
-  When using :php:meth:`Cake\\Utility\\Inflector::rules()` with type 'singular'
-  and 'plural' you can no longer use keys like 'uninflected', 'irregular' in
-  ``$rules`` argument array.
+- Os conjuntos distintos de regras de não-inflexões e irregulares para 
+  pluralização e singularização foram removidos. No lugar agora temos
+  uma lista comum para cada. Quando usar :php:meth:`Cake\\Utility\\Inflector::rules()`
+  com o tipo 'singular' e 'plural' você não poderá mais usar chaves como 'uninflected' 
+  e 'irregular' no array de argumentos ``$rules``.
 
-  You can add / overwrite the list of uninflected and irregular rules using
-  :php:meth:`Cake\\Utility\\Inflector::rules()` by using values 'uninflected' and
-  'irregular' for ``$type`` argument.
+  Você pode adicionar / sobrescrever a lista de regras de não-inflexionados e 
+  irregulares usando :php:meth:`Cake\\Utility\\Inflector::rules()` com valores 
+  'uninflected' e 'irregular' para o argumento ``$type``.
 
 Sanitize
 --------
 
-- ``Sanitize`` class has been removed.
+- A classe ``Sanitize`` foi removida.
 
-Security
---------
+Segurança
+---------
 
-- ``Security::cipher()`` has been removed. It is insecure and promoted bad
-  cryptographic practices. You should use :php:meth:`Security::rijndael()`
-  instead.
-- The Configure value ``Security.cipherSeed`` is no longer required. With the
-  removal of ``Security::cipher()`` it serves no use.
-- Backwards compatibility in :php:meth:`Cake\\Utility\\Security::rijndael()` for values encrypted prior
-  to CakePHP 2.3.1 has been removed. You should re-encrypt values using a recent
-  version of CakePHP 2.x before migrating.
-- The ability to generate blowfish hash been removed. You can no longer use type
-  "blowfish" for ``Security::hash()``. One should just use PHP's `password_hash()`
-  and `password_verify()` to generate and verify blowfish hashes. The compability
-  library `ircmaxell/password-compat <https://packagist.org/packages/ircmaxell/password-compat>`_.
-  which is installed along with CakePHP provides these functions for PHP < 5.5.
+- O ``Security::cipher()`` foi removido. Ele era inseguro e promovia práticas
+  ruins de criptografia. Você deve usar o :php:meth:`Security::encrypt()`
+  no lugar.
+- O valor de configuração ``Security.cipherSeed`` não é mais necessário. Com a
+  remoção de ``Security::cipher()`` ele não tem utilidade.
+- A retrocompatibilidade do :php:meth:`Cake\\Utility\\Security::rijndael()` para
+  valores encriptados antes do CakePHP 2.3.1 foi removido. Você deve reencriptar
+  os valores usando ``Security::encrypt()`` e uma versão recente do CakePHP 2.x 
+  antes de migrar.
+- A habilidade para gerar um hash do tipo blowfish foi removido. Você não pode mais
+  usar o tipo "blowfish" em ``Security::hash()``. Deve ser usado apenas o `password_hash()`
+  do PHP e `password_verify()` para gerar e verificar hashes blowfish. A compabilidade
+  da biblioteca `ircmaxell/password-compat <https://packagist.org/packages/ircmaxell/password-compat>`_
+  que é instalado junto com o CakePHP fornece essas funções para versões de 
+  PHP menor que 5.5.
+- O OpenSSL é usado agora no lugar do mcrypt ao encriptar/desencriptar dados.
+  Esse alteração fornece uma melhor performance e deixa o CakePHP a prova de 
+  futuros abandonos de suporte das distribuições ao mcrypt.
+- O ``Security::rijndael()`` está obsoleto e apenas disponível quando se usa
+  o mcrypt.
 
-Time
-----
+.. warning::
 
-- ``CakeTime`` has been renamed to :php:class:`Cake\\I18n\\Time`.
-- ``CakeTime::serverOffset()`` has been removed.  It promoted incorrect time math practises.
-- ``CakeTime::niceShort()`` has been removed.
-- ``CakeTime::convert()`` has been removed.
-- ``CakeTime::convertSpecifiers()`` has been removed.
-- ``CakeTime::dayAsSql()`` has been removed.
-- ``CakeTime::daysAsSql()`` has been removed.
-- ``CakeTime::fromString()`` has been removed.
-- ``CakeTime::gmt()`` has been removed.
-- ``CakeTime::toATOM()`` has been renamed to ``toAtomString``.
-- ``CakeTime::toRSS()`` has been renamed to ``toRssString``.
-- ``CakeTime::toUnix()`` has been renamed to ``toUnixString``.
-- ``CakeTime::wasYesterday()`` has been renamed to ``isYesterday`` to match the rest
-  of the method naming.
-- ``CakeTime::format()`` Does not use ``sprintf`` format strings anymore, you can use
-  ``i18nFormat`` instead.
-- :php:meth:`Time::timeAgoInWords()` now requires ``$options`` to be an array.
+    Dados encriptados com Security::encrypt() em versões anteriores não são
+    compatíveis com a implementação openssl. Você deve :ref:`definir a
+    implementação como mcrypt <force-mcrypt>` quando fizer atualização.
 
-Time is not a collection of static methods anymore, it extends ``DateTime`` to
-inherit all its methods and adds location aware formatting functions with the
-help of the ``intl`` extension.
+Data e Hora
+-----------
 
-In general, expressions looking like this::
+- O ``CakeTime`` foi renomeado para :php:class:`Cake\\I18n\\Time`.
+- O ``CakeTime::serverOffset()`` foi removido. Ele provia práticas incorretas de operações
+  com tempo.
+- O ``CakeTime::niceShort()`` foi removido.
+- O ``CakeTime::convert()`` foi removido.
+- O ``CakeTime::convertSpecifiers()`` foi removido.
+- O ``CakeTime::dayAsSql()`` foi removido.
+- O ``CakeTime::daysAsSql()`` foi removido.
+- O ``CakeTime::fromString()`` foi removido.
+- O ``CakeTime::gmt()`` foi removido.
+- O ``CakeTime::toATOM()`` foi renomeado para ``toAtomString``.
+- O ``CakeTime::toRSS()`` foi renomeado para ``toRssString``.
+- O ``CakeTime::toUnix()`` foi renomeado para ``toUnixString``.
+- O ``CakeTime::wasYesterday()`` foi renomeado para ``isYesterday`` para combinar com o
+  resto da renomeação de métodos.
+- O ``CakeTime::format()`` não usa mais o formato do ``sprintf``, ao invés disso você 
+  deve usar o formato ``i18nFormat``.
+- O :php:meth:`Time::timeAgoInWords()` agora exige que o ``$options`` seja um array.
+
+A classe Time não é mais uma coleção de métodos estáticos, ela estende o ``DateTime`` para
+herdar todos seus métodos e adicionar funções de formatação baseado em localização com 
+ajuda da extensão ``intl``.
+
+Em geral, expressões assim::
 
     CakeTime::aMethod($date);
 
-Can be migrated by rewriting it to::
+Podem ser migradas reescrevendo para::
 
     (new Time($date))->aMethod();
 
-Number
-------
+Números
+-------
 
-The Number library was rewritten to internally use the ``NumberFormatter``
-class.
+A biblioteca Number foi reescrita para usar internamente a classe ``NumberFormatter``.
 
-- ``CakeNumber`` has been renamed to :php:class:`Cake\\I18n\\Number`.
-- :php:meth:`Number::format()` now requires ``$options`` to be an array.
-- :php:meth:`Number::addFormat()` was removed.
-- ``Number::fromReadableSize()`` has been moved to :php:meth:`Cake\\Utility\\String::parseFileSize()`.
+- O ``CakeNumber`` foi renomeada para :php:class:`Cake\\I18n\\Number`.
+- O :php:meth:`Number::format()` agora exige que o ``$options`` seja um array.
+- O :php:meth:`Number::addFormat()` foi removido.
+- O ``Number::fromReadableSize()`` foi movido para :php:meth:`Cake\\Utility\\Text::parseFileSize()`.
 
-Validation
-----------
+Validação
+---------
 
-- The range for :php:meth:`Validation::range()` now is inclusive if ``$lower`` and
-  ``$upper`` are provided.
-- ``Validation::ssn()`` has been removed.
+- A faixa de valores para :php:meth:`Validation::range()` agora é inclusiva se ``$lower`` e
+  ``$upper`` forem fornecidos.
+- O ``Validation::ssn()`` foi removido.
 
 Xml
 ---
 
-- :php:meth:`Xml::build()` now requires ``$options`` to be an array.
-- ``Xml::build()`` no longer accepts a URL. If you need to create an XML
-  document from a URL, use :ref:`Http\\Client <http-client-xml-json>`.
+- O :php:meth:`Xml::build()` agora exige que o ``$options`` seja um array.
+- O ``Xml::build()`` não aceita mais uma URL. Se você precisar criar um documento XML
+  a partir de uma URL, use :ref:`Http\\Client <http-client-xml-json>`.
+  

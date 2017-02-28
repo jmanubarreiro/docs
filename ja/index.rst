@@ -1,66 +1,55 @@
-.. CakePHP Cookbook documentation master file, created by
-   sphinx-quickstart on Tue Jan 18 12:54:14 2011.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+ようこそ
+########
 
-Welcome
-#######
+CakePHP 3 は、 **PHP 7.1** (最小は PHP |minphpversion|) 上で動作するウェブ開発フレームワークです。
+CakePHP 3 の基礎に入門するには :doc:`CakePHP 概要 </intro>` を読んでください。
 
-CakePHP cookbookは、オープンに開発されている、コミュニティで編集可能なドキュメントのプロジェクトです。
+CakePHP クックブックは、オープンに開発されている、コミュニティで編集可能なドキュメントのプロジェクトです。
 ドキュメンテーションの品質、正当性、正確性の高さを維持することを期待しています。
+右端に固定された鉛筆アイコンボタンに注目してください。
+このボタンは、あなたがドキュメンテーションの追加・削除・修正などの貢献が簡単にできるように、
+該当ページの GitHub のオンラインエディタへ誘導します。
 
 .. container:: offline-download
 
-    **cookbookをどこででも**
+    **クックブックがどこででも読める**
 
-    どこでもCakePHPのレシピをお楽しみ頂けます。PDFとEPUBをご用意しましたので、\
+    .. image:: /_static/img/read-the-book.jpg
+       :alt: Read the Book - CakePHP
+
+    どこでも CakePHP のレシピをお楽しみ頂けます。PDF と EPUB をご用意しましたので、
     多くのデバイス上でオフラインでドキュメントを読むことができます。
 
-    - `PDF(英語) <../_downloads/en/CakePHPCookbook.pdf>`_
+    - `PDF (英語) <../_downloads/en/CakePHPCookbook.pdf>`_
     - `EPUB <../_downloads/ja/CakePHPCookbook.epub>`_
     - `オリジナルソース <http://github.com/cakephp/docs>`_
 
-入門
-====
+助けを得るには
+==============
 
-ブログの作成
-------------
-
-:doc:`ブログチュートリアル</tutorials-and-examples/blog/blog>` を使用した入門。
-基本的なブログの構築の過程を通して、CakePHPの基本を学びます。
-
-規約
-----
-
-CakePHPの動力となっている、典型的な :doc:`CakePHPのリクエスト
-</getting-started/a-typical-cakephp-request>`
-と、 :doc:`規約
-</getting-started/cakephp-conventions>`
-を学びましょう。
-
-コントローラ
-------------
-
-コントローラはリクエストを取り扱い、調和の手助けとクライアントへのレスポンスの準備をします。
-詳細は :doc:`/controllers` を見てください。
-
-ビュー
-------
-
-ビューはCakePHPのプレゼンテーション層です。
-これはモデルから取得したデータをクライアントがリクエストした出力フォーマットに変換します。
-詳細は :doc:`/views` を見てください。
-
-モデル
-------
-
-モデルはアプリケーションの心臓部分です。
-これはバリデーション、ストレージ、データの検索を取り扱います。
-詳細は :doc:`/models` を見てください。
-
-助けの求め方
-============
-
-もし何か困っていたら、 :doc:`いくつもの助けを求められる場所
-</cakephp-overview/where-to-get-help>`
+もし何か困っていたら、 :doc:`いくつもの助けを得られる場所
+</intro/where-to-get-help>`
 があります。
+
+はじめに
+========
+
+新しいフレームワークを学ぶことは、不安と同時にワクワクします。あなたの役に立つために、
+共通のタスクをやり遂げるための例やレシピをまとめたクックブックを作成しました。
+もし、あなたが初心者の場合、 CakePHP は何を提供できて、どのように動作するのかの
+クイックツアーを体験するために :doc:`/quickstart` から始めましょう。
+
+ブックマークチュートリアルを終えた後、 CakePHP アプリケーションの重要な要素の復習できます。
+
+* :ref:`CakePHP のリクエストサイクル <request-cycle>`
+* CakePHP が使用する :doc:`規約 <intro/conventions>`
+* :doc:`コントローラ </controllers>` は、リクエストを処理し、あなたのモデルと
+  あなたのアプリケーションが作成したレスポンスを調整します。
+* :doc:`ビュー </views>` は、あなたのアプリケーションのプレゼンテーション層です。
+  あなたのアプリケーンに必要な HTML, JSON, その他の出力を作成する強力な道具になります。
+* :doc:`モデル </orm>` は、アプリケーションの重要な要素です。
+  バリデーションやあなたのアプリケーションのドメインロジックを処理します。
+
+.. meta::
+    :title lang=ja: .. CakePHP Cookbook documentation master file, created by
+    :keywords lang=ja: doc models,documentation master,presentation layer,documentation project,quickstart,original source,sphinx,liking,cookbook,validity,conventions,validation,cakephp,accuracy,storage and retrieval,heart,blog,project hope

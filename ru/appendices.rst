@@ -1,33 +1,35 @@
-﻿Приложения
+Приложения
 ##########
 
-Приложения содержат информацию о новых возможностях, 
-представленных в 2.0 и указания по переходу от 1.3 к 2.0.
+.. note::
+    The documentation is not currently supported in Russian language for this
+    page.
 
-2.0 Руководство по переходу
+    Please feel free to send us a pull request on
+    `Github <https://github.com/cakephp/docs>`_ or use the **Improve This Doc**
+    button to directly propose your changes.
+
+    You can refer to the english version in the select top menu to have
+    information about this page's topic.
+
+Руководство по миграции 3.x
 ===========================
 
 .. toctree::
     :maxdepth: 1
 
-    appendices/2-0-migration-guide
-    appendices/new-features-in-cakephp-2-0
-    appendices/phpunit-migration-hints
+    appendices/3-x-migration-guide
 
-Переход от 1.2 к 1.3
-====================
+Основная информация
+===================
 
 .. toctree::
     :maxdepth: 1
 
-    appendices/migrating-from-cakephp-1-2-to-1-3
-    appendices/new-features-in-cakephp-1-3
-
-Общая информация
-================
-
-.. toctree::
-    :maxdepth: 1
-    
     appendices/cakephp-development-process
     appendices/glossary
+
+
+.. meta::
+    :title lang=ru: Приложения 
+    :keywords lang=ru: руководство по миграции,путь миграции,новые возможности,глоссарий

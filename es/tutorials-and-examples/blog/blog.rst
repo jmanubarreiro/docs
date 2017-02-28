@@ -16,7 +16,7 @@ Esto es lo que necesitarás:
 #. Servidor web funcionando. Asumiremos que estás usando Apache, aunque las
    instrucciones para otros servidores son similares. Igual tendremos que ajustar
    un poco la configuración inicial, pero la mayoría pueden poner en marcha
-   CakePHP sin configuración alguna. Asegúrate de tener PHP 5.4.19 o superior
+   CakePHP sin configuración alguna. Asegúrate de tener PHP |minphpversion| o superior
    así como tener las extensiones ``mbstring``, ``intl`` y ``mcrypt`` activadas
    en PHP.
 #. Servidor de base de datos. Usaremos MySQL en este tutorial. Necesitarás saber
@@ -44,13 +44,13 @@ cada proyecto.
 
 Luego, simplemente escribe la siguiente línea en tu terminal desde tu directorio
 de instalación para instalar el esqueleto de la aplicación de CakePHP en el
-directorio [nombre_app].::
+directorio [nombre_app]. ::
 
-    php composer.phar create-project --prefer-dist -s dev cakephp/app [nombre_app]
+    php composer.phar create-project --prefer-dist cakephp/app [nombre_app]
 
 O si tienes Composer instalado globalmente::
 
-    composer create-project --prefer-dist -s dev cakephp/app [nombre_app]
+    composer create-project --prefer-dist cakephp/app [nombre_app]
 
 La ventaja de utilizar Composer es que automáticamente completará algunas tareas
 de inicialización, como aplicar permisos a ficheros y crear tu fichero
@@ -81,7 +81,7 @@ estructura::
 
 Quizás sea buen momento para aprender algo sobre cómo funciona esta estructura
 de directorios: echa un vistazo a la sección
-:doc:`/getting-started/cakephp-folder-structure`.
+:doc:`/intro/cakephp-folder-structure`.
 
 Permisos de directorio en tmp
 =============================
@@ -133,19 +133,20 @@ tabla, ejecuta el siguiente código SQL en ella::
 La elección de los nombres para el nombre de la tabla y de algunas columnas no
 se ha hecho al azar. Si sigues las convenciones para nombres en la Base de
 Datos, y las demás convenciones en tus clases (ver más sobre convenciones aquí:
-:doc:`/getting-started/cakephp-conventions`), aprovecharás la potencia del
+:doc:`/intro/conventions`), aprovecharás la potencia del
 framework y ahorrarás mucho trabajo de configuración. CakePHP es suficientemente
 flexible como para acomodarse hasta en el peor esquema de base de datos, pero
 utilizando las convenciones ahorrarás tiempo.
 
-Echa un vistazo a :doc:`las convensionnes </getting-started/cakephp-conventions>`
+Echa un vistazo a :doc:`las convencionnes </intro/conventions>`
 para más información, pero basta decir que nombrando nuestra tabla 'articles'
 automáticamente lo vincula a nuestro modelo Articles y que campos
 llamados `modified` y `created` serán gestionados automáticamente por CakePHP.
 
-Al llamar 'posts' a nuestra tabla de artículos, estamos diciendo a CakePHP que
-vincule esta tabla por defecto al Modelo 'Post', e incluir los campos 'modified'
-y 'created' con ese nombre, serán automáticamente administrados por CakePHP.
+Al llamar 'articles' a nuestra tabla de artículos, estamos diciendo a CakePHP
+que vincule esta tabla por defecto al Modelo 'Articles', e incluiya los campos
+'modified' y 'created' con ese nombre, los cuáles serán automáticamente
+administrados por CakePHP.
 
 Configurando la Base de Datos
 =============================
@@ -155,15 +156,15 @@ conectarnos a ella. Seguramente esta sea la primera y última vez que configuras
 nada.
 
 Una copia del fichero de configuración de CakePHP puede ser hallado en
-``config/app.default.php``. Copia este fichero en su mismo directorio, pero
-nómbralo ``app.php``.
+**config/app.default.php**. Copia este fichero en su mismo directorio, pero
+nómbralo **app.php**.
 
 El fichero de configuración debería de ser bastante sencillo: simplemente
 reemplaza los valores en la matriz `` Datasources.default`` con los que
 encajen con tu configuración. Una configuración completa de ejemplo podría
 parecerse a esto::
 
-    $config = [
+    return [
         // Más configuración arriba
         'Datasources' => [
             'default' => [
@@ -171,10 +172,9 @@ parecerse a esto::
                 'driver' => 'Cake\Database\Driver\Mysql',
                 'persistent' => false,
                 'host' => 'localhost',
-                'login' => 'cake_blog',
+                'username' => 'cake_blog',
                 'password' => 'AngelF00dC4k3~',
                 'database' => 'cake_blog',
-                'prefix' => false,
                 'encoding' => 'utf8',
                 'timezone' => 'UTC'
             ],
@@ -182,7 +182,7 @@ parecerse a esto::
         // Más configuración abajo
     ];
 
-En cuanto guardes tu nuevo fichero ``app.php`` deberías de ser capaz de acceder
+En cuanto guardes tu nuevo fichero **app.php** deberías de ser capaz de acceder
 mediante tu navegador web y ver la página de bienvenida de CakePHP. También
 debería decirte que se ha encontrado el fichero de configuración así como que
 ha podido conectarse a la base de datos.
@@ -200,7 +200,7 @@ tutorial. Uno de ellos es definir un string de seguridad (security salt) para re
 los 'hash' de seguridad.
 
 El string de seguridad se utiliza para generar 'hashes'. Cambia el valor por
-defecto editando el fichero ``/config/app.php``. No importa mucho el valor que
+defecto editando el fichero **config/app.php**. No importa mucho el valor que
 contenga, cuanto más largo más difícil de averiguar::
 
     'Security' => [
@@ -218,11 +218,6 @@ las imágenes ni los estilos y se ve todo en blanco y negro), esto significa que
 probablemente mod\_rewrite no está funcionando en tu sistema. Por favor,
 consulta la sección para tu servidor entre las siguientes acerca de re-escritura
 de URLs para poder poner en marcha la aplicación:
-
-.. toctree::
-    :maxdepth: 1
-
-    /installation/url-rewriting
 
 #. Comprueba que existen los ficheros .htaccess en el directorio en el que está
    instalada tu aplicación web. A veces al descomprimir el archivo o al copiarlo
@@ -242,7 +237,7 @@ de URLs para poder poner en marcha la aplicación:
 
 Si no puedes (o no quieres) configurar mod\_rewrite o algún otro módulo
 compatible, necesitarás activar las url amigables en CakePHP. En el fichero
-``/config/app.php``, quita el comentario a la línea::
+**config/app.php**, quita el comentario a la línea::
 
     'App' => [
         // ...
@@ -260,7 +255,7 @@ de www.example.com/nombredelcontrolador/nombredelaaccion/parametro.
 
 Si estás instalando CakePHP en otro servidor diferente a Apache, encontrarás
 instrucciones para que funcione la reescritura de URLs en la sección
-:doc:`/installation/url-rewriting`
+url-rewriting
 
 Ahora continúa hacia :doc:`/tutorials-and-examples/blog/part-two` para empezar
 a construir tu primera aplicación en CakePHP.

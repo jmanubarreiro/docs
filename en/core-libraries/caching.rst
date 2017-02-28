@@ -7,7 +7,7 @@ Caching
 
 Caching is frequently used to reduce the time it takes to create or read from
 other resources. Caching is often used to make reading from expensive
-resources less expensive. You can easily store the results of expensive queries,
+resources less expensive. You can store the results of expensive queries,
 or remote webservice access that doesn't frequently change in a cache. Once
 in the cache, re-reading the stored resource from the cache is much cheaper
 than accessing the remote resource.
@@ -23,7 +23,7 @@ to implement your own caching systems. The built-in caching engines are:
   atomic operations. However, since disk storage is often quite cheap,
   storing large objects, or elements that are infrequently written
   work well in files.
-* ``ApcCache`` APC cache uses the PHP `APC <http://php.net/apc>`_ extension.
+* ``ApcCache`` APC cache uses the PHP `APCu <http://php.net/apcu>`_ extension.
   This extension uses shared memory on the webserver to store objects.
   This makes it very fast, and able to provide atomic read/write features.
 * ``Wincache`` Wincache uses the `Wincache <http://php.net/wincache>`_
@@ -32,14 +32,14 @@ to implement your own caching systems. The built-in caching engines are:
 * ``XcacheEngine`` `Xcache <http://xcache.lighttpd.net/>`_
   is a PHP extension that provides similar features to APC.
 * ``MemcachedEngine`` Uses the `Memcached <http://php.net/memcached>`_
-  extension. It also interfaces with memcache but provides better performance.
+  extension.
 * ``RedisEngine`` Uses the `phpredis <https://github.com/nicolasff/phpredis>`_
   extension. Redis provides a fast and persistent cache system similar to
-  memcached, also provides atomic operations.
+  Memcached, also provides atomic operations.
 
 Regardless of the CacheEngine you choose to use, your application interacts with
-:php:class:`Cake\\Cache\\Cache` in a consistent manner.  This means you can
-easily swap cache engines as your application grows.
+:php:class:`Cake\\Cache\\Cache` in a consistent manner. You can swap cache
+engines as your application grows.
 
 .. _cache-configuration:
 
@@ -49,7 +49,7 @@ Configuring Cache Class
 .. php:staticmethod:: config($key, $config = null)
 
 Configuring the Cache class can be done anywhere, but generally you will want to
-configure Cache during bootstrapping.  The ``config/app.php`` file is the
+configure Cache during bootstrapping.  The **config/app.php** file is the
 conventional location to do this.  You can configure as many cache
 configurations as you need, and use any mixture of cache engines.  CakePHP uses
 two cache configurations internally.  ``_cake_core_`` is used for storing file
@@ -61,37 +61,60 @@ for the core caches.  This will prevent multiple applications from overwriting
 each other's cached data.
 
 Using multiple configurations also lets you incrementally change the storage as
-needed. Example::
+needed. For example in your **config/app.php** you could put the following::
+
+    // ...
+    'Cache' => [
+        'short' => [
+            'className' => 'File',
+            'duration' => '+1 hours',
+            'path' => CACHE,
+            'prefix' => 'cake_short_'
+        ],
+        // Using a fully namespaced name.
+        'long' => [
+            'className' => 'Cake\Cache\Engine\FileEngine',
+            'duration' => '+1 week',
+            'probability' => 100,
+            'path' => CACHE . 'long' . DS,
+        ]
+    ]
+    // ...
+
+Configuration options can also be provided as a :term:`DSN` string. This is
+useful when working with environment variables or :term:`PaaS` providers::
+
+    Cache::config('short', [
+        'url' => 'memcached://user:password@cache-host/?timeout=3600&prefix=myapp_',
+    ]);
+
+When using a DSN string you can define any additional parameters/options as
+query string arguments.
+
+You can also configure Cache engines at runtime::
 
     // Using a short name
-    Cache::config('short', array(
+    Cache::config('short', [
         'className' => 'File',
         'duration' => '+1 hours',
         'path' => CACHE,
         'prefix' => 'cake_short_'
-    ));
+    ]);
 
     // Using a fully namespaced name.
-    Cache::config('long', array(
+    Cache::config('long', [
         'className' => 'Cake\Cache\Engine\FileEngine',
         'duration' => '+1 week',
         'probability' => 100,
         'path' => CACHE . 'long' . DS,
-    ));
+    ]);
 
     // Using a constructed object.
     $object = new FileEngine($config);
     Cache::config('other', $object);
 
-.. note::
-
-    You must specify which className to use. It does **not** default to
-    File.
-
-By placing the above code in your ``config/app.php`` you will have two
-additional Cache configurations. The name of these configurations 'short' or
-'long' is used as the ``$config`` parameter for
-:php:meth:`Cake\\Cache\\Cache::write()` and
+The name of these configurations 'short' or 'long' is used as the ``$config``
+parameter for :php:meth:`Cake\\Cache\\Cache::write()` and
 :php:meth:`Cake\\Cache\\Cache::read()`. When configuring Cache engines you can
 refer to the class name using the following syntaxes:
 
@@ -103,6 +126,11 @@ refer to the class name using the following syntaxes:
   classes located outside of the conventional locations.
 * Using an object that extends the ``CacheEngine`` class.
 
+.. note::
+
+    When using the FileEngine you might need to use the ``mask`` option to
+    ensure cache files are made with the correct permissions.
+
 Removing Configured Cache Engines
 ---------------------------------
 
@@ -112,24 +140,6 @@ Once a configuration is created you cannot change it. Instead you should drop
 the configuration and re-create it using :php:meth:`Cake\\Cache\\Cache::drop()` and
 :php:meth:`Cake\\Cache\\Cache::config()`. Dropping a cache engine will remove
 the config and destroy the adapter if it was constructed.
-
-Other Cache Related Configuration
----------------------------------
-
-Other than configuring caching adapters, there are a few other cache related
-configuration properties:
-
-enabled
-    When set to ``true``, persistent caching is disabled site-wide.
-    This will make all read/writes to :php:class:`Cake\\Cache\\Cache` fail.
-    You can control this value with :php:meth:`Cake\\Cache\\Cache::enable()` and
-    :php:meth:`Cake\\Cache\\Cache::disable()`. The current state can be read with
-    :php:meth:`Cake\\Cache\\Cache::enabled()`.
-
-.. note::
-
-    When using the FileEngine you might need to use the ``mask`` option to
-    ensure cache files are made with the correct permissions.
 
 Writing to a Cache
 ==================
@@ -148,7 +158,7 @@ model finds::
         Cache::write('posts', $posts);
     }
 
-Using ``Cache::write()`` and ``Cache::read()`` to easily reduce the number
+Using ``Cache::write()`` and ``Cache::read()`` to reduce the number
 of trips made to the database to fetch posts.
 
 .. note::
@@ -187,10 +197,12 @@ and the results stored in the cache at the provided key.
 For example, you often want to cache remote service call results. You could use
 ``remember()`` to make this simple::
 
-    class IssueService  {
+    class IssueService
+    {
 
-        function allIssues($repo) {
-            return Cache::remember($repo . '-issues', function() use ($repo) {
+        public function allIssues($repo)
+        {
+            return Cache::remember($repo . '-issues', function () use ($repo) {
                 return $this->fetchAll($repo);
             });
         }
@@ -278,8 +290,8 @@ Clearing Cached Data
 
 .. php:staticmethod:: clear($check, $config = 'default')
 
-Destroy all cached values for a cache configuration. In engines like Apc,
-Memcached and Wincache, the cache configuration's prefix is used to remove
+Destroy all cached values for a cache configuration. In engines like: Apc,
+Memcached, and Wincache, the cache configuration's prefix is used to remove
 cache entries. Make sure that different cache configurations have different
 prefixes::
 
@@ -296,6 +308,11 @@ Garbage collects entries in the cache configuration. This is primarily
 used by FileEngine. It should be implemented by any Cache engine
 that requires manual eviction of cached data.
 
+.. note::
+
+    Because APC and Wincache use isolated caches for webserver and CLI they
+    have to be cleared separately (CLI cannot clear webserver and vice versa).
+
 Using Cache to Store Counters
 =============================
 
@@ -303,12 +320,12 @@ Using Cache to Store Counters
 
 .. php:staticmethod:: decrement($key, $offset = 1, $config = 'default')
 
-Counters for various things are easily stored in a cache. For example, a simple
-countdown for remaining 'slots' in a contest could be stored in Cache. The
-Cache class exposes atomic ways to increment/decrement counter values in an easy
-way. Atomic operations are important for these values as it reduces the risk of
-contention, and ability for two users to simultaneously lower the value by one,
-resulting in an incorrect value.
+Counters in your application are good candidates for storage in a cache.  As an
+example, a simple countdown for remaining 'slots' in a contest could be stored
+in Cache. The Cache class exposes atomic ways to increment/decrement counter
+values in an easy way. Atomic operations are important for these values as it
+reduces the risk of contention, and ability for two users to simultaneously
+lower the value by one, resulting in an incorrect value.
 
 After setting an integer value you can manipulate it using ``increment()`` and
 ``decrement()``::
@@ -334,7 +351,7 @@ You can greatly improve the performance of your application by putting results
 that infrequently change, or that are subject to heavy reads into the cache.
 A perfect example of this are the results from
 :php:meth:`Cake\\ORM\\Table::find()`. The Query object allows you to cache
-results using the ``cache`` method. See the :ref:`caching-query-results` section
+results using the ``cache()`` method. See the :ref:`caching-query-results` section
 for more information.
 
 Using Groups
@@ -363,7 +380,8 @@ For instance, whenever a new post is added, we could tell the Cache engine to
 remove all entries associated to the ``article`` group::
 
     // src/Model/Table/ArticlesTable.php
-    public function afterSave($entity, $options = []) {
+    public function afterSave($event, $entity, $options = [])
+    {
         if ($entity->isNew()) {
             Cache::clearGroup('article', 'site_home');
         }
@@ -380,7 +398,8 @@ configurations, i.e.: having the same group::
      * A variation of previous example that clears all Cache configurations
      * having the same group
      */
-    public function afterSave($entity, $options = []) {
+    public function afterSave($event, $entity, $options = [])
+    {
         if ($entity->isNew()) {
             $configs = Cache::groupConfigs('article');
             foreach ($configs['article'] as $config) {
@@ -426,15 +445,15 @@ You can provide custom ``Cache`` adapters in ``App\Cache\Engine`` as well
 as in plugins using ``$plugin\Cache\Engine``. src/plugin cache engines can
 also override the core engines. Cache adapters must be in a cache
 directory. If you had a cache engine named ``MyCustomCacheEngine``
-it would be placed in either ``src/Cache/Engine/MyCustomCacheEngine.php``
-as an app/libs. Or in ``$plugin/Cache/Engine/MyCustomCacheEngine.php`` as
+it would be placed in either **src/Cache/Engine/MyCustomCacheEngine.php**
+as an app/libs. Or in **plugin/Cache/Engine/MyCustomCacheEngine.php** as
 part of a plugin. Cache configs from plugins need to use the plugin
-dot syntax.::
+dot syntax. ::
 
-    Cache::config('custom', array(
+    Cache::config('custom', [
         'className' => 'CachePack.MyCustomCache',
         // ...
-    ));
+    ]);
 
 Custom Cache engines must extend :php:class:`Cake\\Cache\\CacheEngine` which
 defines a number of abstract methods as well as provides a few initialization

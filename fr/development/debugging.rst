@@ -6,25 +6,50 @@ Tandis que CakePHP n'offre pas d'outils qui se connectent directement avec tout
 IDE ou éditeur, CakePHP fournit plusieurs outils pour l'aide au debug et ce qui
 est lancé sous le capot de votre application.
 
-Debug basique
+Debug Basique
 =============
 
 .. php:function:: debug(mixed $var, boolean $showHtml = null, $showFrom = true)
+    :noindex:
 
-La fonction ``debug()`` est une fonction disponible partout qui fontionne de la
-même manière que la fonction PHP ``print\_r()``. La fonction ``debug()`` vous
+La fonction ``debug()`` est une fonction disponible partout qui fonctionne de la
+même manière que la fonction PHP ``print_r()``. La fonction ``debug()`` vous
 permet de montrer les contenus d'un variable de différentes façons.
 Premièrement, si vous voulez que vos données soient montrées d'une façon
 sympa en HTML, définissez le deuxième paramètre à ``true``. La fonction affiche
 aussi la ligne et le fichier dont ils sont originaires par défaut.
 
 La sortie de cette fonction est seulement montrée si la variable de ``$debug``
-du coeur a été définie à ``true``.
+du cœur a été définie à ``true``.
 
-.. php:function stackTrace()
+.. versionadded:: 3.3.0
+
+    Utiliser cette méthode retournera la valeur de la variable ``$var`` passée
+    en paramètre, vous permettant ainsi, par exemple, de l'utiliser sur un
+    ``return``::
+
+        return debug($data); // Retournera $data dans tous les cas
+
+.. php:function:: stackTrace()
 
 La fonction ``stackTrace()`` est globalement disponible, et vous permet
 d'afficher une stack trace quelque soit la fonction appelée.
+
+.. php:function:: breakpoint()
+
+.. versionadded:: 3.1
+
+Si vous avez installé `Psysh <http://psysh.org/>`_ vous pouvez utiliser cette
+fonction dans les environnements CLI pour ouvrir une console interactive
+avec le scope local courant::
+
+    // Du code
+    eval(breakpoint());
+
+Ouvrira une console interactive qui peut être utilisée pour vérifier les
+variables locales et exécuter d'autre code. Vous pouvez fermer le debugger
+interactif et reprendre l'exécution du script original en tapant
+``quit`` ou ``q`` dans la session interactive.
 
 Utiliser la Classe Debugger
 ===========================
@@ -41,19 +66,19 @@ Affichage des Valeurs
 
 .. php:staticmethod:: dump($var, $depth = 3)
 
-Dump prints out the contents of a variable. It will print out all
-properties and methods (if any) of the supplied variable::
+Dump affiche le contenu d'une variable. Elle affiche toutes les propriétés
+et méthodes (s'il y en a) de la variable fournie:::
 
-    $foo = array(1,2,3);
+    $foo = [1,2,3];
 
     Debugger::dump($foo);
 
     // Outputs
-    array(
+    [
         1,
         2,
         3
-    )
+    ]
 
     // Simple object
     $car = new Car();
@@ -68,25 +93,42 @@ properties and methods (if any) of the supplied variable::
         mileage => (int)15000
     }
 
+Masquer des Données
+-------------------
+
+Lorsque vous affichez des données avec ``Debugger`` ou que des pages d'erreurs
+sont affichées, vous pouvez souhaiter masquer des données sensibles comme des
+mots de passes ou des clés d'API. Dans votre fichier ``config/bootstrap.php``,
+vous pouvez spécifier les clés à masquer::
+
+    Debugger::setOutputMask([
+        'password' => 'xxxxx',
+        'awsKey' => 'yyyyy',
+    ]);
+
+.. versionadded:: 3.4.0
+
+    Les masques d'affichage ont été ajoutés dans la version 3.4.0
+
 Logging With Stack Traces
 =========================
 
 .. php:staticmethod:: log($var, $level = 7, $depth = 3)
 
 Crée un stack trace log détaillé au moment de l'invocation. La
-méthode log() affiche les données identiques à celles faites par
-Debugger::dump(), mais dans debug.log au lieu de les sortir
-buffer. Notez que votre répertoire app/tmp directory (et son contenu) doit
-être ouvert en écriture par le serveur web pour que le
-log() fonctionne correctement.
+méthode ``log()`` affiche les données identiques à celles faites par
+``Debugger::dump()``, mais dans debug.log au lieu de les sortir
+buffer. Notez que votre répertoire **tmp** (et son contenu) doit
+être ouvert en écriture par le serveur web pour que le ``log()`` fonctionne
+correctement.
 
 Generating Stack Traces
 =======================
 
 .. php:staticmethod:: trace($options)
 
-Retourne le stack trace courant. Chaque ligne des traces inlut la méthode
-appelée, incluant chaque fichier et ligne d'où est originaire l'appel.::
+Retourne le stack trace courant. Chaque ligne des traces inclut la méthode
+appelée, incluant chaque fichier et ligne d'où est originaire l'appel::
 
     //Dans PostsController::index()
     pr( Debugger::trace() );
@@ -97,14 +139,9 @@ appelée, incluant chaque fichier et ligne d'où est originaire l'appel.::
     Dispatcher::dispatch() - CORE/lib/Cake/Routing/Dispatcher.php, line 237
     [main] - APP/webroot/index.php, line 84
 
-Ci-dessus se trouve le stack trace généré en appelant Debugger::trace()
+Ci-dessus se trouve le stack trace généré en appelant ``Debugger::trace()``
 dans une action d'un controller. Lire le stack trace de bas en haut
-montre l'ordre des fonctions lancées actuellement (stack frames). Dans
-l'exemple du dessus, index.php appelé Dispatcher::dispatch(), qui est
-appelé in-turn Dispatcher::\_invoke(). La méthode \_invoke() appelé ensuite
-par PostsController::index(). Cette information est utile quand vous
-travaillez avec des opérations récursives ou des stacks profonds, puisqu'il
-identifie les fonctions qui sont actuellement lancées au moment du trace().
+montre l'ordre des fonctions lancées actuellement (stack frames).
 
 Getting an Excerpt From a File
 ==============================
@@ -113,7 +150,7 @@ Getting an Excerpt From a File
 
 Récupérer un extrait du fichier dans $path (qui est un chemin de fichier
 absolu), mettant en évidence le numéro de la ligne $line avec le nombre
-de lignes $context autour.::
+de lignes $context autour::
 
     pr( Debugger::excerpt(ROOT.DS.LIBS.'debugger.php', 321, 2) );
 
@@ -123,7 +160,7 @@ de lignes $context autour.::
         [0] => <code><span style="color: #000000"> * @access public</span></code>
         [1] => <code><span style="color: #000000"> */</span></code>
         [2] => <code><span style="color: #000000">    function excerpt($file, $line, $context = 2) {</span></code>
-        [3] => <span class="code-highlight"><code><span style="color: #000000">        $data = $lines = array();</span></code></span>
+        [3] => <span class="code-highlight"><code><span style="color: #000000">        $data = $lines = [];</span></code></span>
         [4] => <code><span style="color: #000000">        $data = @explode("\n", file_get_contents($file));</span></code>
     )
 
@@ -135,40 +172,38 @@ situations personnalisées.
 
     Récupère le type de variable. Les objets retourneront leur nom de classe.
 
-    .. versionadded:: 2.1
 
-Utiliser Logging pour debug
-===========================
+Utiliser les Logs pour Debugger
+===============================
 
-Les messages de Logging est une autre bonne façon de debugger les applications,
-et vous pouvez utiliser :php:class:`CakeLog` pour faire le logging dans votre
-application. Tous les objets qui étendent :php:class:`Object` ont une méthode
-d'instanciation `log()` qui peut être utilisé pour les messages de log::
+Logger des messages est une autre bonne façon de debugger les applications,
+et vous pouvez utiliser :php:class:`Cake\\Log\\Log` pour faire le logging dans
+votre application. Tous les objets qui utilisent  ``LogTrait`` ont une méthode
+d'instanciation ``log()`` qui peut être utilisée pour logger les messages::
 
     $this->log('Got here', 'debug');
 
-Ce qui est au-dessus écrit ``Got here`` dans le debug du log. Vous pouvez
-utiliser les logs (log entries) pour aider les méthodes de débug qui impliquent
-les redirections ou les boucles compliquées. Vous pouvez aussi utiliser
-:php:meth:`CakeLog::write()` pour écrire les messages de log. Cette méthode
-peut être appelée statiquement partout dans votre application où CakeLog
-a été chargée::
+Ce qui est au-dessus écrit ``Got here`` dans le log de debug. Vous pouvez
+utiliser les logs (log entries) pour faciliter le debug des méthodes qui
+impliquent des redirections ou des boucles compliquées. Vous pouvez aussi
+utiliser :php:meth:`Cake\\Log\\Log::write()`` pour écrire les messages de log.
+Cette méthode peut être appelée statiquement partout dans votre application où
+CakeLog a été chargée::
 
-    // dans config/bootstrap.php
-    App::uses('CakeLog', 'Log');
+    // Au début du fichier dans lequel vous voulez logger.
+    use Cake\Log\Log;
 
-    // N'importe où dans votre application
-    CakeLog::write('debug', 'Got here');
+    // N'importe où Log a été importé
+    Log::debug('Got here');
 
 Kit de Debug
 ============
 
-DebugKit est un plugin qui fournit un nombre de bons outiles de debug. Il
+DebugKit est un plugin qui fournit un nombre de bons outils de debug. Il
 fournit principalement une barre d'outils dans le HTML rendu, qui fournit
 une pléthore d'informations sur votre application et la requête courante.
-Vous pouvez télécharger
-`DebugKit <https://github.com/cakephp/debug_kit>`_ sur GitHub.
-
+Consultez le chapitre sur :doc:`/debug-kit` pour plus d'information sur son
+installation et son utilisation.
 
 .. meta::
     :title lang=fr: Debugger

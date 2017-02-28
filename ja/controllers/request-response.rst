@@ -1,635 +1,813 @@
 リクエストとレスポンスオブジェクト
 ##################################
 
-CakePHP2.0では新しくリクエストとレスポンスオブジェクトが追加されました。以前のバージョンではこれらのオブジェクトは配列で表現されており、
-また関連するメソッドは :php:class:`RequestHandlerComponent`, :php:class:`Router`,
-:php:class:`Dispatcher`, :php:class:`Controller` に分散していました。そのため、
-リクエストにどのような情報が含まれているかを正確に表すオブジェクトは存在しませんでした。
-バージョン2.0において :php:class:`CakeRequest` と :php:class:`CakeResponse` は上記の目的で使用されます。
+.. php:namespace:: Cake\Http
+
+リクエストとレスポンスオブジェクトは、HTTP リクエストとレスポンスの周辺の抽象化を提供します。
+CakePHP のリクエストオブジェクトは、入ってきたリクエストを省みることができる一方、
+レスポンスオブジェクトは容易にコントローラから HTTP レスポンスを作成することができます。
 
 .. index:: $this->request
 .. _cake-request:
 
-CakeRequest
-###########
+リクエスト
+==========
 
-:php:class:`CakeRequest` はCakePHPで使われるデフォルトのリクエストオブジェクトです。
-リクエストデータへの応答と対話が中心的な機能となります。リクエストごとにCakeRequestは一つ作られ、
+.. php:class:: ServerRequest
+
+``ServerRequest`` は、CakePHP で使用されるデフォルトのリクエストオブジェクトです。
+リクエストデータへの応答と対話が中心的な機能となります。リクエストごとに Request は一つ作られ、
 リクエストデータを使うアプリケーションの様々なレイヤーに参照が渡されます。
-デフォルトの ``CakeRequest`` は ``$this->request`` に設定され、コントローラ、ビュー、
-ヘルパーの中で利用できます。またコントローラの参照を使うことでコンポーネントの中からもアクセスすることが出来ます。
-``CakeRequest`` の役割は以下の通りです。:
+デフォルトのリクエストは ``$this->request`` に設定され、コントローラ、セル、ビュー、
+ヘルパーの中で利用できます。またコントローラの参照を使うことでコンポーネントの中からも
+アクセスすることが出来ます。 ``ServerRequest`` の役割は以下の通りです。
 
-* GET, POST, そしてFILES配列を慣れ親しんだデータ構造に変換する処理を行います。
-* リクエストに関連する内省的環境を提供します。送信されたヘッダやクライアントのIPアドレス、サーバが実行されているサブドメイン/ドメインの情報などが含まれます。
-* リクエストパラメータへのアクセス方法をインデックス付き配列とオブジェクトのプロパティの両方の形式で提供します。
+* GET, POST, そして FILES 配列を慣れ親しんだデータ構造に変換する処理を行います。
+* リクエストに関連する内省的環境を提供します。送信されたヘッダやクライアントの IP アドレス、
+  サーバが実行されているサブドメイン/ドメインの情報などが含まれます。
+* リクエストパラメータへのアクセス方法をインデックス付き配列とオブジェクトのプロパティの
+  両方の形式で提供します。
 
-リクエストパラメータへアクセスする
-==================================
+3.4.0 以降、 CakePHP のリクエストオブジェクトは、CakePHP の外部のライブラリを
+使用しやすくするため `PSR-7 ServerRequestInterface <http://www.php-fig.org/psr/psr-7/>`_
+を実装します。
 
-CakeRequestはリクエストパラメータにアクセスするためにいくつかのインターフェイスを提供しています。
-一つ目の方法は、添字付き配列です。二つ目の方法は ``$this->request->params`` を経由する方法です。
-三つ目はオブジェクトのプロパティとしてアクセスする方法です。::
+リクエストパラメータ
+--------------------
 
-    $this->request['controller'];
-    $this->request->controller;
-    $this->request->params['controller'];
+リクエストは、 ``getParam()`` メソッドを介して、ルーティングパラメータを用意しています。 ::
 
-上記はすべて同じ値へアクセスすることになります。パラメータへアクセスする方法が複数あることで既存のアプリケーションの移植が楽になるかもしれません。
-すべての :ref:`route-elements` はこのインターフェイスを通してアクセスされます。
+    $controllerName = $this->request->getParam('controller');
 
-:ref:`route-elements` に加えて :ref:`passed-arguments` や :ref:`named-parameters` へのアクセスがしばしば必要になります。
-これらは両方ともリクエストオブジェクトと同様に利用可能です。::
+すべての :ref:`route-elements` は、このインタフェースを通してアクセスされます。
+
+:ref:`route-elements` に加えて :ref:`passed-arguments` へのアクセスがしばしば必要になります。
+これらは両方ともリクエストオブジェクトと同様に利用可能です。 ::
 
     // 渡された引数
-    $this->request['pass'];
-    $this->request->pass;
-    $this->request->params['pass'];
+    $passedArgs = $this->request->getParam('pass');
 
-    // 名前付きパラメータ
-    $this->request['named'];
-    $this->request->named;
-    $this->request->params['named'];
+すべての渡された引数にアクセスする方法が提供されています。この中には CakePHP の内部で使っている
+重要で役に立つパラメータが存在し、また、リクエストパラメータの中ですべて見つけられます。
 
-すべての渡された引数と名前付きパラメータにアクセスする方法が提供されています。
-この中にはCakePHPの内部で使っている重要で役に立つパラメータが存在し、また、リクエストパラメータの中ですべて見つけられます。
+* ``plugin`` リクエストを処理するプラグインです。プラグインが存在しない場合は null になります。
+* ``controller`` 現在のリクエストを処理するコントローラです。
+* ``action`` 現在のリクエストを処理するアクションです。
+* ``prefix`` 現在のアクションのプレフィックスです。詳しくは、 :ref:`prefix-routing` をご覧ください。
 
-* ``plugin`` リクエストをハンドリングしているプラグインで、プラグインが無い場合はnullです。
-* ``controller`` 現在のリクエストをハンドリングしているコントローラです。
-* ``action`` 現在のリクエストをハンドリングしているアクションです。
-* ``prefix`` 現在のアクションのプレフィックスです。詳しくは、 :ref:`prefix-routing` 見て下さい。
-* ``bare`` リクエストがrequestAction()から始まりbareオプションを含んでいたとき定義されます。生のリクエストは描画されたレイアウトを持ちません。
-* ``requested`` アクションがrequestActionから始まったとき定義されtrueが設定されます。
+クエリ文字列パラメータ
+----------------------
 
-クエリ文字列パラメータにアクセスする
-====================================
+.. php:method:: getQuery($name)
 
-クエリ文字列パラメータは :php:attr:`CakeRequest::$query` を使って読み出すことができます。::
+クエリ文字列パラメータは、 ``getQuery()`` メソッドを使って読み取ることができます。 ::
 
-    // urlは /posts/index?page=1&sort=title
-    $this->request->query['page'];
+    // URL は /posts/index?page=1&sort=title
+    $page = $this->request->getQuery('page');
 
-    // 配列を経由してアクセスできます
-    $this->request['url']['page'];
+    // 3.4.0 より前
+    $this->request->query('page');
 
-POSTデータにアクセスする
-========================
+query プロパティに直接アクセスするか、エラーが発生しない方法で URL クエリ配列を読むために
+``query()`` メソッドを使用することができます。キーが存在しない場合、 ``null`` が返ります。 ::
 
-すべてのPOSTデータは :php:attr:`CakeRequest::$data` を使ってアクセスされます。フォームデータが ``data``
-接頭辞を含んでいる場合、接頭辞は取り除かれるでしょう。例えば::
+    $foo = $this->request->getQuery('value_that_does_not_exist');
+    // $foo === null
 
-    // name属性が'data[Post][title]'だった入力は次のようにアクセスします。
-    $this->request->data['Post']['title'];
+    // デフォルト値も提供できます。
+    $foo = $this->request->getQuery('does_not_exist', 'default val');
 
-dataプロパティに直接アクセスするか、エラーが発生しない方法でdata配列を読むために
-:php:meth:`CakeRequest::data()` を使うことができます。キーが存在しない場合、 ``null`` が返ります。::
+``getQueryParams()`` を使用すると全てのクエリ文字列パラメータにアクセスできます。 ::
 
-    $foo = $this->request->data('Value.that.does.not.exist');
+    $query = $this->request->getQueryParams();
+
+.. versionadded:: 3.4.0
+    ``getQueryParams()`` と ``getQuery()`` は 3.4.0 で追加されました。
+
+リクエストのボディデータ
+------------------------
+
+.. php:method:: getData($name, $default = null)
+
+すべての POST データは :php:meth:`Cake\\Http\\ServerRequest::getData()` を使ってアクセスされます。
+フォームデータが ``data`` 接頭辞を含んでいる場合、接頭辞は取り除かれるでしょう。例えば::
+
+    // name 属性が 'MyModel[title]' の入力は次のようにアクセスします。
+    $title = $this->request->getData('MyModel.title');
+
+キーが存在しない場合、 ``null`` が返ります。 ::
+
+    $foo = $this->request->getData('Value.that.does.not.exist');
     // $foo == null
 
-PUTまたはPOSTデータにアクセスする
-=================================
-
-.. versionadded:: 2.2
-
-RESTサービスを構築しているとき ``PUT`` と ``DELETE`` リクエストのデータを受け付けることがよくあります。
-2.2において ``application/x-www-form-urlencoded`` リクエストボディのデータは ``PUT``
-と ``DELETE`` リクエストでは自動的に構文解析され ``$this->data`` に設定されます。
-もしJSONやXMLデータを受け付けている場合、どうやってリクエストボディにアクセスすればいいのかについては以下の説明を見て下さい。
-
-XMLまたはJSONデータにアクセスする
-=================================
-
-:doc:`/development/rest` を採用しているアプリケーションではURLエンコードされていないpost形式でデータを交換することがしばしばあります。
-:php:meth:`CakeRequest::input()` を使っているどんな形式であっても入力データを読み込むことができます。
-デコード関数が提供されることでデシリアライズされたコンテンツを受け取ることができます。::
-
-    // PUT/POSTアクションで投稿されたデータをJSON形式にエンコードで取得する
-    $data = $this->request->input('json_decode');
-
-``json_decode`` の'as array'パラメータやXMLをDOMDocumentオブジェクトに変換したい時のように、
-デシリアライズメソッドの中には呼び出し時に追加パラメータが必要なものがあるので :php:meth:`CakeRequest::input()`
-は追加パラメータを渡せるようになっています。::
-
-    // PUT/POSTアクションで投稿されたデータをXmlエンコードで取得する
-    $data = $this->request->input('Xml::build', array('return' => 'domdocument'));
-
-パス情報にアクセスする
-======================
-
-CakeRequestはまたアプリケーションのパスについての役立つ情報を提供しています。 :php:attr:`CakeRequest::$base`
-と :php:attr:`CakeRequest::$webroot` はURLの生成や、アプリケーションがサブディレクトリにいるのかどうかの決定に役立ちます。
-
-.. _check-the-request:
-
-リクエストを調べる
-==================
-
-さまざまなリクエストの状態を検出するために以前は :php:class:`RequestHandlerComponent` を使う必要がありました。
-これらのメソッドは ``CakeRequest`` に移動され後方互換を保ちつつ新しいインターフェイスが提供されています。
-使い方は以下の通りです。::
-
-    $this->request->is('post');
-    $this->request->isPost();
-
-どちらのメソッド呼び出しも同じ値を返します。RequestHandlerにてそのメソッドが利用できるようになったとき、
-これらのメソッドは廃止され最終リリース前に削除されるかもしれません。また、新しい種類の検出器(detector)を作成するために
-:php:meth:`CakeRequest::addDetector()` を使うことでリクエスト検出器を簡単に拡張することができます。4種類の異なる検出器を作成できます。:
-
-* 環境変数の比較 - 環境変数の比較、 :php:func:`env()` から取得された値と既知の値を比較します。
-  環境変数は提供された値に対して等価性をチェックされます。
-* パターン値の比較 - パターン値の比較では :php:func:`env()` から取得された値と正規表現を比較します。
-* オプションベースの比較 - オプションベースの比較では正規表現を作成するためにオプションのリストを使います。
-  既に定義済みのオプション検出器を追加するための呼び出しはオプションをマージするでしょう。
-* コールバック検出器 - コールバック検出器はチェックをハンドリングするために'callback'タイプを提供します。
-  コールバックはパラメータとしてだけリクエストオブジェクトを受け取ります。
-
-いくつかの例を示します。::
-
-    // environment detectorを追加する
-    $this->request->addDetector('post', array('env' => 'REQUEST_METHOD', 'value' => 'POST'));
-
-    // pattern value detectorを追加する
-    $this->request->addDetector('iphone', array('env' => 'HTTP_USER_AGENT', 'pattern' => '/iPhone/i'));
-
-    // option detectorを追加する
-    $this->request->addDetector('internalIp', array(
-        'env' => 'CLIENT_IP',
-        'options' => array('192.168.0.101', '192.168.0.100')
-    ));
-
-    // callback detectorを追加する。匿名関数か通常のコールバックが指定可能。
-    $this->request->addDetector('awesome', array('callback' => function ($request) {
-        return isset($request->awesome);
-    }));
-
-``CakeRequest`` には :php:meth:`CakeRequest::domain()`, :php:meth:`CakeRequest::subdomains()` や
-:php:meth:`CakeRequest::host()` といったサブドメインを扱うのに役立つメソッドがあるため、少し楽ができます。
-
-利用可能な組み込みの検出器は以下の通りです。:
-
-* ``is('get')`` 現在のリクエストがGETかどうかを調べます。
-* ``is('put')`` 現在のリクエストがPUTかどうかを調べます。
-* ``is('post')`` 現在のリクエストがPOSTかどうかを調べます。
-* ``is('delete')`` 現在のリクエストがDELETEかどうかを調べます。
-* ``is('head')`` 現在のリクエストがHEADかどうかを調べます。
-* ``is('options')`` 現在のリクエストがOPTIONSかどうかを調べます。
-* ``is('ajax')`` 現在のリクエストが X-Requested-With = XMLHttpRequestに由来するものかどうかを調べます。
-* ``is('ssl')`` リクエストがSSL経由かどうかを調べます。
-* ``is('flash')`` リクエストにFlashのUser-Agentがあるかどうかを調べます。
-* ``is('mobile')`` リクエストがモバイルエージェントの共通リストに由来しているかどうかを調べます。
-
-CakeRequest と RequestHandlerComponent
-======================================
-
-``CakeRequest`` が提供している多くの機能は以前、 :php:class:`RequestHandlerComponent` の中にあったので、
-CakePHP2.0にどのように収まるのかを理解するために再考する必要がありました。2.0において :php:class:`RequestHandlerComponent`
-はパトロン(sugar daddy)として振るいます。 `CakeRequest` が提供するユーティリティの最上位に砂糖のレイヤーを提供しています。
-レイアウトの切り替えやコンテンツタイプやajaxを基にしたビューといった砂糖は :php:class:`RequestHandlerComponent`
-の領域です。ユーティリティと砂糖のクラスを分離することで欲しいもの、必要なものの取捨選択が簡単になるでしょう。
-
-リクエストの他要素と対話する
-============================
-
-`CakeRequest` はリクエストに関する様々なことを内省(introspect)するために使えます。
-また、検出器によって様々なプロパティやメソッドからの他の情報を発見できます。
-
-* ``$this->request->webroot`` はwebrootディレクトリを含みます。
-* ``$this->request->base`` は基本パスを含みます。
-* ``$this->request->here`` は現在のリクエストへの完全なアドレスを含みます。
-* ``$this->request->query`` はクエリ文字列パラメータを含みます。
-
-CakeRequest API
-===============
-
-.. php:class:: CakeRequest
-
-    CakeRequestはリクエストパラメータのハンドリングをカプセル化し、内省化します。
-
-.. php:method:: domain()
-
-    アプリケーションが実行されているドメイン名を返します。
-
-.. php:method:: subdomains()
-
-    アプリケーションが実行されているサブドメインを配列で返します。
-
-.. php:method:: host()
-
-    アプリケーションのホスト名を返します。
-
-.. php:method:: method()
-
-    リクエストのHTTPメソッドを返します。
-
-.. php:method:: referer()
-
-    リクエストのリファラを返します。
-
-.. php:method:: clientIp()
-
-    現在アクセスしているクライアントのIPアドレスを返します。
-
-.. php:method:: header()
-
-    リクエストで使われている``HTTP_*``ヘッダにアクセスできます。::
-
-        $this->request->header('User-Agent');
-
-    この例の場合、リクエストで使われているユーザエージェントが返るでしょう。
+PUT、PATCH または DELETE データ
+-------------------------------
 
 .. php:method:: input($callback, [$options])
 
-    リクエストとデコード関数を通して渡されたinputデータを取得します。デコード関数の追加パラメータはinput()の引数として渡す事ができます。
+REST サービスを構築しているとき ``PUT`` と ``DELETE`` リクエストのデータを受付けることが
+よくあります。 ``application/x-www-form-urlencoded`` リクエストボディのデータは
+``PUT`` と ``DELETE`` リクエストでは自動的に構文解析され ``$this->data`` に設定されます。
+もし JSON や XML データを受け付けている場合、どうやってリクエストボディにアクセスすればいいのかに
+ついては以下の説明を見て下さい。
 
-.. php:method:: data($key)
+入力されたデータにアクセスする場合、オプション機能でそれをデコードすることができます。
+XML や JSON のリクエストボディのコンテンツと対話するときに便利です。
+デコード機能のための追加のパラメータは、 ``input()`` の引数として渡すことができます。 ::
 
-    リクエストデータへドット記法によるアクセスを提供します。リクエストデータの読み込みと変更が可能です。また次のように連鎖的に呼び出す事をできます。::
+    $jsonData = $this->request->input('json_decode');
 
-        // リクエストデータを修正し、フォームフィールドを生成できます。
-        $this->request->data('Post.title', 'New post')
-            ->data('Comment.1.author', 'Mark');
+環境変数 ($ _SERVER と $ _ENV より)
+-----------------------------------
 
-        // データの取得もできます。
-        $value = $this->request->data('Post.title');
+.. php:method:: env($key, $value = null)
 
-.. php:method:: is($check)
+``ServerRequest::env()`` は、 ``env()`` グローバル関数のラッパーで、グローバルな
+``$_SERVER`` や ``$_ENV`` を変更することなくゲッター/セッターとして動作します。 ::
 
-    リクエストがある基準に適合するかどうかを調べます。 :php:meth:`CakeRequest::addDetector()` で追加された追加のルールと同様に組み込みの検出ルールを使えます。
+    // ホストの取得
+    $host = $this->request->env('HTTP_HOST');
 
-.. php:method:: addDetector($name, $callback)
+    // 値を設定。一般的にはテストに役立ちます。
+    $this->request->env('REQUEST_METHOD', 'POST');
 
-    is()と一緒に使われる検出器を追加します。詳しくは、 :ref:`check-the-request` を参照して下さい。
+``getServerParams()`` を使用すると、全ての環境変数にアクセスできます。 ::
 
-.. php:method:: accepts($type)
+    $env = $this->request->getServerParams();
 
-    クライアントがどのコンテンツタイプを受理するかを調べます。また、特定のコンテンツタイプが受理されるかどうかを調べます。
+.. versionadded:: 3.4.0
+    ``getServerParams()`` は、3.4.0 で追加されました。
 
-    すべてのタイプを取得::
+XML または JSON データ
+----------------------
 
-        $this->request->accepts();
+:doc:`/development/rest` を採用しているアプリケーションでは URL エンコードされていない
+post 形式でデータを交換することがしばしばあります。 :php:meth:`~Cake\\Http\\ServerRequest::input()`
+を使用すると、任意の形式の入力データを読み込むことができます。
+デコード関数が提供されることでデシリアライズされたコンテンツを受け取ることができます。 ::
 
-    あるタイプについて調べる::
+    // PUT/POST アクションで投稿されたデータを JSON 形式にエンコードで取得する
+    $jsonData = $this->request->input('json_decode');
 
-        $this->request->accepts('application/json');
+``json_decode`` で「結果を配列として受け取る」パラメータのように、デシリアライズメソッドの中には
+呼び出し時に追加パラメータが必要なものがあります。同様に、 Xml を DOMDocument オブジェクトに
+変換したい場合、 :php:meth:`~Cake\\Http\\ServerRequest::input()` は、
+追加のパラメータを渡すことができます。 ::
 
-.. php:staticmethod:: acceptLanguage($language)
+    // PUT/POST アクションで投稿されたデータを XML エンコードで取得する
+    $data = $this->request->input('Cake\Utility\Xml::build', ['return' => 'domdocument']);
 
-    クライアントによって受理されるすべての言語を取得します。また、特定の言語が受理されるかどうかを調べます。
+パス情報
+--------
 
-    受理される言語のリストを取得::
+リクエストオブジェクトはまたアプリケーションのパスについての役立つ情報を提供しています。
+``base`` や ``webroot`` 属性は URL の生成や、 アプリケーションが
+サブディレクトリにいるのかどうかの決定に役立ちます。様々な属性が使用できます。 ::
 
-        CakeRequest::acceptLanguage();
+    // 現在のリクエスト URL が /subdir/articles/edit/1?page=1 であると仮定
 
-    特定の言語が受理されるかどうかを調べる::
+    // /subdir/articles/edit/1?page=1 を保持
+    $here = $request->here();
 
-        CakeRequest::acceptLanguage('es-es');
+    // /subdir を保持
+    $base = $request->getAttribute('base');
 
-.. php:attr:: data
+    // /subdir/ を保持
+    $base = $request->getAttribute('base');
 
-    POSTデータの配列です。 :php:meth:`CakeRequest::data()` を使うとエラーが発生しないようにしつつプロパティを読み込むことができます。
+    // 3.4.0 より前
+    $webroot = $request->webroot;
+    $base = $request->base;
 
-.. php:attr:: query
+.. _check-the-request:
 
-    クエリ文字列パラメータの配列です。
+リクエストの状態をチェック
+--------------------------
 
-.. php:attr:: params
+.. php:method:: is($type, $args...)
 
-    ルート要素とリクエストパラメータの配列です。
+リクエストオブジェクトは、特定のリクエストに一定の条件を検査する簡単な方法を提供します。
+``is()`` メソッドを使用することで、多くの一般的な条件を確認するだけでなく、
+他のアプリケーション固有の要求基準を検査することができます。 ::
 
-.. php:attr:: here
+    $isPost = $this->request->is('post');
 
-    現在のリクエストのuriを返します。
+新しい種類の検出器を作成するために :php:meth:`Cake\\Http\\ServerRequest::addDetector()`
+を使用することで利用可能なリクエスト検出器を拡張することができます。4種類の異なる検出器を作成できます。
 
-.. php:attr:: base
+* 環境変数の比較 - 環境変数の比較、 :php:func:`env()` から取得された値と提供された値が
+  等しいかどうかを比較します。
+* パターン値の比較 - パターン値の比較では :php:func:`env()` から取得された値と正規表現を比較します。
+* オプションベースの比較 - オプションベースの比較では正規表現を作成するためにオプションのリストを使います。
+  既に定義済みのオプション検出器を追加するための呼び出しはオプションをマージするでしょう。
+* コールバック検出器 - コールバック検出器はチェックをハンドリングするために 'callback' タイプを
+  提供します。コールバックはパラメータとしてだけリクエストオブジェクトを受け取ります。
 
-    アプリケーションへのベースパスです。アプリケーションがサブディレクトリに配置されていない限り、普通は ``/`` です。
+.. php:method:: addDetector($name, $options)
 
-.. php:attr:: webroot
+いくつかの例::
 
-    現在のwebrootてす。
+    // environment detector の追加
+    $this->request->addDetector(
+        'post',
+        ['env' => 'REQUEST_METHOD', 'value' => 'POST']
+    );
+
+    // pattern value detector の追加
+    $this->request->addDetector(
+        'iphone',
+        ['env' => 'HTTP_USER_AGENT', 'pattern' => '/iPhone/i']
+    );
+
+    // option detector の追加
+    $this->request->addDetector('internalIp', [
+        'env' => 'CLIENT_IP',
+        'options' => ['192.168.0.101', '192.168.0.100']
+    ]);
+
+    // callback detector を追加。有効な callable 形式でなければなりません。
+    $this->request->addDetector(
+        'awesome',
+        function ($request) {
+            return $request->getParam('awesome');
+        }
+    );
+
+    // 追加の引数を使用する検出器を追加。3.3.0 以降。
+    $this->request->addDetector(
+        'controller',
+        function ($request, $name) {
+            return $request->getParam('controller') === $name;
+        }
+    );
+
+``Request`` は、 :php:meth:`Cake\\Http\\ServerRequest::domain()` 、
+:php:meth:`Cake\\Http\\ServerRequest::subdomains()` 、
+:php:meth:`Cake\\Http\\ServerRequest::host()` のようにサブドメインで
+アプリケーションを助けるためのメソッドを含みます。
+
+利用可能な組み込みの検出器は以下の通りです。
+
+* ``is('get')`` 現在のリクエストが GET かどうかを調べます。
+* ``is('put')`` 現在のリクエストが PUT かどうかを調べます。
+* ``is('patch')`` 現在のリクエストが PATCH かどうかを調べます。
+* ``is('post')`` 現在のリクエストが POST かどうかを調べます。
+* ``is('delete')`` 現在のリクエストが DELETE かどうかを調べます。
+* ``is('head')`` 現在のリクエストが HEAD かどうかを調べます。
+* ``is('options')`` 現在のリクエストが OPTIONS かどうかを調べます。
+* ``is('ajax')`` 現在のリクエストが X-Requested-With = XMLHttpRequest
+  に由来するものかどうかを調べます。
+* ``is('ssl')`` リクエストが SSL 経由かどうかを調べます。
+* ``is('flash')`` リクエストに Flash の User-Agent があるかどうかを調べます。
+* ``is('requested')`` リクエストに、値が１のクエリパラメータ 「requested」があるかどうかを調べます。
+* ``is('json')`` リクエストに 「json」 の拡張子を持ち 「application/json」
+  MIME タイプを受付けるかどうかを調べます。
+* ``is('xml')`` リクエストが 「xml」拡張子を持ち、「application/xml」または「text/xml」
+  MIME タイプを受付けるかどうかを調べます。
+
+.. versionadded:: 3.3.0
+    3.3.0 から検出器は追加のパラメータが受け取れます。
+
+
+セッションデータ
+----------------
+
+特定のリクエストのセッションにアクセスするには、 ``session()`` メソッドを使用します。 ::
+
+    $userName = $this->request->session()->read('Auth.User.name');
+
+詳細については、セッションオブジェクトを使用する方法のための :doc:`/development/sessions`
+ドキュメントを参照してください。
+
+ホストとドメイン名
+------------------
+
+.. php:method:: domain($tldLength = 1)
+
+アプリケーションが実行されているドメイン名を返します。 ::
+
+    // 'example.org' を表示
+    echo $request->domain();
+
+.. php:method:: subdomains($tldLength = 1)
+
+アプリケーションが実行されているサブドメインを配列で返します。 ::
+
+    // 'my.dev.example.org' の場合、 ['my', 'dev'] を返す 
+    $subdomains = $request->subdomains();
+
+.. php:method:: host()
+
+アプリケーションのホスト名を返します。 ::
+
+    // 'my.dev.example.org' を表示
+    echo $request->host();
+
+HTTP メソッドの読み込み
+-----------------------------
+
+.. php:method:: getMethod()
+
+リクエストの HTTP メソッドを返します。 ::
+
+    // POST を出力
+    echo $request->getMethod();
+
+    // 3.4.0 より前
+    echo $request->method();
+
+アクションが受け入れる HTTP メソッドの制限
+-----------------------------------------------
+
+.. php:method:: allowMethod($methods)
+
+許可された HTTP メソッドを設定します。
+もしマッチしなかった場合、 ``MethodNotAllowedException`` を投げます。
+405 レスポンスには、通過できるメソッドを持つ ``Allow`` ヘッダが含まれます。 ::
+
+    public function delete()
+    {
+        // POST と DELETE のリクエストのみ受け入れます
+        $this->request->allowMethod(['post', 'delete']);
+        ...
+    }
+
+HTTP ヘッダーの読み込み
+-----------------------
+
+リクエストで使われている ``HTTP_*`` ヘッダにアクセスできます。
+例えば::
+
+    // 文字列としてヘッダーを取得
+    $userAgent = $this->request->getHeaderLine('User-Agent');
+
+    // 全ての値を配列で取得
+    $acceptHeader = $this->request->getHeader('Accept');
+
+    // ヘッダーの存在を確認
+    $hasAcceptHeader = $this->request->hasHeader('Accept');
+
+    // 3.4.0 より前
+    $userAgent = $this->request->header('User-Agent');
+
+いくつかの apache インストール環境では、 ``Authorization`` ヘッダーにアクセスできませんが、
+CakePHP は、必要に応じて apache 固有のメソッドを介して利用できるようにします。
+
+.. php:method:: referer($local = false)
+
+リクエストのリファラを返します。
+
+.. php:method:: clientIp()
+
+現在アクセスしているクライアントの IP アドレスを返します。
+
+プロキシヘッダの信頼
+--------------------
+
+アプリケーションがロードバランサの背後にあったり、クラウドサービス上で実行されている場合、
+しばしばリクエストでロードバランサのホスト、ポートおよびスキームを取得します。
+多くの場合、ロードバランサはまた、オリジナルの値として ``HTTP-X-Forwarded-*`` ヘッダーを送信します。
+転送されたヘッダは、CakePHP によって使用されることはありません。リクエストオブジェクトで
+これらのヘッダを使用するには、 ``trustProxy`` プロパティを ``true`` にを設定します。 ::
+
+    $this->request->trustProxy = true;
+
+    // これらのメソッドがプロキシのヘッダーを使用するようになります。
+    $port = $this->request->port();
+    $host = $this->request->host();
+    $scheme = $this->request->scheme();
+    $clientIp = $this->request->clientIp();
+
+Accept ヘッダの確認
+-------------------
+
+.. php:method:: accepts($type = null)
+
+クライアントがどのコンテンツタイプを受付けるかを調べます。また、特定のコンテンツタイプが
+受付られるかどうかを調べます。
+
+すべてのタイプを取得::
+
+    $accepts = $this->request->accepts();
+
+あるタイプについての確認::
+
+    $acceptsJson = $this->request->accepts('application/json');
+
+.. php:method:: acceptLanguage($language = null)
+
+クライアントが受付けるすべての言語を取得します。また、特定の言語が受付られるかどうかを調べます。
+
+受付られる言語のリストを取得::
+
+    $acceptsLanguages = $this->request->acceptLanguage();
+
+特定の言語が受付られるかどうかの確認::
+
+    $acceptsSpanish = $this->request->acceptLanguage('es-es');
 
 .. index:: $this->response
 
-CakeResponse
-############
+レスポンス
+==========
 
-:php:class:`CakeResponse` はCakePHPのデフォルトのレスポンスクラスです。いくつかの機能とHTTPレスポンスの生成をカプセル化します。
-また送信予定のヘッダを調べるためにモックやスタブとしてテストの手助けをします。:php:class:`CakeRequest` のように
-:php:class:`CakeResponse` は :php:class:`Controller` や :php:class:`RequestHandlerComponent`
-や :php:class:`Dispatcher` に以前からある多くのメソッドを強化します。古いメソッドは廃止され
-:php:class:`CakeResponse` の使用が推奨されます。
+.. php:class:: Response
 
-``CakeResponse`` は次のような共通のレスポンスをラップするためのインターフェイスを提供します。:
+:php:class:`Cake\\Http\\Response` は、CakePHP のデフォルトのレスポンスクラスです。
+いくつかの機能と HTTP レスポンスの生成をカプセル化します。
+また送信予定のヘッダを調べるためにモックやスタブとしてテストの手助けをします。
+:php:class:`Cake\\Http\\ServerRequest` と同様に、 :php:class:`Controller`,
+:php:class:`RequestHandlerComponent` 及び :php:class:`Dispatcher` に以前あった多くのメソッドを
+:php:class:`Cake\\Http\\Response` が統合します。
+古いメソッドは非推奨になり、 :php:class:`Cake\\Http\\Response` の使用を推奨します。
 
-* リダイレクトのためにヘッダを送ること。
-* コンテンツタイプヘッダを送ること。
-* ヘッダを送ること。
-* レスポンスボディを送ること。
+``Response`` は次のような共通のレスポンスをラップするためのインターフェイスを提供します。
 
-レスポンスクラスを変更する
-==========================
+* リダイレクトのヘッダを送信。
+* コンテンツタイプヘッダの送信。
+* 任意のヘッダの送信。
+* レスポンスボディの送信。
 
-CakePHPはデフォルトで  ``CakeResponse`` を使います。 ``CakeResponse`` は柔軟で透過的にクラスが使われます。
-しかし、このクラスをアプリケーション固有のクラスに置き換える必要がある場合、 ``CakeResponse``
-をオーバーライドして独自のクラスで置き換えることができます。それはindex.phpで使われているCakeResponseを置き換えることで実現できます。
+コンテンツタイプの扱い
+----------------------
 
-この置き換えによってすべてのコントローラが :php:class:`CakeResponse` の代わりに
-``CustomResponse`` を使えるようになります。またコントローラの中で  ``$this->response``
-と設定することでレスポンスインスタンスを置き換えることができます。レスポンスオブジェクトのオーバーライドは
-``header()`` とやりとりするメソッドをスタブ化しやすくするので、テストで使いやすいです。
-詳しくは :ref:`cakeresponse-testing` を参照して下さい。
+.. php:method:: withType($contentType = null)
 
-コンテンツタイプを扱う
-======================
+:php:meth:`Cake\\Http\\Response::withType()` を使用して、アプリケーションのレスポンスの
+コンテンツタイプを制御することができます。アプリケーションが Response に組み込まれていない
+コンテンツの種類に対処する必要がある場合は、以下のように ``type()`` を使って設定することができます。 ::
 
-:php:meth:`CakeResponse::type()` を使うことでアプリケーションレスポンスのContent-Typeを制御することができます。
-もしCakeResponseに組み込まれていないコンテンツタイプを扱う必要がある場合、以下のように
-``type()`` を使って設定することが出来ます。::
+    // vCard タイプを追加
+    $this->response->type(['vcf' => 'text/v-card']);
 
-    // vCard タイプを追加する
-    $this->response->type(array('vcf' => 'text/v-card'));
+    // レスポンスのコンテンツタイプを vcard に設定
+    $this->response = $this->response->withType('vcf');
 
-    // レスポンスのContent-Typeをcardに設定する
+    // 3.4.0 より前
     $this->response->type('vcf');
 
-大抵の場合、追加のコンテンツタイプはコントローラの ``beforeFilter`` コールバックの中で設定したいと思うので、
-:php:class:`RequestHandlerComponent` が提供するビューの自動切り替え機能を活用できます。
+大抵の場合、追加のコンテンツタイプはコントローラの :php:meth:`~Controller::beforeFilter()`
+コールバックの中で設定したいと思うので、 :php:class:`RequestHandlerComponent` が提供する
+ビューの自動切り替え機能を活用できます。
 
-添付ファイルを送る
-==================
+.. _cake-response-file:
 
-コントローラからのレスポンスをダウンロードファイルとして送りたいときがあります。それは
-:doc:`/views/media-view` を使うか、 ``CakeResponse`` の機能を使うことで実現できます。
-:php:meth:`CakeResponse::download()` はダウンロードファイルとしてレスポンスを送れるようにしてくれます。::
+ファイルの送信
+--------------
 
-    public function sendFile($id) {
-        $this->autoRender = false;
+.. php:method:: withFile($path, $options = [])
 
-        $file = $this->Attachment->getFile($id);
-        $this->response->type($file['type']);
-        $this->response->download($file['name']);
-        $this->response->body($file['content']);
+リクエストに対する応答としてファイルを送信する機会があります。
+:php:meth:`Cake\\Http\\Response::withFile()` を使用してそれを達成することができます。 ::
+
+    public function sendFile($id)
+    {
+        $file = $this->Attachments->getFile($id);
+        $response = $this->response->withFile($file['path']);
+        // レスポンスオブジェクトを返すとコントローラがビューの描画を中止します
+        return $response;
     }
 
-上記の例では :php:class:`MediaView` を使わずにファイルダウンロードのレスポンスを生成する場合、
-CakeResponseをどのように使えばよいかを示しています。
+上記の例のようにメソッドにファイルのパスを渡す必要があります。CakePHP は、
+`Cake\\Http\\Reponse::$_mimeTypes` に登録された、よく知られるファイルタイプであれば
+正しいコンテンツタイプヘッダを送ります。 :php:meth:`Cake\\Http\\Response::withFile()` を呼ぶ前に
+:php:meth:`Cake\\Http\\Response::withType()` メソッドを使って、新しいタイプを追加できます。
 
-ヘッダを設定する
-================
+もし、あなたが望むなら、 オプションを明記することによって、ブラウザ上に表示する代わりにファイルを
+ダウンロードさせることができます。 ::
 
-ヘッダの設定は :php:meth:`CakeResponse::header()` で行われます。このメソッドは少し違ったパラメータ設定と一緒に呼ばれます。::
+    $response = $this->response->withFile(
+        $file['path'],
+        ['download' => true, 'name' => 'foo']
+    );
 
-    // ヘッダを一つ設定する
+サポートされているオプションは次のとおりです。
+
+name
+    name は、ユーザーに送信される代替ファイル名を指定することができます。
+download
+    ヘッダーでダウンロードを強制するように設定する必要があるかどうかを示すブール値。
+
+文字列をファイルとして送信
+--------------------------
+
+動的に生成された pdf や ics のようにディスク上に存在しないファイルを返すことができます。 ::
+
+    public function sendIcs()
+    {
+        $icsString = $this->Calendars->generateIcs();
+        $response = $this->response;
+        $response->body($icsString);
+
+        $response = $response->withType('ics');
+
+        // 任意のダウンロードファイル名を指定できます
+        $response = $response->withDownload('filename_for_download.ics');
+
+        // レスポンスオブジェクトを返すとコントローラがビューの描画を中止します
+        return $response;
+    }
+
+ストリーミングリソース
+----------------------
+
+リソースストリームをレスポンスに変換するために ``body()`` でコールバックを使用することができます。 ::
+
+    $file = fopen('/some/file.png', 'r');
+    $this->response->body(function () use ($file) {
+        rewind($file);
+        fpassthru($file);
+        fclose($file);
+    });
+
+コールバックはまた、文字列としてボディを返すことができます。 ::
+
+    $path = '/some/file.png';
+    $this->response->body(function () use ($path) {
+        return file_get_contents($path);
+    });
+
+
+ヘッダの設定
+------------
+
+.. php:method:: withHeader($header, $value)
+
+ヘッダーの設定は :php:meth:`Cake\\Http\\Response::withHeader()` メソッドで行われます。
+このメソッドは少し違ったパラメータ設定と一緒に呼ばれます。すべての PSR-7 インターフェイスの
+メソッドと同様に、このメソッドは新しいヘッダーを含む *新しい* インスタンスを返します。 ::
+
+    // 一つのヘッダーを追加/置換
+    $response = $response->withHeader('X-Extra', 'My header');
+
+    // 一度に複数ヘッダーを設定
+    $response = $response->withHeader('X-Extra', 'My header')
+        ->withHeader('Location', 'http://example.com');
+
+    // 既存のヘッダーに値を追加
+    $response = $response->withAddedHeader('Set-Cookie', 'remember_me=1');
+
+    // 3.4.0 より前 - 一つのヘッダーを設定
     $this->response->header('Location', 'http://example.com');
 
-    // 複数ヘッダを設定する
-    $this->response->header(array('Location' => 'http://example.com', 'X-Extra' => 'My header'));
-    $this->response->header(array('WWW-Authenticate: Negotiate', 'Content-type: application/pdf'));
+セットされた際、ヘッダは送られません。これらのヘッダは、 ``Cake\Http\Server`` によって
+レスポンスが実際に送られるまで保持されます。
 
-同じヘッダを複数回設定すると、普通のheader呼び出しと同じように、以前の値を上書きしていしまいます。
-:php:meth:`CakeResponse::header()` が呼び出されなければヘッダは送られません。これらのヘッダはレスポンスが実際に送られるまでバッファリングされます。
+便利なメソッド :php:meth:`Cake\\Http\\Response::withLocation()` を使うと
+直接リダイレクトヘッダの設定や取得ができます。
 
-ブラウザキャッシュと対話する
-============================
+文字コードの設定
+----------------
+
+.. php:method:: withCharset($charset)
+
+レスポンスの中で使われる文字コードの種類を設定します。 ::
+
+    $this->response = $this->response->withCharset('UTF-8');
+
+    // 3.4.0 より前
+    $this->response->charset('UTF-8');
+
+ブラウザキャッシュとの対話
+--------------------------
+
+.. php:method:: withDisableCache()
 
 時々、コントローラアクションの結果をキャッシュしないようにブラウザに強制する必要がでてきます。
-:php:meth:`CakeResponse::disableCache()` はそういった目的で使われます。::
+:php:meth:`Cake\\Http\\Response::disableCache()` はそういった目的で使われます。 ::
 
-    public function index() {
-        // do something.
-        $this->response->disableCache();
+    public function index()
+    {
+        // キャッシュの無効化
+        $this->response = $this->response->withDisabledCache();
     }
 
 .. warning::
 
-    Internet Explorerにファイルを送ろうとしている場合、SSLドメインからのダウンロードと一緒にdisableCache()を使うことをエラーにすることができます。
+    Internet Explorer にファイルを送ろうとしている場合、SSL ドメインからの
+    キャッシュを無効にすることで結果をエラーにすることができます。
 
-また、:php:meth:`CakeResponse::cache()` を使ってクライアントにレスポンスをキャッシュして欲しいことを伝えられます。::
+.. php:method:: withCache($since, $time = '+1 day')
 
-    public function index() {
-        //do something
-        $this->response->cache('-1 minute', '+5 days');
+クライアントにレスポンスをキャッシュして欲しいことを伝えられます。
+:php:meth:`Cake\\Http\\Response::withCache()` を使って::
+
+    public function index()
+    {
+        // キャッシュの有効化
+        $this->response = $this->response->withCache('-1 minute', '+5 days');
     }
 
-上記の例では、訪問者の体感スピード向上のため、クライアントにレスポンス結果を5日間キャッシュするように伝えています。 ``cache()`` は\
-第一引数をLast-Modifiedヘッダの値に設定します。ExpiresヘッダとMax-ageヘッダは\
-第二引数の値をもとに設定されます。Cache-Controlヘッダにはpublicが設定されます。
+上記の例では、訪問者の体感スピード向上のため、クライアントにレスポンス結果を
+5日間キャッシュするように伝えています。
+``withCache()`` メソッドは、第一引数に ``Last-Modified`` ヘッダの値を設定します。
+第二引数に ``Expires`` ヘッダと ``max-age`` ディレクティブの値を設定します。
+Cache-Control の ``public`` ディレクティブも設定されます。
 
 .. _cake-response-caching:
 
-HTTPキャッシュをチューニングする
-================================
+HTTP キャッシュのチューニング
+-----------------------------
 
-アプリケーションの速度を改善するための簡単で最善の方法の一つはHTTPキャッシュを使う事です。
-このキャッシュモデルの元では、modified time, response entity tagなどいくつかのヘッダを設定することでレスポンスのキャッシュコピーを使うべきかどうかをクライアントが決定できるように助ける事が求められます。
+アプリケーションの速度を改善するための簡単で最善の方法の一つは HTTP キャッシュを使う事です。
+このキャッシュモデルの元では、modified time, response entity tag などいくつかのヘッダを
+設定することでレスポンスのキャッシュコピーを使うべきかどうかをクライアントが決定できるように
+助ける事が求められます。
 
 キャッシュやデータが変更されたときに無効化(更新)するロジックのコードを持つのではなく、
-HTTPは二つのモデル、expirationとvalidationを使います。これらは大抵の場合、自身でキャッシュを管理するよりかなり単純です。
+HTTP は二つのモデル、expiration と validation を使います。これらは大抵の場合、
+自身でキャッシュを管理するよりかなり単純です。
 
-:php:meth:`CakeResponse::cache()` と独立して、HTTPキャッシュヘッダをチューニングするための様々なメソッドが使えます。
-この点に関して、ブラウザやリバースプロキシのキャッシュよりも有利だと言えます。
+:php:meth:`Cake\\Http\\Response::withCache()` と独立して、HTTP キャッシュヘッダを
+チューニングするための様々なメソッドが使えます。この点に関して、ブラウザやリバースプロキシの
+キャッシュよりも有利だと言えます。
 
-Cache Controlヘッダ
--------------------
 
-.. versionadded:: 2.1
+Cache Control ヘッダ
+~~~~~~~~~~~~~~~~~~~~
 
-キャッシュ制御ヘッダはexpirationモデルの元で使われ、複数の指示を含んでいます。ブラウザやプロキシがどのようにキャッシュされたコンテンツを扱うのかをその指示で変更することができます。
-Cache-Control ヘッダは以下の通りです。::
+.. php:method:: withSharable($public, $time = null)
+
+キャッシュ制御ヘッダは expiration モデルの元で使われ、複数の指示を含んでいます。
+ブラウザやプロキシがどのようにキャッシュされたコンテンツを扱うのかをその指示で変更することができます。
+``Cache-Control`` ヘッダは以下の通りです。 ::
 
     Cache-Control: private, max-age=3600, must-revalidate
 
-変更されない妥当なCache-Controlヘッダを生成するいくつかのユーティリティメソッドを用いることで ``CakeResponse``
-クラスはこのヘッダを設定します。一つ目は、:php:meth:`CakeResponse::sharable()` メソッドです。
+``Response`` のいくつかのユーティリティメソッドを用いることで、最終的に有効な ``Cache-Control``
+ヘッダを生成します。一つ目は、 ``withSharable()`` メソッドです。
 このメソッドは異なるユーザやクライアントの間で共有出来ることを考慮されたレスポンスかどうかを示します。
-このメソッドは実際には、このヘッダが `public` または `private` のどちらなのかを制御しています。
-privateにレスポンスを設定することは、レスポンスのすべてまたはその一部が特定のユーザ用であることを示しています。
-共有キャッシュのメリットを活かすためにはコントロールディレクティブをpublicに設定する必要があります。
+このメソッドは実際には、このヘッダが ``public`` または ``private`` のどちらなのかを制御しています。
+private としてレスポンスを設定することは、レスポンスのすべてまたはその一部が特定のユーザ用であることを
+示しています。共有キャッシュのメリットを活かすためにはコントロールディレクティブを public に設定する
+必要があります。
 
-このメソッドの二番目のパラメータはキャッシュの `max-age` を指定するために使われます。
-このパラメータはレスポンスが古いと見なされる秒数を表しています。::
+このメソッドの二番目のパラメータはキャッシュの ``max-age`` を指定するために使われます。このパラメータは
+レスポンスが古いと見なされる秒数を表しています。 ::
 
-    public function view() {
-        ...
-        // Cache-Control を3600秒の間、publicとして設定
-        $this->response->sharable(true, 3600);
+    public function view()
+    {
+        // ...
+        // Cache-Control を 3600 秒の間、public として設定
+        $this->response = $this->response->withSharable(true, 3600);
     }
 
-    public function my_data() {
-        ...
-        // Cache-Control を3600秒の間、privateとして設定
-        $this->response->sharable(false, 3600);
+    public function my_data()
+    {
+        // ...
+        // Cache-Control を 3600 秒の間、private として設定
+        $this->response = $this->response->withSharable(false, 3600);
     }
 
-``CakeResponse`` はCache-Controlヘッダの中で各コンポーネントを設定するための分割されたメソッドを公開しています。
+``Response`` は ``Cache-Control`` ヘッダの中で各コンポーネントを設定するための分割されたメソッドを
+公開しています。
 
-Expirationヘッダ
-----------------
+Expiration ヘッダ
+~~~~~~~~~~~~~~~~~
 
-.. versionadded:: 2.1
+.. php:method:: withExpires($time)
 
-cache expirationモデルのもとではまた、 `Expires` ヘッダを設定することが出来ます。このヘッダは、
-HTTP仕様によるとレスポンスが古いと見なされる日時を表しています。このヘッダは :php:meth:`CakeResponse::expires()` メソッドを使って設定されます。::
+``Expires`` ヘッダに、レスポンスが古いと見なされる日時を設定できます。
+このヘッダーは ``withExpires()`` メソッドを使って設定されます。 ::
 
-    public function view() {
-        $this->response->expires('+5 days');
+    public function view()
+    {
+        $this->response = $this->response->withExpires('+5 days');
     }
 
-またこのメソッドは、DateTimeまたはDateTimeクラスによって構文解析可能な文字列を受け付けます。
+またこのメソッドは、:php:class:`DateTime` インスタンスや :php:class:`DateTime` クラスによって
+構文解析可能な文字列を受け付けます。
 
-Etagヘッダ
-----------
+Etag ヘッダ
+~~~~~~~~~~~
 
-.. versionadded:: 2.1
+.. php:method:: withEtag($tag, $weak = false)
 
-HTTPにおけるキャッシュの検証はコンテンツが定期的に変化するような場合によく使われ、
+HTTP におけるキャッシュの検証はコンテンツが定期的に変化するような場合によく使われ、
 キャッシュが古いと見なせる場合にのみレスポンスコンテンツが生成されることをアプリケーションに求めます。
-このモデルのもとでは、クライアントはページを直接使う代わりにキャッシュの中に保存し続け、アプリケーションに毎回リソースが変更されたかどうかを尋ねます。
-これはイメージや他のアセットといった静的なリソースに対して使われる場合が多いです。
+このモデルのもとでは、クライアントはページを直接使う代わりにキャッシュの中に保存し続け、
+アプリケーションに毎回リソースが変更されたかどうかを尋ねます。
+これは画像や他のアセットといった静的なリソースに対して使われる場合が多いです。
 
-Etagヘッダ(entity tagと呼ばれる)は要求されたリソースを識別するための一意な文字列です。大抵の場合はファイルのチェックサムのようなもので、
+``withEtag()`` メソッド (entity tag と呼ばれる) は要求されたリソースを
+識別するための一意な文字列です。大抵の場合はファイルのチェックサムのようなもので、
 リソースが一致するかどうかを調べるためにキャッシュはチェックサムを比較するでしょう。
 
-実際にこのヘッダを使うメリットを得るためには、手動で :php:meth:`CakeResponse::checkNotModified()`
-メソッドを呼び出すかコントローラに :php:class:`RequestHandlerComponent` を読み込まなければなりません。::
+実際にこのヘッダを使うメリットを得るためには、手動で
+``checkNotModified()`` メソッドを呼び出すかコントローラに
+:doc:`/controllers/components/request-handling` を読み込まなければなりません。 ::
 
-    public function index() {
-        $articles = $this->Article->find('all');
-        $this->response->etag($this->Article->generateHash($articles));
-        if ($this->response->checkNotModified($this->request)) {
-            return $this->response;
+    public function index()
+    {
+        $articles = $this->Articles->find('all');
+        $response = $this->response->withEtag($this->Articles->generateHash($articles));
+        if ($response->checkNotModified($this->request)) {
+            return $response;
         }
-        ...
-    }
-
-Last Modifiedヘッダ
--------------------
-
-.. versionadded:: 2.1
-
-HTTPキャッシュのvalidationモデルのもとでは、リソースが最後に変更された日時を示すために `Last-Modified` ヘッダを設定することができます。
-このヘッダを設定するとCakePHPがキャッシュしているクライアントにレスポンスが変更されたのかどうかを返答する手助けとなります。
-
-実際にこのヘッダを使うメリットを得るためには、 :php:meth:`CakeResponse::checkNotModified()`
-メソッドを呼び出すかコントローラに :php:class:`RequestHandlerComponent` を読み込まなければなりません。::
-
-    public function view() {
-        $article = $this->Article->find('first');
-        $this->response->modified($article['Article']['modified']);
-        if ($this->response->checkNotModified($this->request)) {
-            return $this->response;
-        }
-        ...
-    }
-
-Varyヘッダ
-----------
-
-時には同じURLで異なるコンテンツを提供したいと思うかもしれません。これは多国語対応ページがある場合やブラウザごとに異なるHTMLを返すようなケースでしばしばおこります。
-そのような状況ではVaryヘッダを使えます。::
-
-        $this->response->vary('User-Agent');
-        $this->response->vary('Accept-Encoding', 'User-Agent');
-        $this->response->vary('Accept-Language');
-
-.. _cakeresponse-testing:
-
-CakeResponseとテスト
-====================
-
-コントローラとコンポーネントのテストが簡単に実施できた時、``CakeResponse`` を使っていて良かったと思うかもしれません。
-いくつものオブジェクトを横断して使われるメソッドの代わりに、コントローラとコンポーネントが ``CakeResponse``
-に委譲しているのをまねる(mock)オブジェクトを準備するだけでよくなります。このことで'単体'テストを作りやすくなり、コントローラのテスト実施が簡単になります。::
-
-    public function testSomething() {
-        $this->controller->response = $this->getMock('CakeResponse');
-        $this->controller->response->expects($this->once())->method('header');
+        $this->response = $response;
         // ...
     }
 
-さらに、CLIからヘッダ設定を試みた時に起こる'ヘッダ送信'エラーを避けるためにモックを使うことができるので、コマンドラインからより簡単にテストを実行できます。
+.. note::
 
-CakeResponse API
-================
+    ほとんどのプロキシユーザーは、おそらくパフォーマンスと互換性の理由から、Etags の代わりに
+    Last Modified ヘッダーの使用を検討してください。
 
-.. php:class:: CakeResponse
+Last Modified ヘッダ
+~~~~~~~~~~~~~~~~~~~~
 
-    CakeResponseはクライアントへ送信するレスポンスと対話するために役立つメソッドをたくさん提供しています。
+.. php:method:: withModified($time)
 
-.. php:method:: header()
+HTTP キャッシュの検証モデルのもとでは、リソースが最後に変更された日時を示すために
+``Last-Modified`` ヘッダを設定することができます。このヘッダを設定すると CakePHP が
+キャッシュしているクライアントにレスポンスが変更されたのかどうかを返答する手助けとなります。
 
-    レスポンスと一緒に送られる一つまたは複数のヘッダを直接設定できます。
+実際にこのヘッダを使うメリットを得るためには、
+``checkNotModified()`` メソッドを呼び出すかコントローラに
+:doc:`/controllers/components/request-handling` を読み込まなければなりません。 ::
 
-.. php:method:: charset()
+    public function view()
+    {
+        $article = $this->Articles->find()->first();
+        $response = $this->response->withModified($article->modified);
+        if ($response->checkNotModified($this->request)) {
+            return $response;
+        }
+        $this->response;
+        // ...
+    }
 
-    レスポンスの中で使われる文字コードの種類を設定します。
+Vary ヘッダ
+~~~~~~~~~~~
 
-.. php:method:: type($type)
+.. php:method:: withVary($header)
 
-    レスポンスのコンテンツタイプを設定します。既知のコンテンツタイプの別名かコンテンツタイプの正式名称を使えます。
+時には同じ URL で異なるコンテンツを提供したいと思うかもしれません。
+これは多国語対応ページがある場合やブラウザごとに異なる HTML を返すようなケースでしばしばおこります。
+そのような状況では ``Vary`` ヘッダを使えます。 ::
 
-.. php:method:: cache()
+    $response = $this->response->withVary('User-Agent');
+    $response = $this->response->withVary('Accept-Encoding', 'User-Agent');
+    $response = $this->response->withVary('Accept-Language');
 
-    レスポンスにキャッシュヘッダを設定することが出来ます。
+Not-Modified レスポンスの送信
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. php:method:: disableCache()
+.. php:method:: checkNotModified(Request $request)
 
-    レスポンスにクライアントのキャッシュを無効にするためのヘッダを設定します。
+リクエストオブジェクトとレスポンスのキャッシュヘッダを比較し、まだキャッシュが有効かどうかを決定します。
+もしまだ有効な場合、レスポンスのコンテンツは削除され `304 Not Modified` ヘッダが送られます。 ::
 
-.. php:method:: sharable($isPublic, $time)
+    // コントローラアクションの中で
+    if ($this->response->checkNotModified($this->request)) {
+        return $this->response;
+    }
 
-    Cache-Controlヘッダに `public` か `private` を設定し、任意で、リソースの `max-age` ディレクティブを設定します。
+.. _cors-headers:
 
-    .. versionadded:: 2.1
+クロスオリジンリクエストヘッダ（CORS）の設定
+============================================
 
-.. php:method:: expires($date)
+3.2 から、 `HTTP アクセス制御
+<https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS>`__ 関連の
+ヘッダーを定義するために、流れるようなインターフェースの ``cors()`` メソッドが使用できます。 ::
 
-    `Expires` ヘッダに特定の日付を設定することができます。
+    $this->response->cors($this->request)
+        ->allowOrigin(['*.cakephp.org'])
+        ->allowMethods(['GET', 'POST'])
+        ->allowHeaders(['X-CSRF-Token'])
+        ->allowCredentials()
+        ->exposeHeaders(['Link'])
+        ->maxAge(300)
+        ->build();
 
-    .. versionadded:: 2.1
+以下の基準が満たされた場合のみ、 CORS 関連ヘッダーはレスポンスに適用されます。
 
-.. php:method:: etag($tag, $weak)
+1. リクエストは ``Origin`` ヘッダーがあります。
+2. リクエストの ``Origin`` 値が許可された Origin 値のいずれかと一致します。
 
-    レスポンスリソースを一意に識別するために `Etag` ヘッダを設定します。
+.. versionadded:: 3.2
+    ``CorsBuilder`` は 3.2 で追加されました。
 
-    .. versionadded:: 2.1
+不変レスポンスに伴うよくある失敗
+========================================
 
-.. php:method:: modified($time)
+CakePHP 3.4.0 以降、レスポンスオブジェクトはレスポンスを不変オブジェクトとして扱う
+いくつかのメソッドを提供しています。不変オブジェクトは、偶発的な副作用の追跡を困難になるのを予防し、
+その変更順序のリファクタリングに起因するメソッド呼び出しに起因する間違いを減らします。
+それらは多くの利点を提供しますが、不変オブジェクトには慣れが必要です。
+``with`` で始まるメソッドは、レスポンスに対して不変な方法で動作し、
+**常に** 、 **新しい** インスタンスを返します。変更されたインスタンスを保持し忘れるのは、
+不変オブジェクトを扱うときに人々が最も頻繁にする失敗です。 ::
 
-    `Last-Modified` ヘッダに特定の日時を正しいフォーマットで設定します。
+    $this->response->withHeader('X-CakePHP', 'yes!');
 
-    .. versionadded:: 2.1
+上記のコードでは、レスポンスは ``X-CakePHP`` ヘッダーがありません。
+``withHeader()`` メソッドの戻り値を保持していないためです。
+上記のコードを修正するには、次のように記述します。 ::
 
-.. php:method:: checkNotModified(CakeRequest $request)
-
-    リクエストオブジェクトとレスポンスのキャッシュヘッダを比較し、まだキャッシュが有効かどうかを決定します。
-    もしまだ有効な場合、レスポンスのコンテンツは削除され `304 Not Modified` ヘッダが送られます。
-
-    .. versionadded:: 2.1
-
-.. php:method:: compress()
-
-    レスポンスのgzip圧縮を使用開始します。
-
-.. php:method:: download()
-
-    添付ファイルとしてレスポンスを送り、ファイル名を設定できます。
-
-.. php:method:: statusCode()
-
-    レスポンスのステータスコードを設定できます。
-
-.. php:method:: body()
-
-    レスポンスのコンテンツボディを設定します。
-
-.. php:method:: send()
-
-    レスポンスの作成が完了した後に、send()を呼び出すことでボディと同様に設定されているすべてのヘッダが送られます。
-    各リクエストの最後に :php:class:`Dispatcher` によって自動的に行われます。
-
+    $this->response = $this->response->withHeader('X-CakePHP', 'yes!');
 
 .. meta::
-    :title lang=en: Request and Response objects
-    :keywords lang=en: request controller,request parameters,array indices,purpose index,response objects,domain information,request object,request data,interrogating,params,previous versions,introspection,dispatcher,rout,data structures,arrays,ip address,migration,indexes,cakephp
+    :title lang=ja: リクエストとレスポンスオブジェクト
+    :keywords lang=ja: request controller,request parameters,array indexes,purpose index,response objects,domain information,request object,request data,interrogating,params,previous versions,introspection,dispatcher,rout,data structures,arrays,ip address,migration,indexes,cakephp,PSR-7,immutable

@@ -1,5 +1,5 @@
-HTMLHelper
-##########
+Html
+####
 
 .. php:namespace:: Cake\View\Helper
 
@@ -7,7 +7,7 @@ HTMLHelper
 
 Le rôle du Helper Html dans CakePHP est de fabriquer les options du HTML plus
 facilement, plus rapidement. L'utilisation de ce Helper permettra à votre
-application d'être plus légère, bien ancrée et plus flexible de l'endroit ou
+application d'être plus légère, bien ancrée et plus flexible de l'endroit où
 il est placé en relation avec la racine de votre domaine.
 
 De nombreuses méthodes du Helper Html contiennent un paramètre
@@ -28,7 +28,7 @@ Insertion d'éléments correctement formatés
 
 La tâche la plus importante que le Helper Html accomplit est la création d'un
 balisage bien formé. Cette section couvrira quelques méthodes du Helper Html et
-leur utlisation.
+leur utilisation.
 
 Créer un Tag Charset
 --------------------
@@ -61,9 +61,9 @@ Lier des Fichiers CSS
 
 .. php:method:: css(mixed $path, array $options = [])
 
-Créé un ou plusieurs lien(s) vers une feuille de style CSS. Si l'option ``block``
+Crée un ou plusieurs lien(s) vers une feuille de style CSS. Si l'option ``block``
 est définie à ``true``, les balises de liens sont ajoutées au bloc ``css`` qui
-qui peut être dans la balise head du document.
+peut être dans la balise head du document.
 
 Vous pouvez utiliser  l'option ``block`` pour contrôler sur lequel
 des blocs l'élément lié sera ajouté. Par défaut il sera ajouté au bloc ``css``.
@@ -72,7 +72,7 @@ Si la clé 'rel' dans le tableau ``$options`` est définie à 'import',
 la feuille de style sera importée.
 
 Cette méthode d'inclusion CSS présume que le CSS spécifié se trouve dans
-le répertoire ``webroot/css`` si le chemin ne commence pas par un '/'.::
+le répertoire **webroot/css** si le chemin ne commence pas par un '/'::
 
     echo $this->Html->css('forms');
 
@@ -82,7 +82,7 @@ Affichera:
 
     <link rel="stylesheet" href="/css/forms.css" />
 
-Le premier paramètre peut être un tableau pour inclure des fichiers multiples.::
+Le premier paramètre peut être un tableau pour inclure des fichiers multiples::
 
     echo $this->Html->css(['forms', 'tables', 'menu']);
 
@@ -95,14 +95,14 @@ Affichera:
     <link rel="stylesheet" href="/css/menu.css" />
 
 Vous pouvez inclure un fichier CSS depuis un plugin chargé en utilisant la
-:term:`syntaxe de plugin`. Pour inclure ``plugins/DebugKit/webroot/css/toolbar.css``,
-vous pouvez utiliser ce qui suit::
+:term:`syntaxe de plugin`. Pour inclure
+**plugins/DebugKit/webroot/css/toolbar.css**, vous pouvez utiliser ce qui suit::
 
         echo $this->Html->css('DebugKit.toolbar.css');
 
 Si vous voulez inclure un fichier CSS qui partage un nom avec un plugin
 chargé vous pouvez faire ce qui suit. Par exemple vous avez un plugin
-``Blog``, et souhaitez inclure également ``webroot/css/Blog.common.css``
+``Blog``, et souhaitez inclure également **webroot/css/Blog.common.css**
 vous pouvez faire ceci::
 
     echo $this->Html->css('Blog.common.css', ['plugin' => false]);
@@ -113,7 +113,7 @@ Créer des CSS par Programmation
 
 Construit les définitions de style CSS en se basant sur les clés et
 valeurs du tableau passé à la méthode. Particulièrement pratique si votre
-fichier CSS est dynamique.::
+fichier CSS est dynamique::
 
     echo $this->Html->style([
         'background' => '#633',
@@ -125,10 +125,10 @@ Affichera ::
 
     background:#633; border-bottom:1px solid #000; padding:10px;
 
-Créer des balises meta
+Créer des Balises meta
 ----------------------
 
-.. php:method:: meta(string $type, string $url = null, array $options = [])
+.. php:method:: meta(string|array $type, string $url = null, array $options = [])
 
 Cette méthode est pratique pour faire des liens vers des ressources
 externes comme RSS/Atom feeds et les favicons. Comme avec css(), vous
@@ -195,42 +195,55 @@ clés) et descriptions. Exemple::
     // Affiche
     <meta name="description" content="entrez votre description pour la balise meta ici" />
 
+En plus de faire des balises meta prédéfinies, vous pouvez créer des éléments de
+lien::
 
-Créer une balise Doctype
-------------------------
+    <?= $this->Html->meta([
+        'link' => 'http://example.com/manifest',
+        'rel' => 'manifest'
+    ]);
+    ?>
+    // Affiche
+    <link href="http://example.com/manifest" rel="manifest"/>
+
+Tout attribut fourni à meta() lorsqu'elle est appelée de cette façon, sera
+ajoutée à la balise de lien générée.
+
+Créer le DOCTYPE
+----------------
 
 .. php:method:: docType(string $type = 'html5')
 
-Retourne une balise doctype (X)HTML. Fournissez votre doctype selon la
-table suivante:
+Retourne une déclaration DOCTYPE (*document type declaration*) (X)HTML.
+Spécifiez le DOCTYPE souhaité selon la table suivante:
 
 +--------------------------+----------------------------------+
-| type                     | valeur résultante                |
+| type                     | valeur finale                    |
 +==========================+==================================+
-| html4-strict             | HTML4 Strict                     |
+| html4-strict             | HTML 4.01 Strict                 |
 +--------------------------+----------------------------------+
-| html4-trans              | HTML4 Transitional               |
+| html4-trans              | HTML 4.01 Transitional           |
 +--------------------------+----------------------------------+
-| html4-frame              | HTML4 Frameset                   |
+| html4-frame              | HTML 4.01 Frameset               |
 +--------------------------+----------------------------------+
-| html5                    | HTML5                            |
+| html5 (défaut)           | HTML5                            |
 +--------------------------+----------------------------------+
-| xhtml-strict             | XHTML1 Strict                    |
+| xhtml-strict             | XHTML 1.0 Strict                 |
 +--------------------------+----------------------------------+
-| xhtml-trans              | XHTML1 Transitional              |
+| xhtml-trans              | XHTML 1.0 Transitional           |
 +--------------------------+----------------------------------+
-| xhtml-frame              | XHTML1 Frameset                  |
+| xhtml-frame              | XHTML 1.0 Frameset               |
 +--------------------------+----------------------------------+
-| xhtml11                  | XHTML1.1                         |
+| xhtml11                  | XHTML 1.1                        |
 +--------------------------+----------------------------------+
 
 ::
 
     echo $this->Html->docType();
-    // Sortie: <!DOCTYPE html>
+    // Affiche: <!DOCTYPE html>
 
     echo $this->Html->docType('html4-trans');
-    // Sortie:
+    // Affiche:
     // <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
     //    "http://www.w3.org/TR/html4/loose.dtd">
 
@@ -239,8 +252,8 @@ Lier des Images
 
 .. php:method:: image(string $path, array $options = [])
 
-Créé une balise image formatée. Le chemin fourni devra être relatif à
-``webroot/img/``.::
+Crée une balise image formatée. Le chemin fourni devra être relatif à
+**webroot/img/**::
 
     echo $this->Html->image('cake_logo.png', ['alt' => 'CakePHP']);
 
@@ -251,7 +264,7 @@ Affichera:
     <img src="/img/cake_logo.png" alt="CakePHP" />
 
 Pour créer un lien d'image, spécifiez le lien de destination en
-utilisant l'option ``url`` dans ``$attributes``.::
+utilisant l'option ``url`` dans ``$attributes``::
 
     echo $this->Html->image("recipes/6.jpg", [
         "alt" => "Brownies",
@@ -279,14 +292,14 @@ Affichera:
 
 Vous pouvez inclure des fichiers images depuis un plugin chargé en
 utilisant :term:`syntaxe de plugin`. Pour inclure
-``plugins/DebugKit/webroot/img/icon.png``, vous pouvez faire cela::
+**plugins/DebugKit/webroot/img/icon.png**, vous pouvez faire cela::
 
     echo $this->Html->image('DebugKit.icon.png');
 
 Si vous voulez inclure un fichier image qui partage un nom
 avec un plugin chargé vous pouvez faire ce qui suit. Par exemple si vous
 avez un plugin ``Blog``, et si vous voulez également inclure
-``webroot/js/Blog.icon.png``, vous feriez::
+**webroot/img/Blog.icon.png**, vous feriez::
 
     echo $this->Html->image('Blog.icon.png', ['plugin' => false]);
 
@@ -297,7 +310,7 @@ Créer des Liens
 
 Méthode générale pour la création de liens HTML. Utilisez les ``$options``
 pour spécifier les attributs des éléments et si le ``$title`` doit ou
-non être échappé.::
+non être échappé::
 
     echo $this->Html->link(
         'Enter',
@@ -331,7 +344,7 @@ dialogue de confirmation JavaScript ``confirm()``::
     echo $this->Html->link(
         'Delete',
         ['controller' => 'Recipes', 'action' => 'delete', 6],
-        ['confirm' => 'Are you sure you wish to delete this recipe?'],
+        ['confirm' => 'Are you sure you wish to delete this recipe?']
     );
 
 Affichera:
@@ -345,7 +358,7 @@ Affichera:
         Delete
     </a>
 
-Les chaînes de requête peuvent aussi être créées avec ``link()``.::
+Les chaînes de requête peuvent aussi être créées avec ``link()``::
 
     echo $this->Html->link('View image', [
         'controller' => 'Images',
@@ -380,7 +393,7 @@ Affichera:
 
 Définir ``escape`` à ``false`` va aussi désactiver l'échappement des attributs
 du lien. Vous pouvez utiliser l'option ``escapeTitle`` pour juste
-désactiver l'échappement du titre et pas des attributs.::
+désactiver l'échappement du titre et pas des attributs::
 
     echo $this->Html->link(
         $this->Html->image('recipes/6.jpg', ['alt' => 'Brownies']),
@@ -396,7 +409,7 @@ Affichera:
         <img src="/img/recipes/6.jpg" alt="Brownies" />
     </a>
 
-Regardez aussi la méthode :php:meth:`Cake\View\Helper\UrlHelper::build()` pour
+Regardez aussi la méthode :php:meth:`Cake\\View\\Helper\\UrlHelper::build()` pour
 plus d'exemples des différents types d'URLs.
 
 Liens vers des Videos et Fichiers Audio
@@ -412,7 +425,7 @@ Options:
 - ``text`` Texte à inclure dans la balise vidéo.
 - ``pathPrefix`` Préfixe du chemin à utiliser pour les URLs relatives,
   par défaut à 'files/'.
-- ``fullBase`` Si il est fourni, l'attribut src prendra l'adresse complète
+- ``fullBase`` S'il est fourni, l'attribut src prendra l'adresse complète
   incluant le nom de domaine.
 
 Retourne une balise formatée audio/video:
@@ -452,10 +465,10 @@ Lier des Fichiers Javascript
 Inclus un(des) fichier(s), présent soit localement soit à une URL
 distante.
 
-Par défaut, les balises du script sont ajoutés au document inline. Si vous
-le surcharger en configurant ``$options['block']`` à ``true``, les balises du
+Par défaut, les balises du script sont ajoutées au document inline. Si vous
+le surchargez en configurant ``$options['block']`` à ``true``, les balises du
 script vont plutôt être ajoutées au block ``script`` que vous pouvez
-afficher aileurs dans le document. Si vous souhaitez surcharger le nom
+afficher ailleurs dans le document. Si vous souhaitez surcharger le nom
 du block utilisé, vous pouvez le faire en configurant
 ``$options['block']``.
 
@@ -467,7 +480,7 @@ pour la balise script générée. Si un tableau de balise script est utilisé,
 les attributs seront appliqués à toutes les balises script générées.
 
 Cette méthode d'inclusion de fichier JavaScript suppose que les fichiers
-JavaScript spécifiés se trouvent dans le répertoire ``webroot/js``.::
+JavaScript spécifiés se trouvent dans le répertoire ``webroot/js``::
 
     echo $this->Html->script('scripts');
 
@@ -492,7 +505,7 @@ Affichera:
 
     <script src="http://code.jquery.com/jquery.min.js"></script>
 
-Le premier paramètre peut être un tableau pour inclure des fichiers multiples.::
+Le premier paramètre peut être un tableau pour inclure des fichiers multiples::
 
     echo $this->Html->script(['jquery', 'wysiwyg', 'scripts']);
 
@@ -505,7 +518,7 @@ Affichera:
     <script src="/js/scripts.js"></script>
 
 Vous pouvez insérer dans la balise script un bloc spécifique en
-utilisant l'option ``block``.::
+utilisant l'option ``block``::
 
     echo $this->Html->script('wysiwyg', ['block' => 'scriptBottom']);
 
@@ -516,13 +529,13 @@ dans 'scriptBottom'::
 
 Vous pouvez inclure des fichiers de script depuis un plugin en utilisant
 la :term:`syntaxe de plugin`. Pour inclure
-``plugins/DebugKit/webroot/js/toolbar.js`` vous pouvez faire cela::
+**plugins/DebugKit/webroot/js/toolbar.js** vous pouvez faire cela::
 
     echo $this->Html->script('DebugKit.toolbar.js');
 
 Si vous voulez inclure un fichier de script qui partage un nom de fichier
 avec un plugin chargé vous pouvez faire cela. Par exemple si vous avez
-Un plugin ``Blog``, et voulez inclure également ``webroot/js/Blog.plugins.js``,
+Un plugin ``Blog``, et voulez inclure également **webroot/js/Blog.plugins.js**,
 vous feriez::
 
     echo $this->Html->script('Blog.plugins.js', ['plugin' => false]);
@@ -532,27 +545,34 @@ Créer des Blocs Javascript Inline
 
 .. php:method:: scriptBlock($code, $options = [])
 
-Génère un bloc de code contenant ``code`` et définit ``$options['inline']``
-à ``true`` pour voir le bloc de script apparaître dans le bloc de vue
-``script``. D'autre options définies seront ajoutées comme attributs dans
-les balises de script.
-``$this->Html->scriptBlock('stuff', ['defer' => true]);`` va créer une
-balise script avec l'attribut ``defer="defer"``.
+Pour générer des blocks Javascript à partir d'un code de vue en PHP, vous pouvez
+utiliser une des méthodes de script de blocks. Les scripts peuvent soit être
+affichés à l'endroit où ils sont écrits, soit être mis en mémoire tampon dans un
+block::
 
-Créer des Blocs Javascript
---------------------------
+    // Définit un block de script en une fois, avec l'attribut defer.
+    $this->Html->scriptBlock('alert("hi")', ['defer' => true]);
+
+    // Mis en mémoire d'un block de script pour être affiché plus tard.
+    $this->Html->scriptBlock('alert("hi")', ['block' => true]);
 
 .. php:method:: scriptStart($options = [])
+.. php:method:: scriptEnd()
 
-Débute la mise en mémoire tampon d'un block de code. Ce block de code
-va capturer toutes les sorties entre ``scriptStart()`` et ``scriptEnd()``
-et créer une balise script. Les options sont les mêmes que celles de
-``scriptBlock()``. Un exemple d'utilisation de ``scriptStart()`` et
-``scriptEnd()`` serait::
+Vous pouvez utiliser la méthode ``scriptStart()`` pour créer un block capturant
+qui va être affiché dans une balise ``<script>``. Les bouts de code de script
+capturés peuvent être affichés inline, ou mis en mémoire tampon dans un block::
 
+    // Ajoute dans le block 'script'.
     $this->Html->scriptStart(['block' => true]);
-    echo "alert('I am in the JavaScript');"
+    echo "alert('Je suis dans le JavaScript');";
     $this->Html->scriptEnd();
+
+Une fois que vous avez mis en mémoire tampon le javascript, vous pouvez
+l'afficher comme vous le feriez pour tout autre :ref:`Block de vue <view-blocks>`::
+
+    // Dans votre layout
+    echo $this->fetch('script');
 
 Créer des Listes Imbriquées
 ---------------------------
@@ -567,7 +587,7 @@ Fabrique une liste imbriquée (UL/OL) dans un tableau associatif::
                 'American',
                 'Canadian',
                 'British',
-            [,
+            ],
             'Spanish',
             'German',
         ]
@@ -600,7 +620,7 @@ Créer des En-Têtes de Tableaux
 
 .. php:method:: tableHeaders(array $names, array $trOptions = null, array $thOptions = null)
 
-Crée une ligne de cellule d'en-tête à placer dans la balise <table>.::
+Crée une ligne de cellule d'en-tête à placer dans la balise <table>::
 
     echo $this->Html->tableHeaders(['Date', 'Title', 'Active']);
 
@@ -659,7 +679,7 @@ Créer des Cellules de Tableaux
 Crée des cellules de table, en assignant aux lignes  des attributs <tr>
 différents pour les lignes paires et les lignes impaires. Entoure une
 table simple de cellule dans un [] pour des attributs <td>
-spécifiques. ::
+spécifiques::
 
     echo $this->Html->tableCells([
         ['Jul 7th, 2007', 'Best Brownies', 'Yes'],
@@ -743,40 +763,41 @@ Affichera:
 Changer l'affichage des balises avec le Helper Html
 ===================================================
 
-.. php:method:: templates($templates)
+.. php:method:: setTemplates($templates)
 
-Le paramètre ``$templates`` peut être soit un chemin de fichier en chaîne
+Le paramètre ``setTemplates`` peut être soit un chemin de fichier en chaîne
 de caractères vers le fichier PHP contenant les balises que vous
 souhaitez charger, soit avec un tableau des templates à ajouter/remplacer::
 
     // Charger les templates à partir de config/my_html.php
-    $this->Html->templates('my_html.php');
+    $this->Html->setTemplates('my_html.php');
 
     // Charger les templates spécifiques.
-    $this->Html->templates([
+    $this->Html->setTemplates([
         'javascriptlink' => '<script src="{{url}}" type="text/javascript"{{attrs}}></script>'
     ]);
 
 Lors du chargement des fichiers de templates, votre fichier ressemblera à::
 
     <?php
-    $config = [
+    return [
         'javascriptlink' => '<script src="{{url}}" type="text/javascript"{{attrs}}></script>'
     ];
 
 .. warning::
 
-Les chaînes de template contenant un signe pourcentage (``%``) nécessitent
-une attention spéciale, vous devriez préfixer ce caractère avec un autre
-pourcentage pour qu'il ressemble à ``%%``. La raison est que les templates
-sont compilés en interne pour être utilisé avec ``sprintf()``.
-Exemple: '<div style="width:{{size}}%%">{{content}}</div>'
+    Les chaînes de template contenant un signe pourcentage (``%``) nécessitent
+    une attention spéciale, vous devriez préfixer ce caractère avec un autre
+    pourcentage pour qu'il ressemble à ``%%``. La raison est que les templates
+    sont compilés en interne pour être utilisé avec ``sprintf()``.
+    Exemple: '<div style="width:{{size}}%%">{{content}}</div>'
 
 Création d'un chemin de navigation avec le Helper Html
 ======================================================
 
 .. php:method:: addCrumb(string $name, string $link = null, mixed $options = null)
 .. php:method:: getCrumbs(string $separator = '&raquo;', string $startText = false)
+.. php:method:: getCrumbList(array $options = [], $startText = false)
 
 Beaucoup d'applications utilisent un chemin de navigation (fil d'Ariane) pour
 faciliter la navigation des utilisateurs. Vous pouvez créer un chemin de
@@ -798,7 +819,7 @@ Toute clé qui n'est pas ``text`` ou ``url`` sera passée à
 :php:meth:`~HtmlHelper::link()` comme paramètre ``$options``.
 
 Maintenant, dans votre vue vous allez devoir ajouter ce qui suit
-pour démarrer le fil d'Ariane sur chacune de vos pages.::
+pour démarrer le fil d'Ariane sur chacune de vos pages::
 
     $this->Html->addCrumb('Users', '/users');
     $this->Html->addCrumb('Add User', ['controller' => 'Users', 'action' => 'add']);
@@ -806,18 +827,42 @@ pour démarrer le fil d'Ariane sur chacune de vos pages.::
 Ceci ajoutera la sortie "**Home > Users > Add User**" dans votre layout
 où ``getCrumbs`` a été ajouté.
 
-Vous pouvez aussi récupérer le fil d'Ariane en tant une liste Html::
+Vous pouvez aussi récupérer le fil d'Ariane en tant que liste Html::
 
     echo $this->Html->getCrumbList();
 
 Cette méthode utilise :php:meth:`Cake\\View\\Helper\\HtmlHelper::tag()` pour
-générer la liste et ces éléments. Fonctionne de la même manière
+générer la liste et ses éléments. Fonctionne de la même manière
 que :php:meth:`~Cake\\View\\Helper\\HtmlHelper::getCrumbs()`, il utilise toutes
 les options que chacun des fils a ajouté. Vous pouvez utiliser le paramètre
 ``$startText`` pour fournir le premier lien de fil. C'est utile quand vous
 voulez inclure un lien racine. Cette option fonctionne de la même façon que
-l'option ``$startText`` pour :php:meth:`~Cake\\View\\Helper\\HtmlHelper::getCrumbs()`.
+l'option ``$startText`` pour
+:php:meth:`~Cake\\View\\Helper\\HtmlHelper::getCrumbs()`.
 
+En option vous pouvez préciser un attribut standard HTML valide pour un
+``<ul>`` (Liste non ordonnées) comme ``class`` et pour des options
+spécifiques, vous avez:
+``separator`` (sera entre les éléments ``<li>``), ``firstClass`` et
+``lastClass`` comme::
+
+    echo $this->Html->getCrumbList(
+        [
+            'firstClass' => false,
+            'lastClass' => 'active',
+            'class' => 'breadcrumb'
+        ],
+        'Home'
+    );
+
+Cette méthode utilise :php:meth:`Cake\\View\\Helper\\HtmlHelper::tag()` pour
+générer une liste et ses éléments. Fonctionne de la même manière que
+:php:meth:`~Cake\\View\\Helper\\HtmlHelper::getCrumbs()`, donc elle utilise
+des options pour lesquelles chaque crumb a été ajouté. Vous pouvez utiliser le
+paramètre ``$startText`` pour fournir le premier lien/texte breadcrumb. C'est
+utile quand vous voulez toujours inclure un lien avec la racine. Cette option
+fonctionne de la même manière que l'option ``$startText`` pour
+:php:meth:`~Cake\\View\\Helper\\HtmlHelper::getCrumbs()`.
 
 .. meta::
     :title lang=fr: HtmlHelper

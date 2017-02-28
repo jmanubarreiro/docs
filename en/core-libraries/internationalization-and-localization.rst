@@ -1,47 +1,45 @@
 Internationalization & Localization
 ###################################
 
-One of the best ways for your applications to reach a larger
-audience is to cater for multiple languages. This can often prove
-to be a daunting task, but the internationalization and
-localization features in CakePHP make it much easier.
+One of the best ways for an application to reach a larger audience is to cater
+to multiple languages. This can often prove to be a daunting task, but the
+internationalization and localization features in CakePHP make it much easier.
 
-First, it's important to understand some terminology.
-*Internationalization* refers to the ability of an application to
-be localized. The term *localization* refers to the adaptation of
-an application to meet specific language (or culture) requirements
-(i.e. a "locale"). Internationalization and localization are often
-abbreviated as i18n and l10n respectively; 18 and 10 are the number
+First, it's important to understand some terminology. *Internationalization*
+refers to the ability of an application to be localized. The term *localization*
+refers to the adaptation of an application to meet specific language (or
+culture) requirements (i.e. a "locale"). Internationalization and localization
+are often abbreviated as i18n and l10n respectively; 18 and 10 are the number
 of characters between the first and last character.
 
 Setting Up Translations
 =======================
 
-There are only a few steps to go from a single-language application
-to a multi-lingual application, the first of which is to make use
-of the :php:func:`__()` function in your code. Below is an example of some code for a
+There are only a few steps to go from a single-language application to a
+multi-lingual application, the first of which is to make use of the
+:php:func:`__()` function in your code. Below is an example of some code for a
 single-language application::
 
     <h2>Popular Articles</h2>
 
-To internationalize your code, all you need to do is to wrap
-strings in :php:func:`__()` like so::
+To internationalize your code, all you need to do is to wrap strings in
+:php:func:`__()` like so::
 
     <h2><?= __('Popular Articles') ?></h2>
 
-If you do nothing further, these two code examples are functionally
-identical - they will both send the same content to the browser.
-The :php:func:`__()` function will translate the passed string
-if a translation is available, or return it unmodified.
+Doing nothing else, these two code examples are functionally identical - they
+will both send the same content to the browser. The :php:func:`__()` function
+will translate the passed string if a translation is available, or return it
+unmodified.
 
 Language Files
 --------------
 
-Translations can be made available by using language files stored in your
+Translations can be made available by using language files stored in the
 application. The default format for CakePHP translation files is the
-`Gettext <http://en.wikipedia.org/wiki/Gettext>`_ format. Files neeed to be
-placed under ``src/Locale/`` and within this directory, there should be
-a subfolder for each language the application needs to support::
+`Gettext <http://en.wikipedia.org/wiki/Gettext>`_ format. Files need to be
+placed under **src/Locale/** and within this directory, there should be a
+subfolder for each language the application needs to support::
 
     /src
         /Locale
@@ -53,10 +51,18 @@ a subfolder for each language the application needs to support::
             /es
                 default.po
 
-The default domain is 'default', therefore your locale folder should at least
-contain the ``default.po`` file as shown above. A domain refers to any arbitrary
+The default domain is 'default', therefore the locale folder should at least
+contain the **default.po** file as shown above. A domain refers to any arbitrary
 grouping of translation messages. When no group is used, then the default group
 is selected.
+
+The core strings messages extracted from the CakePHP library can be stored
+separately in a file named **cake.po** in **src/Locale/**.
+The `CakePHP localized library <https://github.com/cakephp/localized>`_ houses
+translations for the client-facing translated strings in the core (the cake
+domain). To use these files, link or copy them into their expected location:
+**src/Locale/<locale>/cake.po**. If your locale is incomplete or incorrect,
+please submit a PR in this repository to fix it.
 
 Plugins can also contain translation files, the convention is to use the
 ``under_scored`` version of the plugin name as the domain for the translation
@@ -84,15 +90,27 @@ An example translation file could look like this:
      msgid "I'm {0,number} years old"
      msgstr "J'ai {0,number} ans"
 
+Extract Pot Files with I18n Shell
+---------------------------------
+
+To create the pot files from `__()` and other internationalized types of
+messages that can be found in the application code, you can use the i18n shell.
+Please read the :doc:`following chapter </console-and-shells/i18n-shell>` to
+learn more.
+
 Setting the Default Locale
 --------------------------
 
-The default locale can be set in your ``config/bootstrap.php`` folder by using
-the following line::
+The default locale can be set in your **config/app.php** file by setting
+``App.defaultLocale``::
 
-    ini_set('intl.default_locale', 'fr_FR');
+    'App' => [
+        ...
+        'defaultLocale' => env('APP_DEFAULT_LOCALE', 'en_US'),
+        ...
+    ]
 
-This will control several aspects of your application, including the default
+This will control several aspects of the application, including the default
 translations language, the date format, number format and currency whenever any
 of those is displayed using the localization libraries that CakePHP provides.
 
@@ -105,8 +123,8 @@ To change the language for translated strings you can call this method::
 
     I18n::locale('de_DE');
 
-This will also change how numbers and dates are formatted when using one of
-the localization tools.
+This will also change how numbers and dates are formatted when using one of the
+localization tools.
 
 Using Translation Functions
 ===========================
@@ -119,13 +137,21 @@ translation was found::
     echo __('Popular Articles');
 
 If you need to group your messages, for example, translations inside a plugin,
-you can use the :php:func:`__d()` function to fetch messages from another domain::
+you can use the :php:func:`__d()` function to fetch messages from another
+domain::
 
     echo __d('my_plugin', 'Trending right now');
 
+.. note::
+
+    If you want to translate your plugins and they're namespaced, you must name
+    your domain string ``Namespace/PluginName``. But the related language file
+    will become ``plugins/Namespace/PluginName/src/Locale/plugin_name.po``
+    inside your plugin folder.
+
 Sometimes translations strings can be ambiguous for people translating them.
 This can happen if two strings are identical but refer to different things. For
-example, 'letter' has multiple meanings in english. To solve that problem, you
+example, 'letter' has multiple meanings in English. To solve that problem, you
 can use the :php:func:`__x()` function::
 
     echo __x('written communication', 'He read the first letter');
@@ -154,25 +180,34 @@ All translation functions support placeholder replacements::
 
     __x('alphabet', 'He read the letter {0}', 'Z');
 
+The ``'`` (single quote) character acts as an escape code in translation
+messages. Any variables between single quotes will not be replaced and is
+treated as literal text. For example::
+
+    __("This variable '{0}' be replaced.", 'will not');
+
+By using two adjacent quotes your variables will be replaced properly::
+
+    __("This variable ''{0}'' be replaced.", 'will');
+
 These functions take advantage of the
 `ICU MessageFormatter <http://php.net/manual/en/messageformatter.format.php>`_
-so you and translate messages and localize dates, numbers and
-currency at the same time::
+so you can translate messages and localize dates, numbers and currency at the
+same time::
 
     echo __(
-        'Hi {0,string}, your balance on the {1,date} is {2,number,currency}',
-        ['Charles', '2014-01-13 11:12:00', 1354.37]
+        'Hi {0}, your balance on the {1,date} is {2,number,currency}',
+        ['Charles', new FrozenTime('2014-01-13 11:12:00'), 1354.37]
     );
 
     // Returns
     Hi Charles, your balance on the Jan 13, 2014, 11:12 AM is $ 1,354.37
 
-
 Numbers in placeholders can be formatted as well with fine grain control of the
 output::
 
     echo __(
-        'You have traveled {0,number,decimal} kilometers in {1,number,integer} weeks',
+        'You have traveled {0,number} kilometers in {1,number,integer} weeks',
         [5423.344, 5.1]
     );
 
@@ -187,7 +222,6 @@ output::
 This is the list of formatter specifiers you can put after the word ``number``:
 
 * ``integer``: Removes the decimal part
-* ``decimal``: Formats the number as a float
 * ``currency``: Puts the locale currency symbol and rounds decimals
 * ``percent``: Formats the number as a percentage
 
@@ -204,10 +238,14 @@ understands the same options as ``date``.
 
 .. note::
 
-    If you are using PHP 5.5+, you can use also named placeholders like {name}
-    {age}, etc. And pass the variables in an array having the corresponding key
-    names like ``['name' => 'Sara', 'age' => 12]``. This feature is not available
-    in PHP 5.4.
+    Named placeholders are supported in PHP 5.5+ and are formatted as
+    ``{name}``. When using named placeholders pass the variables in an array
+    using key/value pairs, for example ``['name' => 'Sara', 'age' => 12]``.
+
+    It is recommended to use PHP 5.5 or higher when making use of
+    internationalization features in CakePHP. The ``php5-intl`` extension must
+    be installed and the ICU version should be above 48.x.y (to check the ICU
+    version ``Intl::getIcuVersion()``).
 
 Plurals
 -------
@@ -219,29 +257,33 @@ a couple ways to correctly select plurals in your messages.
 Using ICU Plural Selection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The first one is taking advantage of the ``ICU`` message format that comes
-by default in the translation functions. In the translations file you could have
+The first one is taking advantage of the ``ICU`` message format that comes by
+default in the translation functions. In the translations file you could have
 the following strings
 
 .. code-block:: pot
 
-     msgid "{0,plural,=0{No records found} =1{Found 1 record} other{Found {1} records}}"
-     msgstr "{0,plural,=0{Ningún resultado} =1{1 resultado} other{{1} resultados}}"
+     msgid "{0,plural,=0{No records found} =1{Found 1 record} other{Found # records}}"
+     msgstr "{0,plural,=0{Ningún resultado} =1{1 resultado} other{# resultados}}"
 
-And in your application use the following code to output either of the
+     msgid "{placeholder,plural,=0{No records found} =1{Found 1 record} other{Found {1} records}}"
+     msgstr "{placeholder,plural,=0{Ningún resultado} =1{1 resultado} other{{1} resultados}}"
+
+And in the application use the following code to output either of the
 translations for such string::
 
-    __('{0,plural,=0{No records found }=1{Found 1 record} other{Found {1} records}}', [0]);
+    __('{0,plural,=0{No records found }=1{Found 1 record} other{Found # records}}', [0]);
 
     // Returns "Ningún resultado" as the argument {0} is 0
 
-    __('{0,plural,=0{No records found} =1{Found 1 record} other{Found {1} records}}', [1]);
+    __('{0,plural,=0{No records found} =1{Found 1 record} other{Found # records}}', [1]);
 
     // Returns "1 resultado" because the argument {0} is 1
 
-    __('{0,plural,=0{No records found} =1{Found 1 record} other{Found {1} records}}', [2, 2]);
+    __('{placeholder,plural,=0{No records found} =1{Found 1 record} other{Found {1} records}}', [0, 'many', 'placeholder' => 2])
 
-    // Returns "2 resultados" because the argument {0} is 2
+    // Returns "many resultados" because the argument {placeholder} is 2 and
+    // argument {1} is 'many'
 
 A closer look to the format we just used will make it evident how messages are
 built::
@@ -251,6 +293,9 @@ built::
 The ``[count placeholder]`` can be the array key number of any of the variables
 you pass to the translation function. It will be used for selecting the correct
 plural form.
+
+Note that to reference ``[count placeholder]`` within ``{message}`` you have to
+use ``#``.
 
 You can of course use simpler message ids if you don't want to type the full
 plural selection sequence in your code
@@ -266,7 +311,7 @@ Then use the new string in your code::
 
     // Returns: "2 resultados"
 
-The latter version has the downside that you will need to have a translation
+The latter version has the downside that there is a need to have a translation
 messages file even for the default language, but has the advantage that it makes
 the code more readable and leaves the complicated plural selection strings in
 the translation files.
@@ -291,14 +336,18 @@ Using Gettext Plural Selection
 
 The second plural selection format accepted is using the built-in capabilities
 of Gettext. In this case, plurals will be stored in the ``.po``
-file by creating a separate message translation line per plural form
+file by creating a separate message translation line per plural form:
 
 .. code-block:: pot
 
-    msgid "One file removed" # One message identifier for singular
-    msgid_plural "{0} files removed" # Another one for plural
-    msgstr[0] "Un fichero eliminado" # Translation in singular
-    msgstr[1] "{0} ficheros eliminados" # Translation in plural
+    # One message identifier for singular
+    msgid "One file removed"
+    # Another one for plural
+    msgid_plural "{0} files removed"
+    # Translation in singular
+    msgstr[0] "Un fichero eliminado"
+    # Translation in plural
+    msgstr[1] "{0} ficheros eliminados"
 
 When using this other format, you are required to use another translation
 function::
@@ -318,9 +367,9 @@ example Croatian:
 
     msgid "One file removed"
     msgid_plural "{0} files removed"
-    msgstr[0] "jednom datotekom je uklonjen"
-    msgstr[1] "{0} datoteke uklonjenih"
-    msgstr[2] "{0} slika uklonjenih"
+    msgstr[0] "{0} datoteka je uklonjena"
+    msgstr[1] "{0} datoteke su uklonjene"
+    msgstr[2] "{0} datoteka je uklonjeno"
 
 Please visit the `Launchpad languages page <https://translations.launchpad.net/+languages>`_
 for a detailed explanation of the plural form numbers for each language.
@@ -335,10 +384,10 @@ for a single domain and locale::
 
     use Aura\Intl\Package;
 
-    I18n::translator('animals', 'fr_FR', function() {
+    I18n::translator('animals', 'fr_FR', function () {
         $package = new Package(
             'default', // The formatting strategy (ICU)
-            'default', // The fallback domain
+            'default'  // The fallback domain
         );
         $package->setMessages([
             'Dog' => 'Chien',
@@ -350,7 +399,7 @@ for a single domain and locale::
         return $package;
     });
 
-The above code can be added to your ``config/bootstrap.php`` so that
+The above code can be added to your **config/bootstrap.php** so that
 translations can be found before any translation function is used. The absolute
 minimum that is required for creating a translator is that the loader function
 should return a ``Aura\Intl\Package`` object. Once the code is in place you can
@@ -363,7 +412,7 @@ As you see, ``Package`` objects take translation messages as an array. You can
 pass the ``setMessages()`` method however you like: with inline code, including
 another file, calling another function, etc. CakePHP provides a few loader
 functions you can reuse if you just need to change where messages are loaded.
-For example, you can still use ``.po`` files, but loaded from another location::
+For example, you can still use **.po** files, but loaded from another location::
 
     use Cake\I18n\MessagesFileLoader as Loader;
 
@@ -385,16 +434,18 @@ class::
 
     namespace App\I18n\Parser;
 
-    class YamlFileParser {
+    class YamlFileParser
+    {
 
-        public function parse($file) {
+        public function parse($file)
+        {
             return yaml_parse_file($file);
         }
     }
 
-The file should be created in the ``src/I18n/Parser`` directory of your
+The file should be created in the **src/I18n/Parser** directory of your
 application. Next, create the translations file under
-``src/Locale/fr_FR/animals.yaml``
+**src/Locale/fr_FR/animals.yaml**
 
 .. code-block:: yaml
 
@@ -405,11 +456,14 @@ application. Next, create the translations file under
 And finally, configure the translation loader for the domain and locale::
 
     use Cake\I18n\MessagesFileLoader as Loader;
+
     I18n::translator(
         'animals',
         'fr_FR',
         new Loader('animals', 'fr_FR', 'yaml')
     );
+
+.. _creating-generic-translators:
 
 Creating Generic Translators
 ----------------------------
@@ -424,7 +478,7 @@ any language from an external service::
 
     use Aura\Intl\Package;
 
-    I18n::config('default', function($domain, $locale) {
+    I18n::config('default', function ($domain, $locale) {
         $locale = Locale::parseLocale($locale);
         $language = $locale['language'];
         $messages = file_get_contents("http://example.com/translations/$lang.json");
@@ -436,17 +490,28 @@ any language from an external service::
         )
     });
 
-The above example calls an example external service to load a json file with the
+The above example calls an example external service to load a JSON file with the
 translations and then just build a ``Package`` object for any locale that is
 requested in the application.
+
+If you'd like to change how packages are loaded for all packages, that don't
+have specific loaders set you can replace the fallback package loader by using
+the ``_fallback`` package::
+
+    I18n::config('_fallback', function ($domain, $locale) {
+        // Custom code that yields a package here.
+    });
+
+.. versionadded:: 3.4.0
+    Replacing the ``_fallback`` loader was added in 3.4.0
 
 Plurals and Context in Custom Translators
 -----------------------------------------
 
 The arrays used for ``setMessages()`` can be crafted to instruct the translator
-to store messages under different domains or to trigger Gettext-style plural selection.
-The following is an example of storing translations for the same key in
-different contexts::
+to store messages under different domains or to trigger Gettext-style plural
+selection. The following is an example of storing translations for the same key
+in different contexts::
 
     [
         'He reads the letter {0}' => [
@@ -471,15 +536,15 @@ Using Different Formatters
 
 In previous examples we have seen that Packages are built using ``default`` as
 first argument, and it was indicated with a comment that it corresponded to the
-formatter to be used. Formatters are  classes responsible for interpolating variables
-in translation messages and selecting the correct plural form.
+formatter to be used. Formatters are classes responsible for interpolating
+variables in translation messages and selecting the correct plural form.
 
 If you're dealing with a legacy application, or you don't need the power offered
 by the ICU message formatting, CakePHP also provides the ``sprintf`` formatter::
 
     return Package('sprintf', 'fallback_domain', $messages);
 
-The messages to be translated will be passed to the ``sprintf`` function for
+The messages to be translated will be passed to the ``sprintf()`` function for
 interpolating the variables::
 
     __('Hello, my name is %s and I am %d years old', 'José', 29);
@@ -489,6 +554,75 @@ CakePHP before they are used for the first time. This does not include manually
 created translators using the ``translator()`` and ``config()`` methods::
 
     I18n::defaultFormatter('sprintf');
+
+Localizing Dates and Numbers
+============================
+
+When outputting Dates and Numbers in your application, you will often need that
+they are formatted according to the preferred format for the country or region
+that you wish your page to be displayed.
+
+In order to change how dates and numbers are displayed you just need to change
+the current locale setting and use the right classes::
+
+    use Cake\I18n\I18n;
+    use Cake\I18n\Time;
+    use Cake\I18n\Number;
+
+    I18n::locale('fr-FR');
+
+    $date = new Time('2015-04-05 23:00:00');
+
+    echo $date; // Displays 05/04/2015 23:00
+
+    echo Number::format(524.23); // Displays 524,23
+
+Make sure you read the :doc:`/core-libraries/time` and :doc:`/core-libraries/number`
+sections to learn more about formatting options.
+
+By default dates returned for the ORM results use the ``Cake\I18n\Time`` class,
+so displaying them directly in you application will be affected by changing the
+current locale.
+
+.. _parsing-localized-dates:
+
+Parsing Localized Datetime Data
+-------------------------------
+
+When accepting localized data from the request, it is nice to accept datetime
+information in a user's localized format. In a controller, or
+:doc:`/development/dispatch-filters` you can configure the Date, Time, and
+DateTime types to parse localized formats::
+
+    use Cake\Database\Type;
+
+    // Enable default locale format parsing.
+    Type::build('datetime')->useLocaleParser();
+
+    // Configure a custom datetime format parser format.
+    Type::build('datetime')->useLocaleParser()->setLocaleFormat('dd-M-y');
+
+    // You can also use IntlDateFormatter constants.
+    Type::build('datetime')->useLocaleParser()
+        ->setLocaleFormat([IntlDateFormatter::SHORT, -1]);
+
+The default parsing format is the same as the default string format.
+
+Automatically Choosing the Locale Based on Request Data
+=======================================================
+
+By using the ``LocaleSelectorFilter`` in your application, CakePHP will
+automatically set the locale based on the current user::
+
+    // in config/bootstrap.php
+    DispatcherFactory::add('LocaleSelector');
+
+    // Restrict the locales to only en_US, fr_FR
+    DispatcherFactory::add('LocaleSelector', ['locales' => ['en_US', 'fr_FR']]);
+
+The ``LocaleSelectorFilter`` will use the ``Accept-Language`` header to
+automatically set the user's preferred locale. You can use the locale list
+option to restrict which locales will automatically be used.
 
 .. meta::
     :title lang=en: Internationalization & Localization

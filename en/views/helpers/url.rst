@@ -1,7 +1,7 @@
-UrlHelper
-##########
+Url
+###
 
-.. php:namespace:: Cake\View\UrlHelper
+.. php:namespace:: Cake\View\Helper
 
 .. php:class:: UrlHelper(View $view, array $config = [])
 
@@ -13,7 +13,7 @@ overriding the core helper with an application one. See the
 Generating URLs
 ===============
 
-.. php:method:: build(mixed $url = NULL, boolean $full = false)
+.. php:method:: build(mixed $url = null, boolean|array $full = false)
 
 Returns a URL pointing to a combination of controller and action.
 If ``$url`` is empty, it returns the ``REQUEST\_URI``, otherwise it
@@ -21,7 +21,7 @@ generates the URL for the controller and action combo. If ``full`` is
 ``true``, the full base URL will be prepended to the result::
 
     echo $this->Url->build([
-        "controller" => "posts",
+        "controller" => "Posts",
         "action" => "view",
         "bar"
     ]);
@@ -31,21 +31,10 @@ generates the URL for the controller and action combo. If ``full`` is
 
 Here are a few more usage examples:
 
-URL with named parameters::
-
-    echo $this->Url->build([
-        "controller" => "posts",
-        "action" => "view",
-        "foo" => "bar"
-    ]);
-
-    // Output
-    /posts/view/foo:bar
-
 URL with extension::
 
     echo $this->Url->build([
-        "controller" => "posts",
+        "controller" => "Posts",
         "action" => "list",
         "_ext" => "rss"
     ]);
@@ -60,10 +49,10 @@ URL (starting with '/') with the full base URL prepended::
     // Output
     http://somedomain.com/posts
 
-URL with GET params and named anchor::
+URL with GET params and fragment anchor::
 
     echo $this->Url->build([
-        "controller" => "posts",
+        "controller" => "Posts",
         "action" => "search",
         "?" => ["foo" => "bar"],
         "#" => "first"
@@ -71,6 +60,10 @@ URL with GET params and named anchor::
 
     // Output
     /posts/search?foo=bar#first
+
+The above example uses the ``?`` key which is useful when you want to be
+explicit about the query string parameters you are using, or if you want a query
+string parameter that shares a name with one of your route placeholders.
 
 URL for named route::
 
@@ -80,7 +73,7 @@ URL for named route::
     // $router->connect(
     //     '/products/:slug',
     //     [
-    //         'controller' => 'products',
+    //         'controller' => 'Products',
     //         'action' => 'view'
     //     ],
     //     [
@@ -89,8 +82,34 @@ URL for named route::
     // );
     /products/i-m-slug
 
+The 2nd parameter allows you to define options controlling HTML escaping, and
+whether or not the base path should be added::
+
+    $this->Url->build('/posts', [
+        'escape' => false,
+        'fullBase' => true
+    ]);
+
+.. versionadded:: 3.3.5
+    ``build()`` accepts an array as the 2nd argument as of 3.3.5
+
+If you are generating URLs for CSS, Javascript or image files there are helper
+methods for each of these asset types::
+
+    // Outputs /img/icon.png
+    $this->Url->image('icon.png');
+
+    // Outputs /js/app.js
+    $this->Url->script('app.js');
+
+    // Outputs /css/app.css
+    $this->Url->css('app.css');
+
+.. versionadded:: 3.2.4
+    The asset helper methods were added in 3.2.4.
+
 For further information check
-`Router::url <http://api.cakephp.org/3.0/class-Cake.Routing.Router.html#_url>`_
+`Router::url <https://api.cakephp.org/3.0/class-Cake.Routing.Router.html#_url>`_
 in the API.
 
 .. meta::

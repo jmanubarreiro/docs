@@ -1,5 +1,5 @@
 Tutoriel d'un Blog
-==================
+##################
 
 Ce tutoriel vous accompagnera à travers la création d'une simple application
 de blog. Nous récupérerons et installerons CakePHP, créerons et configurerons
@@ -13,8 +13,8 @@ Voici ce dont vous aurez besoin :
    être assez semblables. Nous aurons peut-être besoin de jouer un peu sur la
    configuration du serveur, mais la plupart des personnes peuvent faire
    fonctionner CakePHP sans aucune configuration préalable. Assurez-vous
-   d'avoir PHP 5.4.16 ou supérieur et que les extensions ``mbstring``, ``intl`` et
-   ``mcrypt`` sont activées dans PHP.
+   d'avoir PHP |minphpversion| ou supérieur et que les extensions ``mbstring`` et
+   ``intl`` sont activées dans PHP.
 #. Un serveur de base de données. Dans ce tutoriel, nous utiliserons MySQL.
    Vous aurez besoin d'un minimum de connaissance en SQL afin de créer une
    base de données : CakePHP prendra les rênes à partir de là. Puisque nous
@@ -39,9 +39,15 @@ Ou vous pouvez télécharger ``composer.phar`` du
 
 Ensuite tapez simplement la ligne suivante dans votre terminal depuis votre
 répertoire d'installation pour installer le squelette d'application de CakePHP
-dans le répertoire [app_name].::
+dans le répertoire que vous souhaitez utiliser. Pour l'exemple nous utiliserons
+"blog", mais vous pouvez utiliser le nom que vous souhaitez::
 
-    php composer.phar create-project --prefer-dist -s dev cakephp/app [app_name]
+    php composer.phar create-project --prefer-dist cakephp/app blog
+
+Dans le cas où vous avez déjà composer installé globalement, vous devrez plutôt
+taper::
+
+    composer self-update && composer create-project --prefer-dist cakephp/app blog
 
 L'avantage d'utiliser Composer est qu'il va automatiquement réaliser certaines
 tâches de configurations importantes, comme configurer les bonnes permissions
@@ -55,6 +61,7 @@ du "DocumentRoot" de votre serveur. Une fois terminé, votre répertoire
 d'installation devrait ressembler à quelque chose comme cela::
 
     /cake_install
+        /bin
         /config
         /logs
         /plugins
@@ -63,6 +70,7 @@ d'installation devrait ressembler à quelque chose comme cela::
         /tmp
         /vendor
         /webroot
+        .editorconfig
         .gitignore
         .htaccess
         .travis.yml
@@ -79,13 +87,13 @@ Les Permissions des Répertoires tmp et logs
 ===========================================
 
 Les répertoires ``tmp`` and ``logs`` doivent être en écriture pour le serveur
-web. Si vous avez utilisé Composer pour l'installation, ceci a du être fait pour vous et confirmé par un message
-"Permissions set on <folder>". Si vous avez plutôt un message d'erreur ou
-voulez le faire manuellement, la meilleur façon de le faire est de trouver
-sous quel utilisateur votre serveur web tourne en faisant
-(``<?= `whoami`; ?>``) et en changeant le possesseur du répertoire ``src/tmp``
-pour cet utilisateur. La commande finale que vous pouvez lancer (dans \*nix)
-pourrait ressembler à ceci::
+web. Si vous avez utilisé Composer pour l'installation, ceci a du être fait pour
+vous et confirmé par un message "Permissions set on <folder>". Si vous avez
+plutôt un message d'erreur ou voulez le faire manuellement, la meilleur façon
+de le faire est de trouver sous quel utilisateur votre serveur web tourne en
+faisant (``<?= `whoami`; ?>``) et en changeant le possesseur du répertoire
+**src/tmp** pour cet utilisateur. La commande finale que vous pouvez lancer
+(dans \*nix) pourrait ressembler à ceci::
 
     chown -R www-data tmp
     chown -R www-data logs
@@ -105,10 +113,10 @@ Créer la Base de Données du Blog
 
 Maintenant, mettons en place la base de données pour notre blog. Si vous
 ne l'avez pas déjà fait, créez une base de données vide avec le nom de votre
-choix pour l'utiliser dans ce tutoriel, par ex ``cake_blog``.Pour le moment, nous allons juste créer
-une simple table pour stocker nos posts. Nous allons également insérer quelques
-posts à des fins de tests. Exécutez les requêtes SQL suivantes dans votre base
-de données::
+choix pour l'utiliser dans ce tutoriel, par ex ``cake_blog``.Pour le moment,
+nous allons juste créer une simple table pour stocker nos posts. Nous allons
+également insérer quelques posts à des fins de tests. Exécutez les requêtes SQL
+suivantes dans votre base de données::
 
     /* D'abord, créons la table des posts : */
     CREATE TABLE articles (
@@ -151,10 +159,10 @@ vous configurerez quelque chose.
 
 Le fichier de configuration devrait être assez simple : remplacez simplement
 les valeurs du tableau ``Datatsources.default`` dans le fichier
-``config/app.php`` avec ceux de votre config. Un exemple de tableau de
+**config/app.php** avec ceux de votre config. Un exemple de tableau de
 configuration complet pourrait ressembler à ce qui suit::
 
-    $config = [
+    return [
         // Plus de configuration au-dessus.
         'Datasources' => [
             'default' => [
@@ -162,10 +170,9 @@ configuration complet pourrait ressembler à ce qui suit::
                 'driver' => 'Cake\Database\Driver\Mysql',
                 'persistent' => false,
                 'host' => 'localhost',
-                'login' => 'cake_blog',
+                'username' => 'cake_blog',
                 'password' => 'AngelF00dC4k3~',
                 'database' => 'cake_blog',
-                'prefix' => false,
                 'encoding' => 'utf8',
                 'timezone' => 'UTC'
             ],
@@ -173,7 +180,7 @@ configuration complet pourrait ressembler à ce qui suit::
         // Plus de configuration ci-dessous.
     ];
 
-Une fois votre fichier ``config/app.php`` sauvegardé, vous devriez
+Une fois votre fichier **config/app.php** sauvegardé, vous devriez
 être en mesure d'ouvrir votre navigateur internet et de voir la page d'accueil
 de CakePHP. Elle devrait également vous indiquer que votre fichier de connexion
 a été trouvé, et que CakePHP peut s'y connecter avec succès.
@@ -181,26 +188,25 @@ a été trouvé, et que CakePHP peut s'y connecter avec succès.
 .. note::
 
     Une copie du fichier de configuration par défaut de
-    CakePHP se trouve dans ``config/app.default.php``.
+    CakePHP se trouve dans **config/app.default.php**.
 
 Configuration facultative
 =========================
 
-Il y a quelques autres élements qui peuvent être configurés. La plupart des
+Il y a quelques autres éléments qui peuvent être configurés. La plupart des
 développeurs configurent les éléments de cette petite liste, mais ils ne
 sont pas obligatoires pour ce tutoriel. Le premier consiste à définir une
 chaîne de caractères personnalisée (ou "grain de sel") afin de sécuriser les
 hashs.
 
 Le "grain de sel" est utilisé pour générer des hashes. Changez sa valeur par
-défaut en modifiant ``/config/app.php``.
+défaut en modifiant **config/app.php**.
 La nouvelle valeur n'a pas beaucoup d'importance du moment qu'elle est
 difficile à deviner::
 
     'Security' => [
         'salt' => 'something long and containing lots of different values.',
     ],
-
 
 Une note sur mod\_rewrite
 =========================

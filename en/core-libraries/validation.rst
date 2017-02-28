@@ -1,10 +1,14 @@
-.. php:namespace:: Cake\Validation
-
 Validation
 ##########
 
+.. php:namespace:: Cake\Validation
+
 The validation package in CakePHP provides features to build validators that can
-validate arbitrary arrays of data with ease.
+validate arbitrary arrays of data with ease. You can find a `list of available
+Validation rules in the API
+<https://api.cakephp.org/3.0/class-Cake.Validation.Validation.html>`__.
+
+.. _creating-validators:
 
 Creating Validators
 ===================
@@ -12,9 +16,9 @@ Creating Validators
 .. php:class:: Validator
 
 Validator objects define the rules that apply to a set of fields.
-Validator objects contain a mapping between fields and validation sets. In turn, the
-validation sets contain a collection of rules that apply to the field they are
-attached to. Creating a validator is simple::
+Validator objects contain a mapping between fields and validation sets. In
+turn, the validation sets contain a collection of rules that apply to the field
+they are attached to. Creating a validator is simple::
 
     use Cake\Validation\Validator;
 
@@ -24,7 +28,7 @@ Once created, you can start defining sets of rules for the fields you want to
 validate::
 
     $validator
-        ->validatePresence('title')
+        ->requirePresence('title')
         ->notEmpty('title', 'Please fill this field')
         ->add('title', [
             'length' => [
@@ -36,7 +40,7 @@ validate::
         ->add('published', 'boolean', [
             'rule' => 'boolean'
         ])
-        ->validatePresence('body')
+        ->requirePresence('body')
         ->add('body', 'length', [
             'rule' => ['minLength', 50],
             'message' => 'Articles must have a substantial body.'
@@ -49,12 +53,12 @@ There were a few methods called in the example above, so let's go over the
 various features. The ``add()`` method allows you to add new rules to
 a validator. You can either add rules individually or in groups as seen above.
 
-Validating Field Presence
+Requiring Field Presence
 -------------------------
 
-The ``validatePresence()`` method requires the field to be present in any
+The ``requirePresence()`` method requires the field to be present in any
 validated array. If the field is absent, validation will fail. The
-``validatePresence()`` method has 4 modes:
+``requirePresence()`` method has 4 modes:
 
 * ``true`` The field's presence is always required.
 * ``false`` The field's presence is not required.
@@ -64,24 +68,44 @@ validated array. If the field is absent, validation will fail. The
   operation.
 
 By default, ``true`` is used. Key presence is checked by using
-``array_key_exists()`` so that null values will count as present. You can set the
-mode using the second parameter::
+``array_key_exists()`` so that null values will count as present. You can set
+the mode using the second parameter::
 
-    $validator->validatePresence('author_id', 'create');
+    $validator->requirePresence('author_id', 'create');
+
+If you have multiple fields that are required, you can define them as a list::
+
+    // Define multiple fields for create
+    $validator->requirePresence(['author_id', 'title'], 'create');
+
+    // Define multiple fields for mixed modes
+    $validator->requirePresence([
+        'author_id' => [
+            'mode' => 'create',
+            'message' => 'An author is required.',
+        ],
+        'published' => [
+            'mode' => 'update',
+            'message' => 'The published state is required.',
+        ]
+    ]);
+
+.. versionadded:: 3.3.0
+    ``requirePresence()`` accepts an array of fields as of 3.3.0
 
 Allowing Empty Fields
 ---------------------
 
-The ``allowEmpty()`` and ``notEmpty()`` methods allow you to control which fields are
-allowed to be 'empty'. By using the ``notEmpty()`` method, the given field will be marked
-invalid when it is empty. You can use ``allowEmpty()`` to allow a field to be
-empty. Both ``allowEmpty()`` and ``notEmpty()`` support a mode parameter that
-allows you to control when a field can or cannot be empty:
+The ``allowEmpty()`` and ``notEmpty()`` methods allow you to control which
+fields are allowed to be 'empty'. By using the ``notEmpty()`` method, the given
+field will be marked invalid when it is empty. You can use ``allowEmpty()`` to
+allow a field to be empty. Both ``allowEmpty()`` and ``notEmpty()`` support a
+mode parameter that allows you to control when a field can or cannot be empty:
 
 * ``false`` The field is not allowed to be empty.
-* ``create`` The field is required when validating a **create**
+* ``create`` The field can be empty when validating a **create**
   operation.
-* ``update`` The field is required when validating an **update**
+* ``update`` The field can be empty when validating an **update**
   operation.
 
 The values ``''``, ``null`` and ``[]`` (empty array) will cause validation
@@ -92,37 +116,9 @@ accepted.
 An example of these methods in action is::
 
     $validator->allowEmpty('published')
-        ->notEmpty('title', 'A title is required')
-        ->notEmpty('body', 'A title is required', 'create')
+        ->notEmpty('title', 'Title cannot be empty')
+        ->notEmpty('body', 'Body cannot be empty', 'create')
         ->allowEmpty('header_image', 'update');
-
-Unique Fields
--------------
-
-The ``Table`` class provides a validation rule to ensure that a given field
-is unique within a table. For example, if you wanted to make sure that an e-mail
-address is unique, you could do the following::
-
-    $validator->add('email', [
-        'unique' => ['rule' => 'validateUnique', 'provider' => 'table']
-    ]);
-
-If you wish to only ensure uniqueness of a field based on an another field in
-your table, such as a foreign key of an associated table, you can scope it with
-the following::
-
-    $validator->add('email', [
-        'unique' => [
-            'rule' => ['validateUnique', ['scope' => 'site_id']],
-            'provider' => 'table'
-        ]
-    ]);
-
-This will ensure that the provided e-mail address is only unique to other 
-records with the same ``site_id``.
-
-Notice that these examples take a ``provider`` key.  Adding ``Validator``
-providers is further explained in the following sections.
 
 Marking Rules as the Last to Run
 --------------------------------
@@ -149,6 +145,19 @@ a specific rule has failed, you can set the ``last`` option to ``true``::
 If the minLength rule fails in the example above, the maxLength rule will not be
 run.
 
+Validation Methods Less Verbose
+-------------------------------
+
+Since 3.2, the Validator object has a number of new methods that make building
+validators less verbose. For example adding validation rules to a username field
+can now look like::
+
+    $validator = new Validator();
+    $validator
+        ->email('username')
+        ->ascii('username')
+        ->lengthBetween('username', [4, 8]);
+
 Adding Validation Providers
 ---------------------------
 
@@ -159,8 +168,8 @@ Validator instances come with a 'default' provider setup automatically. The
 default provider is mapped to the :php:class:`~Cake\\Validation\\Validation`
 class. This makes it simple to use the methods on that class as validation
 rules. When using Validators and the ORM together, additional providers are
-configured for the table and entity objects. You can use the ``provider`` method
-to add any additional providers your application needs::
+configured for the table and entity objects. You can use the ``provider()``
+method to add any additional providers your application needs::
 
     $validator = new Validator();
 
@@ -175,10 +184,46 @@ methods must be static. To use a provider other than 'default', be sure to set
 the ``provider`` key in your rule::
 
     // Use a rule from the table provider
-    $validator->add('title', 'unique', [
-        'rule' => 'uniqueTitle',
+    $validator->add('title', 'custom', [
+        'rule' => 'customTableMethod',
         'provider' => 'table'
     ]);
+
+You can use the `Localized plugin <https://github.com/cakephp/localized>`_ to
+get providers based on countries. With this plugin, you'll be able to validate
+model fields, depending on a country, ie::
+
+    namespace App\Model\Table;
+
+    use Cake\ORM\Table;
+    use Cake\Validation\Validator;
+
+    class PostsTable extends Table
+    {
+        public function validationDefault(Validator $validator)
+        {
+            $validator = new Validator();
+            // add the provider to the validator
+            $validator->provider('fr', 'Localized\Validation\FrValidation');
+            // use the provider in a field validation rule
+            $validator->add('phoneField', 'myCustomRuleNameForPhone', [
+                'rule' => 'phone',
+                'provider' => 'fr'
+            ]);
+
+            return $validator;
+        }
+    }
+
+The localized plugin uses the two letter ISO code of the countries for
+validation, like en, fr, de.
+
+There are a few methods that are common to all classes, defined through the
+`ValidationInterface interface <https://github.com/cakephp/localized/blob/master/src/Validation/ValidationInterface.php>`_::
+
+    phone() to check a phone number
+    postal() to check a postal code
+    personId() to check a country specific person ID
 
 Custom Validation Rules
 -----------------------
@@ -188,19 +233,30 @@ callable, including anonymous functions, as validation rules::
 
     // Use a global function
     $validator->add('title', 'custom', [
-        'rule' => 'validate_title'
+        'rule' => 'validate_title',
+        'message' => 'The title is not valid'
     ]);
 
     // Use an array callable that is not in a provider
     $validator->add('title', 'custom', [
-        'rule' => [$this, 'method']
+        'rule' => [$this, 'method'],
+        'message' => 'The title is not valid'
     ]);
 
     // Use a closure
+    $extra = 'Some additional value needed inside the closure';
     $validator->add('title', 'custom', [
-        'rule' => function ($value, $context) {
+        'rule' => function ($value, $context) use ($extra) {
             // Custom logic that returns true/false
-        }
+        },
+        'message' => 'The title is not valid'
+    ]);
+
+    // Use a rule from a custom provider
+    $validator->add('title', 'custom', [
+        'rule' => 'customRule',
+        'provider' => 'custom',
+        'message' => 'The title is not unique enough'
     ]);
 
 Closures or callable methods will receive 2 arguments when called. The first
@@ -212,7 +268,22 @@ containing data related to the validation process:
 - **providers**: The complete list of rule provider objects, useful if you
   need to create complex rules by calling multiple providers.
 - **newRecord**: Whether the validation call is for a new record or
-  a pre-existent one.
+  a preexisting one.
+
+If you need to pass additional data to your validation methods such as the
+current user's id, you can use a custom dynamic provider from your controller. ::
+
+    $this->Examples->validator('default')->provider('passed', [
+        'count' => $countFromController,
+        'userid' => $this->Auth->user('id')
+    ]);
+
+Then ensure that your validation method has the second context parameter. ::
+
+    public function customValidationMethod($check, array $context)
+    {
+        $userid = $context['providers']['passed']['userid'];
+    }
 
 Conditional Validation
 ----------------------
@@ -232,27 +303,88 @@ not a particular rule should be applied::
         }
     ]);
 
+You can access the other submitted field values using the ``$context['data']``
+array.
 The above example will make the rule for 'picture' optional depending on whether
-the value for ``show_profile_picture`` is empty.
+the value for ``show_profile_picture`` is empty. You could also use the
+``uploadedFile`` validation rule to create optional file upload inputs::
 
-The same can be done for the ``allowEmpty()`` and ``notEmpty`` validation method.
-Both take a callable function as the last argument, which determines whether or not
-the rule should be applied. For example, a field can be sometimes allowed to be
-empty::
+    $validator->add('picture', 'file', [
+        'rule' => ['uploadedFile', ['optional' => true]],
+    ]);
 
-    $validator->allowEmpty('tax', function($context) {
+The ``allowEmpty()``, ``notEmpty()`` and ``requirePresence()`` methods will also
+accept a callback function as their last argument. If present, the callback
+determines whether or not the rule should be applied. For example, a field is
+sometimes allowed to be empty::
+
+    $validator->allowEmpty('tax', function ($context) {
         return !$context['data']['is_taxable'];
     });
 
 Likewise, a field can be required to be populated when certain conditions are
 met::
 
-    $validator->notEmpty('email_frequency', 'This field is required', function($context) {
+    $validator->notEmpty('email_frequency', 'This field is required', function ($context) {
         return !empty($context['data']['wants_newsletter']);
     });
 
 In the above example, the ``email_frequency`` field cannot be left empty if the
 the user wants to receive the newsletter.
+
+Further it's also possible to require a field to be present under certain
+conditions only::
+
+    $validator->requirePresence('full_name', function ($context) {
+        if (isset($context['data']['action'])) {
+            return $context['data']['action'] === 'subscribe';
+        }
+        return false;
+    });
+    $validator->requirePresence('email');
+
+This would require the ``full_name`` field to be present only in case the user
+wants to create a subscription, while the ``email`` field would always be
+required, since it would also be needed when canceling a subscription.
+
+.. versionadded:: 3.1.1
+    The callable support for ``requirePresence()`` was added in 3.1.1
+
+Nesting Validators
+------------------
+
+.. versionadded:: 3.0.5
+
+When validating :doc:`/core-libraries/form` with nested data, or when working
+with models that contain array data types, it is necessary to validate the
+nested data you have. CakePHP makes it simple to add validators to specific
+attributes. For example, assume you are working with a non-relational database
+and need to store an article and its comments::
+
+    $data = [
+        'title' => 'Best article',
+        'comments' => [
+            ['comment' => '']
+        ]
+    ];
+
+To validate the comments you would use a nested validator::
+
+    $validator = new Validator();
+    $validator->add('title', 'not-blank', ['rule' => 'notBlank']);
+
+    $commentValidator = new Validator();
+    $commentValidator->add('comment', 'not-blank', ['rule' => 'notBlank']);
+
+    // Connect the nested validators.
+    $validator->addNestedMany('comments', $commentValidator);
+
+    // Get all errors including those from nested validators.
+    $validator->errors($data);
+
+You can create 1:1 'relationships' with ``addNested()`` and 1:N 'relationships'
+with ``addNestedMany()``. With both methods, the nested validator's errors will
+contribute to the parent validator's errors and influence the final result.
 
 .. _reusable-validators:
 
@@ -260,7 +392,7 @@ Creating Reusable Validators
 ----------------------------
 
 While defining validators inline where they are used makes for good example
-code, it doesn't lead to easily maintainable applications. Instead, you should
+code, it doesn't lead to maintainable applications. Instead, you should
 create ``Validator`` sub-classes for your reusable validation logic::
 
     // In src/Model/Validation/ContactValidator.php
@@ -268,8 +400,11 @@ create ``Validator`` sub-classes for your reusable validation logic::
 
     use Cake\Validation\Validator;
 
-    class ContactValidator extends Validator {
-        public function __construct() {
+    class ContactValidator extends Validator
+    {
+        public function __construct()
+        {
+            parent::__construct();
             // Add validation rules here.
         }
     }
@@ -278,7 +413,7 @@ Validating Data
 ===============
 
 Now that you've created a validator and added the rules you want to it, you can
-start using it to validate data. Validators are able to validate array based
+start using it to validate data. Validators are able to validate array
 data. For example, if you wanted to validate a contact form before creating and
 sending an email you could do the following::
 
@@ -286,18 +421,18 @@ sending an email you could do the following::
 
     $validator = new Validator();
     $validator
-        ->validatePresence('email')
+        ->requirePresence('email')
         ->add('email', 'validFormat', [
             'rule' => 'email',
             'message' => 'E-mail must be valid'
         ])
-        ->validatePresence('name')
+        ->requirePresence('name')
         ->notEmpty('name', 'We need your name.')
-        ->validatePresence('comment')
+        ->requirePresence('comment')
         ->notEmpty('comment', 'You need to give a comment.');
 
-    $errors = $validator->errors($this->request->data());
-    if (!empty($errors)) {
+    $errors = $validator->errors($this->request->getData());
+    if (empty($errors)) {
         // Send an email.
     }
 
@@ -310,34 +445,83 @@ failures. The returned array of errors will be structured like::
 
 If you have multiple errors on a single field, an array of error messages will
 be returned per field. By default the ``errors()`` method applies rules for
-the 'create' mode. If you'd like to apply 'update' rules you can do the following::
+the 'create' mode. If you'd like to apply 'update' rules you can do the
+following::
 
-    $errors = $validator->errors($this->request->data(), false);
-    if (!empty($errors)) {
+    $errors = $validator->errors($this->request->getData(), false);
+    if (empty($errors)) {
         // Send an email.
     }
 
 .. note::
 
     If you need to validate entities you should use methods like
-    :php:meth:`~Cake\\ORM\\Table::validate()` or
+    :php:meth:`~Cake\\ORM\\Table::newEntity()`,
+    :php:meth:`~Cake\\ORM\\Table::newEntities()`,
+    :php:meth:`~Cake\\ORM\\Table::patchEntity()`,
+    :php:meth:`~Cake\\ORM\\Table::patchEntities()` or
     :php:meth:`~Cake\\ORM\\Table::save()` as they are designed for that.
+
+Validating Entities
+===================
+
+While entities are validated as they are saved, you may also want to validate
+entities before attempting to do any saving. Validating entities before
+saving is done automatically when using the ``newEntity()``, ``newEntities()``,
+``patchEntity()`` or ``patchEntities()``::
+
+    // In the ArticlesController class
+    $article = $this->Articles->newEntity($this->request->getData());
+    if ($article->errors()) {
+        // Do work to show error messages.
+    }
+
+Similarly, when you need to pre-validate multiple entities at a time, you can
+use the ``newEntities()`` method::
+
+    // In the ArticlesController class
+    $entities = $this->Articles->newEntities($this->request->getData());
+    foreach ($entities as $entity) {
+        if (!$entity->errors()) {
+                $this->Articles->save($entity);
+        }
+    }
+
+The ``newEntity()``, ``patchEntity()``, ``newEntities()`` and ``patchEntities()``
+methods allow you to specify which associations are validated, and which
+validation sets to apply using the ``options`` parameter::
+
+    $valid = $this->Articles->newEntity($article, [
+      'associated' => [
+        'Comments' => [
+          'associated' => ['User'],
+          'validate' => 'special',
+        ]
+      ]
+    ]);
+
+Validation is commonly used for user-facing forms or interfaces, and thus it is
+not limited to only validating columns in the table schema. However,
+maintaining integrity of data regardless where it came from is important. To
+solve this problem CakePHP offers a second level of validation which is called
+"application rules". You can read more about them in the
+:ref:`Applying Application Rules <application-rules>` section.
 
 Core Validation Rules
 =====================
 
 CakePHP provides a basic suite of validation methods in the ``Validation``
 class. The Validation class contains a variety of static methods that provide
-validators for a several common validation situations.
+validators for several common validation situations.
 
 The `API documentation
-<http://api.cakephp.org/3.0/class-Cake.Validation.Validation.html>`_ for the
+<https://api.cakephp.org/3.0/class-Cake.Validation.Validation.html>`_ for the
 ``Validation`` class provides a good list of the validation rules that are
 available, and their basic usage.
 
 Some of the validation methods accept additional parameters to define boundary
-conditions or valid options. You can provide these boundary conditions & options
-as follows::
+conditions or valid options. You can provide these boundary conditions and
+options as follows::
 
     $validator = new Validator();
     $validator
@@ -348,6 +532,6 @@ as follows::
             'rule' => ['range', 1, 5]
         ]);
 
-Core rules that take additional parameters should have an array for the ``rule`` key
-that contains the rule as the first element, and the additional parameters as
-the remaining parameters.
+Core rules that take additional parameters should have an array for the
+``rule`` key that contains the rule as the first element, and the additional
+parameters as the remaining parameters.

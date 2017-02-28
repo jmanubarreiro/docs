@@ -1,86 +1,114 @@
 ブログチュートリアル
 ####################
 
-Cakeをさっそく使ってみましょう。
-このチュートリアルを読んでいるのは、Cakeの動作に関してさらに学びたいと思っているからだと思います。
-私たちは、生産性を高め、コーディングがさらに楽しいものになることを目指しています。
-コードを調べているうちに、きっとあなたもそのことに気が付くでしょう。
-
-このチュートリアルでは、シンプルなブログアプリケーションを作成します。
-Cakeを取得してインストールし、データベースの設定を行い、ブログの投稿記事の一覧表示(*list*)、追加(*add*)、編集(*edit*)、削除(*delete*)などのアプリケーションロジックを作成します。
+このチュートリアルでは、シンプルなブログアプリケーションを作成します。CakePHP を取得して
+インストールし、データベースの設定を行い、ブログの投稿記事の一覧表示 (*list*)、追加 (*add*)、
+編集 (*edit*)、削除 (*delete*) などのアプリケーションロジックを作成します。
 
 必要なもの:
 
-#. 動作しているWebサーバ。
-   Apacheを使っているという前提で書いてありますが、他の種類のサーバを使用する場合でも、ほぼ同じにいけるはずです。
-   サーバの設定を少し変える必要があるかもしれませんが、たいていの人は、そのままの設定でCakeを動作させることが可能です。
-   PHP 5.2.8以上が動作していることを確認してください。
-#. データベースサーバ。
-   このチュートリアルでMySQLを使用します。
-   データベースを作成できる程度のSQLの知識が必要です。
-   その先はCakeが面倒をみてくれます。
-   MySQLを使用するので、PHPで ``pdo_mysql`` が有効になっていることを確認してください。
-#. PHPの基本的な知識。
-   オブジェクト指向プログラミングに慣れていれば非常に有利ですが、手続き型に慣れているという人でも心配する必要はありません。
-#. 最後に、MVCプログラミングに関する基本的な知識が必要です。
-   概要については、 :doc:`/cakephp-overview/understanding-model-view-controller` を見てください。
-   半ページぐらいの説明ですので、心配はご無用です。
+#. 動作しているウェブサーバ。Apache を使っているという前提で書いてありますが、
+   他の種類のサーバを使用する場合でも、ほぼ同じにいけるはずです。サーバの設定を
+   少し変える必要があるかもしれませんが、たいていの人は、そのままの設定で CakePHP を
+   動作させることが可能です。PHP |minphpversion| 以上が動作していること、
+   そして PHP で ``mbstring`` と ``intl`` が有効になっていることを確認してください。
+#. データベースサーバ。このチュートリアルでは MySQL を使用します。
+   データベースを作成できる程度の SQL の知識が必要です。その先は CakePHP が面倒を
+   みてくれます。MySQL を使用するので、PHP で ``pdo_mysql`` が有効になっていることを
+   確認してください。
+#. PHP の基本的な知識。
 
 それでは、はじめましょう！
 
-Cakeのダウンロード
+CakePHP の取得
+==============
+
+最も簡単な CakePHP のインストール方法は Composer を使う方法です。Composer は、
+ターミナルやコマンドラインプロンプトから CakePHP をインストールするシンプルな方法です。
+まだ準備ができていない場合、最初に Composer のダウンロードおよびインストールが必要です。
+cURL がインストールされていたら、以下のように実行するのが簡単です。 ::
+
+    curl -s https://getcomposer.org/installer | php
+
+もしくは `Composer のウェブサイト <https://getcomposer.org/download/>`_
+から ``composer.phar`` をダウンロードすることができます。
+
+そして、CakePHP アプリケーションのスケルトンを使用したいディレクトリにインストールするために、
+インストールディレクトリからターミナルに以下の行をシンプルにタイプしてください。
+この例では、"blog" を使用しますが、他のものに自由に変更できます。 ::
+
+    php composer.phar create-project --prefer-dist cakephp/app blog
+
+Composer をグローバルにすでに設定している場合は、以下のようにタイプすることもできます。 ::
+
+    composer self-update && composer create-project --prefer-dist cakephp/app blog
+
+Composer を使うメリットは、 正しいファイルパーミッションの設定や、 **config/app.php**
+ファイルの作成などのような、重要なセットアップを自動的に完全にしてくれることです。
+
+CakePHP をインストールする他の方法があります。 Composer を使いたくない場合、
+:doc:`/installation` セクションをご覧ください。
+
+CakePHP のダウンロードやインストール方法にかかわらず、いったんセットアップが完了すると、
+ディレクトリ構成は以下のようになります。 ::
+
+    /cake_install
+        /bin
+        /config
+        /logs
+        /plugins
+        /src
+        /tests
+        /tmp
+        /vendor
+        /webroot
+        .editorconfig
+        .gitignore
+        .htaccess
+        .travis.yml
+        composer.json
+        index.php
+        phpunit.xml.dist
+        README.md
+
+CakePHP のディレクトリ構造がどのように働くかを学ぶのにいい機会かもしれません。
+:doc:`/intro/cakephp-folder-structure` セクションをご覧ください。
+
+
+tmp と logs ディレクトリのパーミッション
+========================================
+
+ウェブサーバが書き込みを行うために、 ``tmp`` と ``logs`` ディレクトリに適切なパーミッションの
+設定をする必要があります。インストールにComposerを用いた場合はこれはすでに終わっており、
+"Permissions set on <folder>" というメッセージで確認できます。もしエラーメッセージが出ている場合、
+または手動で設定したい場合は、ウェブサーバを動作させているユーザを見つけるために
+``<?= `whoami`; ?>`` をウェブサーバで実行するのが最も良いでしょう。
+そしてそのユーザーにこれらの2つのディレクトリの所有権を変更します。
+実行するコマンドは (\*nixで) このようになります。 ::
+
+    chown -R www-data tmp
+    chown -R www-data logs
+
+何らかの理由で CakePHP がそのディレクトリに書き込めない場合は、
+プロダクションモードでない限り警告で通知されます。
+
+推奨はしませんが、もしこの方法でウェブサーバに権限の設定ができない場合、
+以下のコマンドを実行することで書き込み権限をフォルダに与えることができます。 ::
+
+    chmod 777 -R tmp
+    chmod 777 -R logs
+
+データベースの作成
 ==================
 
-まずは、最新のCakeのコードをダウンロードしてきましょう。
+次に、ブログで使用する基礎的なMySQLデータベースをセットアップしましょう。データベースを
+まだ作成していないのであれば、このチュートリアル用に好きな名前で、
+例えば ``cake_blog`` のような名前で空のデータベースを作成しておいてください。このページでは、
+投稿記事を保存するためのテーブルをひとつ作成します。そしてテスト用に、いくつかの記事も投入します。
+次の SQL をデータベースで実行してください。 ::
 
-最新のCakeをダウンロードするには、GitHubにあるCakePHPプロジェクトを見てみましょう:
-`https://github.com/cakephp/cakephp/tags <https://github.com/cakephp/cakephp/tags>`_
-そして、2.0の最新リリースをダウンロードします。
-
-または、
-`git <http://git-scm.com/>`_
-を使ってレポジトリをcloneすることもできます。
-``git clone git://github.com/cakephp/cakephp.git``
-
-どちらにしても、ダウンロードしたコードをDocumentRoot内に配置してください。
-そうすると、ディレクトリは次のようになります::
-
-    /path_to_document_root
-        /app
-        /lib
-        /plugins
-        /vendors
-        .htaccess
-        index.php
-        README
-
-Cakeのディレクトリ構造について少し学んでおきましょう:
-:doc:`/getting-started/cakephp-folder-structure` のセクションをチェックしてください。
-
-Tmpディレクトリのパーミッション
--------------------------------
-
-次に、 ``app/tmp`` ディレクトリをWebサーバから書き込めるように設定します。
-これを行うためのいちばんいい方法は、 Webサーバを動作させているユーザーを見つけることです。
-次のコード ``<?php echo exec('whoami'); ?>`` を任意のPHPファイルに記述して、Webサーバで実行してみましょう。
-すると、Webサーバを実行しているユーザの名前が表示されるはずです。
-そのユーザーに ``app/tmp`` ディレクトリの所有権を変更します。
-実行するコマンドは (\*nixで) このようになります::
-
-    $ chown -R www-data app/tmp
-
-何らかの理由でCakePHPがそのディレクトリに書き込めない場合は、キャッシュデータが書き込めないという警告や例外が表示されます。
-
-ブログデータベースの作成
-========================
-
-次に、ブログで使用する基礎的なデータベースをセットアップしましょう。
-データベースをまだ作成していないのであれば、このチュートリアル用に好きな名前で空のデータベースを作成しておいてください。
-このページでは、投稿記事を保存するためのテーブルをひとつ作成します。
-次のSQLをデータベースで実行してください。::
-
-    /* まず、postsテーブルを作成します: */
-    CREATE TABLE posts (
+    /* まず、articles テーブルを作成します: */
+    CREATE TABLE articles (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(50),
         body TEXT,
@@ -89,94 +117,86 @@ Tmpディレクトリのパーミッション
     );
 
     /* それから、テスト用に記事をいくつか入れておきます: */
-    INSERT INTO posts (title,body,created)
+    INSERT INTO articles (title,body,created)
         VALUES ('タイトル', 'これは、記事の本文です。', NOW());
-    INSERT INTO posts (title,body,created)
+    INSERT INTO articles (title,body,created)
         VALUES ('またタイトル', 'そこに本文が続きます。', NOW());
-    INSERT INTO posts (title,body,created)
+    INSERT INTO articles (title,body,created)
         VALUES ('タイトルの逆襲', 'こりゃ本当にわくわくする！うそ。', NOW());
 
-テーブル名とフィールド名は適当に選んだわけではありません。
-Cakeのデータベース命名規約とクラスの命名規約に従っておくと、（どちらも、 :doc:`/getting-started/cakephp-conventions` の中で説明されています）たくさんの機能を自由に使うことができ、設定作業をする必要がなくなります。
-Cakeはフレキシブルなので、最悪な従来型のデータベーススキーマにも対応することができますが、規約に従えば、時間を節約することができます。
+テーブル名とフィールド名は適当に選んだわけではありません。CakePHP のデータベース命名規約と
+クラスの命名規約に従っておくと、（どちらも、  :doc:`/intro/conventions` の中で説明されています）
+たくさんの機能を自由に使うことができ、設定作業をする必要がなくなります。
+CakePHP はレガシーなデータベーススキーマに対応できるくらい十分に柔軟ですが、規約に従うことで、
+時間を節約できます。
 
-詳細は、 :doc:`/getting-started/cakephp-conventions` を参照してください。
-簡単に言うと、'posts'というテーブル名にしておけば、自動的にPostモデルが呼び出され、'modified'と'created'というフィールドがあると、自動的にCakeが管理するようになります。
+詳細は、 :doc:`/intro/conventions` を参照してください。簡単に言うと、
+'articles' というテーブル名にしておけば、自動的に Articles モデルが呼び出され、'modified' と
+'created' というフィールドがあると、自動的にCakePHP が管理するようになります。
 
-Cakeのデータベース設定
-======================
+データベース設定
+================
 
-どんどん進みましょう。
-データベースがどこにあって、どうやって接続するかをCakeに教えます。
-多くの人にとって、設定(*configure*)をする最初で最後の機会です。
+次に、どこにデータベースあるか、そしてどうやってテータベースに接続するかを CakePHP
+に伝えましょう。おそらく、これが何らかの設定が必要となる最初で最後です。
 
-CakePHPのデータベース設定ファイルの元は、
-``/config/database.php.default`` の中にあります。
-同一ディレクトリ上にこのファイルのコピーを作り、 ``database.php`` という名前にしてください。
+この設定はとても単純です。あなたのセットアップを適用するために **config/app.php**
+ファイルの中の ``Datasources.default`` 配列の値を置き換えてください。
+完全な設定配列の例は、以下のようになります。 ::
 
-この設定ファイルの中身は一目瞭然です。
-``$default`` 配列の値を自分のセットアップに合わせて変更するだけです。
-完全な設定の配列の例は次のようなものになるでしょう::
+    return [
+        // More configuration above.
+        'Datasources' => [
+            'default' => [
+                'className' => 'Cake\Database\Connection',
+                'driver' => 'Cake\Database\Driver\Mysql',
+                'persistent' => false,
+                'host' => 'localhost',
+                'username' => 'cake_blog',
+                'password' => 'AngelF00dC4k3~',
+                'database' => 'cake_blog',
+                'encoding' => 'utf8',
+                'timezone' => 'UTC',
+            ],
+        ],
+        // More configuration below.
+    ];
 
-    public $default = array(
-        'datasource' => 'Database/Mysql',
-        'persistent' => false,
-        'host' => 'localhost',
-        'port' => '',
-        'login' => 'cakeBlog',
-        'password' => 'c4k3-rUl3Z',
-        'database' => 'cake_blog_tutorial',
-        'schema' => '',
-        'prefix' => '',
-        'encoding' => 'utf8'
-    );
 
-新しくできた ``database.php`` ファイルを保存したら、ブラウザをあけて、Cakeのwelcomeページを開いてください。
-データベース接続のファイルがある、そしてデータベースに接続できる、というメッセージが表示されるはずです。
+**config/app.php** を保存すると、ブラウザでウェルカムページが表示されるはずです。
+データベースへの接続ファイルがみつかり、CakePHPがデータベースにきちんと接続されていることをも示しています。
 
 .. note::
 
-   PDOとpdo_mysqlがphp.iniで有効になっている必要があることを覚えておいてください。
+    CakePHP のデフォルト設定ファイルは **config/app.default.php** にあります。
 
 追加の設定
 ==========
 
-設定できる項目があといくつかあります。
-たいていの開発者はこれらの詳細なリストも仕上げますが、このチュートリアルに必要不可欠、というわけではありません。
-ひとつは、セキュリティハッシュ用のカスタム文字列(「salt」ともいう)です。
-二つ目は、独自の番号(「seed」ともいう)を暗号化用に定義するということです。
+設定できる項目があといくつかあります。たいていの開発者はこれらの詳細なリストも仕上げますが、
+このチュートリアルに必要不可欠、というわけではありません。ひとつは、セキュリティハッシュ用の
+カスタム文字列(「salt」ともいう)です。
 
-セキュリティ用のsaltは、ハッシュの生成に用いられます。
-``/config/core.php`` を編集し、デフォルトの ``Security.salt`` の値を変更してください。
-この値は、ランダムで長い文字列にします。そうすることで推測がより困難になります。::
+セキュリティ用の salt は、ハッシュの生成に用いられます。 ``config/app.php`` を
+編集し、デフォルトの ``Security.salt`` の値を変更してください。
+この値は、ランダムで長い文字列にします。そうすることで推測がより困難になります。 ::
 
-    /**
-     * A random string used in security hashing methods.
-     */
-    Configure::write('Security.salt', 'pl345e-P45s_7h3*S@l7!');
+   'Security' => [
+      'salt' => 'something long and containing lots of different values.',
+   ],
 
-サイファシード(*cipher seed*)は暗号化・復号化のための文字列です。
-``/config/core.php`` を編集して ``Security.cipherSeed`` をデフォルト値から変更してください。
-この値は、大きくてランダムな整数でなければなりません::
+mod\_rewrite について
+=====================
 
-    /**
-     * A random numeric string (digits only) used to encrypt/decrypt strings.
-     */
-    Configure::write('Security.cipherSeed', '7485712659625147843639846751');
+新しいユーザは mod\_rewrite でつまずくことがよくあります。例えば CakePHP の
+ウェルカムページが少しおかしくなったりします (画像が表示されない、CSS が効いていない)。
+これはおそらく、システム上の mod\_rewrite が機能していないということです。
+:ref:`url-rewriting` セクションを参照して、URL リライティングが有効になるように設定してください。
 
-mod\_rewriteについて
-====================
-
-新しいユーザはmod\_rewriteでつまずくことがよくあります。
-例えばCakePHPのwelcomeページが少しおかしくなったりします(画像が表示されない、CSSが効いていない)。
-これはおそらく、システム上のmod\_rewriteが機能していないということです。
-以下のいずれかの項目を参照して、URLリライティングが有効になるように設定してください。
-
-.. toctree::
-    :maxdepth: 1
-
-    /installation/url-rewriting
-
-はじめてのCakePHPアプリケーションを構築しはじめるには、続けて
+はじめての CakePHP アプリケーションを構築しはじめるには、続けて
 :doc:`/tutorials-and-examples/blog/part-two`
-を見てください。
+をご覧ください。
+
+.. meta::
+    :title lang=ja: Blog Tutorial
+    :keywords lang=ja: model view controller,object oriented programming,application logic,directory setup,basic knowledge,database server,server configuration,reins,documentroot,readme,repository,web server,productivity,lib,sql,aim,cakephp,servers,apache,downloads

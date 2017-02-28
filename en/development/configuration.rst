@@ -17,8 +17,8 @@ Configuring your Application
 Configuration is generally stored in either PHP or INI files, and loaded during
 the application bootstrap. CakePHP comes with one configuration file by default,
 but if required you can add additional configuration files and load them in
-``config/bootstrap.php``. :php:class:`Cake\\Core\\Configure` is used for
-general configuration, and the adapter based classes provide ``config()``
+your application's bootstrap code. :php:class:`Cake\\Core\\Configure` is used
+for global configuration, and classes like ``Cache`` provide ``config()``
 methods to make configuration simple and transparent.
 
 Loading Additional Configuration Files
@@ -26,17 +26,17 @@ Loading Additional Configuration Files
 
 If your application has many configuration options it can be helpful to split
 configuration into multiple files. After creating each of the files in your
-``config/`` directory you can load them in ``bootstrap.php``::
+**config/** directory you can load them in **bootstrap.php**::
 
     use Cake\Core\Configure;
     use Cake\Core\Configure\Engine\PhpConfig;
 
     Configure::config('default', new PhpConfig());
-    Configure::load('app.php', 'default', false);
-    Configure::load('other_config.php', 'default');
+    Configure::load('app', 'default', false);
+    Configure::load('other_config', 'default');
 
 You can also use additional configuration files to provide environment specific
-overrides. Each file loaded after ``app.php`` can redefine previously declared
+overrides. Each file loaded after **app.php** can redefine previously declared
 values allowing you to customize configuration for development or staging
 environments.
 
@@ -55,7 +55,7 @@ App.namespace
     .. note::
 
         When changing the namespace in your configuration, you will also
-        need to update your ``composer.json`` file to use this namespace
+        need to update your **composer.json** file to use this namespace
         as well. Additionally, create a new autoloader by running
         ``php composer.phar dumpautoload``.
 
@@ -67,14 +67,16 @@ App.baseUrl
     files too.
 App.base
     The base directory the app resides in. If ``false`` this
-    will be auto detected.
+    will be auto detected. If not ``false``, ensure your string starts
+    with a `/` and does NOT end with a `/`. E.g., `/basedir` is a valid
+    App.base. Otherwise, the AuthComponent will not work properly.
 App.encoding
     Define what encoding your application uses.  This encoding
     is used to generate the charset in the layout, and encode entities.
     It should match the encoding values specified for your database.
 App.webroot
     The webroot directory.
-App.www_root
+App.wwwRoot
     The file path to webroot.
 App.fullBaseUrl
     The fully qualified domain name (including protocol) to your application's
@@ -82,6 +84,9 @@ App.fullBaseUrl
     is generated using the $_SERVER environment. However, you should define it
     manually to optimize performance or if you are concerned about people
     manipulating the ``Host`` header.
+    In a CLI context (from shells) the `fullBaseUrl` cannot be read from $_SERVER,
+    as there is no webserver involved. You do need to specify it yourself if
+    you do need to generate URLs from a shell (e.g. when sending emails).
 App.imageBaseUrl
     Web path to the public images directory under webroot. If you are using
     a :term:`CDN` you should set this value to the CDN's location.
@@ -91,6 +96,10 @@ App.cssBaseUrl
 App.jsBaseUrl
     Web path to the public js directory under webroot. If you are using
     a :term:`CDN` you should set this value to the CDN's location.
+App.paths
+    Configure paths for non class based resources. Supports the
+    ``plugins``, ``templates``, ``locales`` subkeys, which allow the definition
+    of paths for plugins, view templates and locale files respectively.
 Security.salt
     A random string used in hashing. This value is also used as the
     HMAC salt when doing symetric encryption.
@@ -99,9 +108,9 @@ Asset.timestamp
     file at the end of asset files URLs (CSS, JavaScript, Image) when
     using proper helpers.
     Valid values:
-    
+
     - (bool) ``false`` - Doesn't do anything (default)
-    - (bool) ``true`` - Appends the timestamp when debug is ``false``
+    - (bool) ``true`` - Appends the timestamp when debug is ``true``
     - (string) 'force' - Always appends the timestamp.
 
 Database Configuration
@@ -173,25 +182,33 @@ to multiple directories with the following::
         }
     }
 
-View and Plugin Paths
----------------------
+Plugin, View Template and Locale Paths
+--------------------------------------
 
-Since views and plugins are not classes, they cannot have an autoloader
-configured. CakePHP provides two Configure variables to setup additional paths
-for these resources. In your ``config/app.php`` you can set these
-variables::
+Since plugins, view templates and locales are not classes, they cannot have an
+autoloader configured. CakePHP provides three Configure variables to setup additional
+paths for these resources. In your **config/app.php** you can set these variables::
 
-    $config = [
+    return [
         // More configuration
         'App' => [
             'paths' => [
-                'views' => [APP . 'View/', APP . 'View2/'],
-                'plugins' => [ROOT . '/Plugin/', '/path/to/other/plugins/']
+                'plugins' => [
+                    ROOT . DS . 'plugins' . DS,
+                    '/path/to/other/plugins/'
+                ],
+                'templates' => [
+                    APP . 'Template' . DS,
+                    APP . 'Template2' . DS
+                ],
+                'locales' => [
+                    APP . 'Locale' . DS
+                ]
             ]
         ]
     ];
 
-Paths should end in ``/``, or they will not work properly.
+Paths should end with a directory separator, or they will not work properly.
 
 Inflection Configuration
 ========================
@@ -261,16 +278,34 @@ data back::
     Configure::read('Company');
 
     // Yields:
-    array('name' => 'Pizza, Inc.', 'slogan' => 'Pizza for your body and soul');
+    ['name' => 'Pizza, Inc.', 'slogan' => 'Pizza for your body and soul'];
 
 If $key is left null, all values in Configure will be returned.
+
+
+.. php:staticmethod:: readOrFail($key)
+
+Reads configuration data just like :php:meth:`Cake\\Core\\Configure::read`
+but expects to find a key/value pair. In case the requested pair does not
+exist, a :php:class:`RuntimeException` will be thrown::
+
+    Configure::readOrFail('Company.name');    // Yields: 'Pizza, Inc.'
+    Configure::readOrFail('Company.geolocation');  // Will throw an exception
+
+    Configure::readOrFail('Company');
+
+    // Yields:
+    ['name' => 'Pizza, Inc.', 'slogan' => 'Pizza for your body and soul'];
+
+.. versionadded:: 3.1.7
+    ``Configure::readOrFail()`` was added in 3.1.7
 
 Checking to see if Configuration Data is Defined
 ------------------------------------------------
 
 .. php:staticmethod:: check($key)
 
-Used to check if a key/path exists and has not-null value::
+Used to check if a key/path exists and has non-null value::
 
     $exists = Configure::check('Company.name');
 
@@ -316,7 +351,7 @@ need to attach it to Configure using :php:meth:`Configure::config()`::
 
 You can have multiple engines attached to Configure, each reading different
 kinds or sources of configuration files. You can interact with attached engines
-using a few other methods on Configure. To see check which engine aliases are
+using a few other methods on Configure. To check which engine aliases are
 attached you can use :php:meth:`Configure::configured()`::
 
     // Get the array of aliases for attached engines.
@@ -340,7 +375,8 @@ Loading Configuration Files
 
 .. php:staticmethod:: load($key, $config = 'default', $merge = true)
 
-Once you've attached a config engine to Configure you can load configuration files::
+Once you've attached a config engine to Configure you can load configuration
+files::
 
     // Load my_file.php using the 'default' engine object.
     Configure::load('my_file', 'default');
@@ -353,23 +389,23 @@ will not ever overwrite the existing configuration.
 Creating or Modifying Configuration Files
 -----------------------------------------
 
-.. php:staticmethod:: dump($key, $config = 'default', $keys = array())
+.. php:staticmethod:: dump($key, $config = 'default', $keys = [])
 
 Dumps all or some of the data in Configure into a file or storage system
 supported by a config engine. The serialization format is decided by the config
 engine attached as $config. For example, if the 'default' engine is
-a :php:class:`Cake\\Configure\\Engine\\PhpConfig`, the generated file will be
+a :php:class:`Cake\\Core\\Configure\\Engine\\PhpConfig`, the generated file will be
 a PHP configuration file loadable by the
-:php:class:`Cake\\Configure\\Engine\\PhpConfig`
+:php:class:`Cake\\Core\\Configure\\Engine\\PhpConfig`
 
 Given that the 'default' engine is an instance of PhpConfig.
 Save all data in Configure to the file `my_config.php`::
 
-    Configure::dump('my_config.php', 'default');
+    Configure::dump('my_config', 'default');
 
 Save only the error handling configuration::
 
-    Configure::dump('error.php', 'default', ['Error', 'Exception']);
+    Configure::dump('error', 'default', ['Error', 'Exception']);
 
 ``Configure::dump()`` can be used to either modify or overwrite
 configuration files that are readable with :php:meth:`Configure::load()`
@@ -422,26 +458,30 @@ files, you could create a simple Xml config engine for you application::
     use Cake\Core\Configure\ConfigEngineInterface;
     use Cake\Utility\Xml;
 
-    class XmlConfig implements ConfigEngineInterface {
+    class XmlConfig implements ConfigEngineInterface
+    {
 
-        public function __construct($path = null) {
+        public function __construct($path = null)
+        {
             if (!$path) {
                 $path = CONFIG;
             }
             $this->_path = $path;
         }
 
-        public function read($key) {
+        public function read($key)
+        {
             $xml = Xml::build($this->_path . $key . '.xml');
             return Xml::toArray($xml);
         }
 
-        public function dump($key, $data) {
+        public function dump($key, array $data)
+        {
             // Code to dump data to file
         }
     }
 
-In your ``config/bootstrap.php`` you could attach this engine and use it::
+In your **config/bootstrap.php** you could attach this engine and use it::
 
     use App\Configure\Engine\XmlConfig;
 
@@ -477,17 +517,19 @@ configuration information that the resource named ``$key`` contains.
 Built-in Configuration Engines
 ==============================
 
+.. php:namespace:: Cake\Core\Configure\Engine
+
 PHP Configuration Files
 -----------------------
 
 .. php:class:: PhpConfig
 
 Allows you to read configuration files that are stored as plain PHP files.
-You can read either files from your ``config`` or from plugin configs
-directories by using :term:`plugin syntax`. Files **must** contain a ``$config``
-variable. An example configuration file would look like::
+You can read either files from your app's config or from plugin configs
+directories by using :term:`plugin syntax`. Files *must* return an array.
+An example configuration file would look like::
 
-    $config = [
+    return [
         'debug' => 0,
         'Security' => [
             'salt' => 'its-secret'
@@ -497,9 +539,8 @@ variable. An example configuration file would look like::
         ]
     ];
 
-Files without ``$config`` will cause an :php:exc:`ConfigureException`
-
-Load your custom configuration file by inserting the following in ``config/bootstrap.php``::
+Load your custom configuration file by inserting the following in
+**config/bootstrap.php**::
 
     Configure::load('customConfig');
 
@@ -509,7 +550,7 @@ Ini Configuration Files
 .. php:class:: IniConfig
 
 Allows you to read configuration files that are stored as plain .ini files.
-The ini files must be compatible with php's ``parse_ini_file`` function, and
+The ini files must be compatible with php's ``parse_ini_file()`` function, and
 benefit from the following improvements
 
 * dot separated values are expanded into arrays.
@@ -530,26 +571,115 @@ as the PHP example above. Array structures can be created either
 through dot separated values, or sections. Sections can contain
 dot separated keys for deeper nesting.
 
+
+Json Configuration Files
+------------------------
+
+.. php:class:: JsonConfig
+
+Allows you to read / dump configuration files that are stored as JSON encoded
+strings in .json files.
+
+An example JSON file would look like::
+
+    {
+        "debug": false,
+        "App": {
+            "namespace": "MyApp"
+        },
+        "Security": {
+            "salt": "its-secret"
+        }
+    }
+
+
 Bootstrapping CakePHP
 =====================
 
 If you have any additional configuration needs, you should add them to your
-application's ``config/bootstrap.php`` file. This file is included before each
+application's **config/bootstrap.php** file. This file is included before each
 request, and CLI command.
 
 This file is ideal for a number of common bootstrapping tasks:
 
 - Defining convenience functions.
 - Declaring constants.
-- Creating cache configurations.
-- Configuring inflections.
+- Defining cache configuration.
+- Defining logging configuration.
+- Loading custom inflections.
 - Loading configuration files.
 
-Be careful to maintain the MVC software design pattern when you add things to
-the bootstrap file: it might be tempting to place formatting functions there in
-order to use them in your controllers. As you'll see in the :doc:`/controllers`
-and :doc:`/views` sections there are better ways you add custom logic to your
-application.
+It might be tempting to place formatting functions there in order to use them in
+your controllers. As you'll see in the :doc:`/controllers` and :doc:`/views`
+sections there are better ways you add custom logic to your application.
+
+.. _application-bootstrap:
+
+Application::bootstrap()
+------------------------
+
+In addition to the **config/bootstrap.php** file which should be used to
+configure low-level concerns of your application, you can also use the
+``Application::bootstrap()`` hook method to load/initialize plugins, and attach
+global event listeners::
+
+    // in src/Application.php
+    namespace App;
+
+    use Cake\Core\Plugin;
+    use Cake\Http\BaseApplication;
+
+    class Application extends BaseApplication
+    {
+        public function bootstrap()
+        {
+            // Call the parent to `require_once` config/bootstrap.php
+            parent::bootstrap();
+
+            Plugin::load('MyPlugin', ['bootstrap' => true, 'routes' => true]);
+        }
+    }
+
+Loading plugins/events in ``Application::bootstrap()`` makes
+:ref:`integration-testing` easier as events and routes will be re-processed on
+each test method.
+
+Environment Variables
+=====================
+
+Some of the modern cloud providers, like Heroku, let you define environment
+variables. By defining environment variables, you can configure your CakePHP
+app as an 12factor app. Following the
+`12factor app instructions <http://12factor.net/>`_ is a good way to create a
+stateless app, and to ease the deployment of your app.
+This means for example, that if you need to change your database, you'll just
+need to modify a DATABASE_URL variable on your host configuration without the
+need to change it in your source code.
+
+As you can see in your **app.php**, the following variables are concerned:
+
+- ``DEBUG`` (``0`` or ``1``)
+- ``APP_ENCODING`` (ie UTF-8)
+- ``APP_DEFAULT_LOCALE`` (ie ``en_US``)
+- ``SECURITY_SALT``
+- ``CACHE_DEFAULT_URL`` (ie ``File:///?prefix=myapp_&serialize=true&timeout=3600&path=../tmp/cache/``)
+- ``CACHE_CAKECORE_URL`` (ie ``File:///?prefix=myapp_cake_core_&serialize=true&timeout=3600&path=../tmp/cache/persistent/``)
+- ``CACHE_CAKEMODEL_URL`` (ie ``File:///?prefix=myapp_cake_model_&serialize=true&timeout=3600&path=../tmp/cache/models/``)
+- ``EMAIL_TRANSPORT_DEFAULT_URL`` (ie ``smtp://user:password@hostname:port?tls=null&client=null&timeout=30``)
+- ``DATABASE_URL`` (ie ``mysql://user:pass@db/my_app``)
+- ``DATABASE_TEST_URL`` (ie ``mysql://user:pass@db/test_my_app``)
+- ``LOG_DEBUG_URL`` (ie ``file:///?levels[]=notice&levels[]=info&levels[]=debug&file=debug&path=../logs/``)
+- ``LOG_ERROR_URL`` (ie ``file:///?levels[]=warning&levels[]=error&levels[]=critical&levels[]=alert&levels[]=emergency&file=error&path=../logs/``)
+
+As you can see in the examples, we define some options configuration as
+:term:`DSN` strings. This is the case for databases, logs, email transport and
+cache configurations.
+
+If the environment variables are not defined in your environment, CakePHP will
+use the values that are defined in the **app.php**. You can use
+`php-dotenv library <https://github.com/josegonzalez/php-dotenv>`_ to use
+environment variables in a local development. See the Readme instructions of the
+library for more information.
 
 .. meta::
     :title lang=en: Configuration

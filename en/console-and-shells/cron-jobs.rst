@@ -10,13 +10,17 @@ trivial to setup, for example::
     # │    │    │    │    │
     # │    │    │    │    │
     # │    │    │    │    \───── day of week (0 - 6) (0 to 6 are Sunday to Saturday,
-      |    |    |    |           or use names)
+    # |    |    |    |           or use names)
     # │    │    │    \────────── month (1 - 12)
     # │    │    \─────────────── day of month (1 - 31)
     # │    \──────────────────── hour (0 - 23)
     # \───────────────────────── min (0 - 59)
 
 You can see more info here: http://en.wikipedia.org/wiki/Cron
+
+.. tip::
+
+    Use ``-q`` (or `--quiet`) to silence any output for cronjobs.
 
 .. meta::
     :title lang=en: Running Shells as cronjobs

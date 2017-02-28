@@ -52,8 +52,8 @@ Glossaire
             ]
 
     CSRF
-        Les Reqûetes de site croisées de Contrefaçon. Empêche les attaques de 
-        replay, les soumissions doubles et les requêtes contrefaîtes provenant 
+        Les Requêtes de site croisées de Contrefaçon. Empêche les attaques de 
+        replay, les soumissions doubles et les requêtes contrefaites provenant 
         d'autres domaines.
 
     CDN
@@ -73,8 +73,18 @@ Glossaire
         Ne vous répétez pas vous-même. C'est un principe de développement de 
         logiciel qui a pour objectif de réduire les répétitions d'information 
         de tout type. Dans CakePHP, DRY est utilisé pour vous permettre de 
-        coder des choses et de les ré-utiliser à travers votre application.
+        coder des choses et de les réutiliser à travers votre application.
 
+    PaaS
+        Plate-forme en tant que service (Platform as a Service). Les fournisseurs
+        de plate-forme en tant que service fournissent des hébergements, des
+        bases de données et des ressources de caching basés sur le Cloud. Quelques
+        fournisseurs populaires sont Heroku, EngineYard et PagodaBox
+
+    DSN
+        Nom de Source de Données (Data Source Name). Un format de chaîne de
+        connexion qui est formé comme un URI. CakePHP supporte les DSN pour
+        les connections Cache, base de données, Log et Email.
 
 .. meta::
     :title lang=fr: Glossaire

@@ -27,7 +27,7 @@ Toutes clés & valeurs fournies vont être passées au constructeur du Component
 La seule exception à cette règle est ``className``. Classname est une clé
 spéciale qui est utilisée pour faire des alias des objets dans un registry. Cela
 vous permet d'avoir des noms de component qui ne correspondent pas aux noms de
-classes, ce qui peut être utile quand vous étendez les components du coeur::
+classes, ce qui peut être utile quand vous étendez les components du cœur::
 
     $this->Auth = $this->loadComponent('Auth', ['className' => 'MyCustomAuth']);
     $this->Auth->user(); // Utilise en fait MyCustomAuth::user();
@@ -43,18 +43,17 @@ Désactiver les Callbacks
 ========================
 
 Dans les versions précédentes, les objets collection fournissaient une méthode
-``disable`` pour désactiver les objets à partir des callbacks reçus. Pour le
+``disable()`` pour désactiver les objets à partir des callbacks reçus. Pour le
 faire maintenant, vous devez utiliser les fonctionnalités dans le système
-d'evènements. Par exemple, vous pouvez désactiver les callbacks du component
+d'événements. Par exemple, vous pouvez désactiver les callbacks du component
 de la façon suivante::
 
     // Retire Auth des callbacks.
-    $this->eventManager()->detach($this->Auth);
+    $this->eventManager()->off($this->Auth);
 
     // Re-active Auth pour les callbacks.
-    $this->eventManager()->attach($this->Auth);
-
+    $this->eventManager()->on($this->Auth);
 
 .. meta::
     :title lang=fr: Objet Registry
-    :keywords lang=fr: nom tableau,chargement components,plusieurs types différents,api uni,charger objects,noms component,clé speciale,components coeur,callbacks,prg,callback,alias,fatal error,collections,memoire,priorité,priorités
+    :keywords lang=fr: nom tableau,chargement components,plusieurs types différents,api uni,charger objects,noms component,clé speciale,components cœur,callbacks,prg,callback,alias,fatal error,collections,memoire,priorité,priorités

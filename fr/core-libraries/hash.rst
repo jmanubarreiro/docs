@@ -1,6 +1,8 @@
 Hash
 ####
 
+.. php:namespace:: Cake\Utility
+
 .. php:class:: Hash
 
 La gestion de tableau, si elle est bien faite, peut être un outil très
@@ -8,7 +10,7 @@ puissant et utile pour construire du code plus intelligent et plus
 optimisé. CakePHP offre un ensemble d'utilitaires statiques très
 utile dans la classe Hash qui vous permet de faire justement cela.
 
-La classe Hash de CakePHP peut être appelée à partir de n'inporte quel
+La classe Hash de CakePHP peut être appelée à partir de n'importe quel
 model ou controller de la même façon que pour un appel à Inflector
 Exemple: :php:meth:`Hash::combine()`.
 
@@ -18,12 +20,12 @@ Syntaxe de chemin Hash
 ======================
 
 La syntaxe de chemin décrite ci-dessous est utilisée par toutes les méthodes
-dans ``Hash``. Les parties de la syntaxe du chemin ne sont pas toutes
+dans ``hash()``. Les parties de la syntaxe du chemin ne sont pas toutes
 disponibles dans toutes les méthodes. Une expression en chemin est faite
 depuis n'importe quel nombre de tokens. Les Tokens sont composés de deux
 groupes. Les Expressions sont utilisées pour parcourir le tableau de données,
 alors que les matchers sont utilisés pour qualifier les éléments. Vous
-appliquez les matchers aux élements de l'expression.
+appliquez les matchers aux éléments de l'expression.
 
 Types d'expression
 ------------------
@@ -39,7 +41,7 @@ Types d'expression
 |                                | chaîne numérique.                          |
 +--------------------------------+--------------------------------------------+
 | ``Foo``                        | Matche les clés avec exactement la même    |
-|                                | valeur keys with the exact same value.     |
+|                                | valeur.                                    |
 +--------------------------------+--------------------------------------------+
 
 Tous les éléments d'expression supportent toutes les méthodes. En plus des
@@ -52,7 +54,7 @@ Les Types d'Attribut Correspondants
 -----------------------------------
 
 +--------------------------------+--------------------------------------------+
-| Matcher                        | Definition                                 |
+| Matcher                        | Définition                                 |
 +================================+============================================+
 | ``[id]``                       | Match les éléments avec une clé de         |
 |                                | tableau donnée.                            |
@@ -65,12 +67,12 @@ Les Types d'Attribut Correspondants
 |                                | à 2.                                       |
 +--------------------------------+--------------------------------------------+
 | ``[id>=2]``                    | Match les éléments avec un id supérieur    |
-|                                | égal à 2.                                  |
+|                                | ou égal à 2.                               |
 +--------------------------------+--------------------------------------------+
 | ``[id<2]``                     | Match les éléments avec un id inférieur    |
 |                                | à 2.                                       |
 +--------------------------------+--------------------------------------------+
-| ``[id<=2]``                    | Match les éléménts avec un id inférieur    |
+| ``[id<=2]``                    | Match les éléments avec un id inférieur    |
 |                                | ou égal à 2.                               |
 +--------------------------------+--------------------------------------------+
 | ``[text=/.../]``               | Match les éléments qui ont des valeurs     |
@@ -78,37 +80,38 @@ Les Types d'Attribut Correspondants
 |                                | à l'intérieur de ``...``.                  |
 +--------------------------------+--------------------------------------------+
 
-.. php:staticmethod:: get(array $data, $path)
-
-    :rtype: mixed
+.. php:staticmethod:: get(array|\ArrayAccess $data, $path, $default = null)
 
     ``get()`` est une version simplifiée de ``extract()``, elle ne supporte
     que les expressions de chemin direct. Les chemins avec ``{n}``, ``{s}``
     ou les matchers ne sont pas supportés. Utilisez ``get()`` quand vous
-    voulez exactement une valeur sortie d'un tableau.
+    voulez exactement une valeur sortie d'un tableau. Si un chemin correspondant
+    n'est pas trouvé, la valeur par défaut sera retournée.
 
-.. php:staticmethod:: extract(array $data, $path)
-
-    :rtype: array
+.. php:staticmethod:: extract(array|\ArrayAccess $data, $path)
 
     ``Hash::extract()`` supporte toutes les expressions, les components
-    matcher de la :ref:`hash-path-syntax`. Vous pouvez utilisez l'extract pour
-    récupèrer les données à partir des tableaux, le long des chemins
-    arbitraires rapidement sans avoir à parcourir les structures de données.
-    A la place, vous utilisez les expressions de chemin pour qualifier
-    les éléments que vous souhaitez retourner ::
+    matcher de la :ref:`hash-path-syntax`. Vous pouvez utiliser l'extract pour
+    récupérer les données à partir des tableaux, ou bien un objet implémentant
+    l'interface ``ArrayAccess`` avec des chemins arbitraires rapidement sans
+    avoir à parcourir les structures de données. A la place, vous utilisez les
+    expressions de chemin pour qualifier les éléments que vous souhaitez
+    retourner::
 
         // Utilisation habituelle:
-        $users = $this->User->find("all");
-        $results = Hash::extract($users, '{n}.User.id');
+        $users = [
+            ['id' => 1, 'name' => 'mark'],
+            ['id' => 2, 'name' => 'jane'],
+            ['id' => 3, 'name' => 'sally'],
+            ['id' => 4, 'name' => 'jose'],
+        ];
+        $results = Hash::extract($users, '{n}.id');
         // $results égal à:
-        // [1,2,3,4,5,...];
+        // [1,2,3,4];
 
 .. php:staticmethod:: Hash::insert(array $data, $path, $values = null)
 
-    :rtype: array
-
-    Insère $data dans un tableau tel que défini dans ``$path``::
+    Insère ``$values`` dans un tableau tel que défini dans ``$path``::
 
         $a = [
             'pages' => ['name' => 'page']
@@ -118,24 +121,41 @@ Les Types d'Attribut Correspondants
         [
             [pages] => [
                     [name] => page
-	]
+            ]
             [files] => [
-            
+
                     [name] => files
-	]
+            ]
         ]
 
     Vous pouvez utiliser les chemins en utilisant ``{n}`` et ``{s}`` pour
     insérer des données dans des points multiples::
 
-        $users = $this->User->find('all');
-        $users = Hash::insert($users, '{n}.User.new', 'value');
+        $users = Hash::insert($users, '{n}.new', 'value');
+
+    Les matchers d'attribut fonctionnent aussi avec ``insert()``::
+
+        $data = [
+            0 => ['up' => true, 'Item' => ['id' => 1, 'title' => 'first']],
+            1 => ['Item' => ['id' => 2, 'title' => 'second']],
+            2 => ['Item' => ['id' => 3, 'title' => 'third']],
+            3 => ['up' => true, 'Item' => ['id' => 4, 'title' => 'fourth']],
+            4 => ['Item' => ['id' => 5, 'title' => 'fifth']],
+        ];
+        $result = Hash::insert($data, '{n}[up].Item[id=4].new', 9);
+        /* $result ressemble maintenant à:
+            [
+                ['up' => true, 'Item' => ['id' => 1, 'title' => 'first']],
+                ['Item' => ['id' => 2, 'title' => 'second']],
+                ['Item' => ['id' => 3, 'title' => 'third']],
+                ['up' => true, 'Item' => ['id' => 4, 'title' => 'fourth', 'new' => 9]],
+                ['Item' => ['id' => 5, 'title' => 'fifth']],
+            ]
+        */
 
 .. php:staticmethod:: remove(array $data, $path = null)
 
-    :rtype: array
-
-    Retire tous les éléments d'un tableau qui matche avec $path.::
+    Retire tous les éléments d'un tableau qui matche avec ``$path``::
 
         $a = [
             'pages' => ['name' => 'page'],
@@ -146,24 +166,41 @@ Les Types d'Attribut Correspondants
             [
                 [pages] => [
                         [name] => page
-	    ]
+            ]
 
             ]
         */
 
     L'utilisation de ``{n}`` et ``{s}`` vous autorisera à retirer les valeurs
-    multiples en une fois.
+    multiples en une fois. Vous pouvez aussi utiliser les matchers d'attribut
+    avec ``remove()``::
+
+        $data = [
+            0 => ['clear' => true, 'Item' => ['id' => 1, 'title' => 'first']],
+            1 => ['Item' => ['id' => 2, 'title' => 'second']],
+            2 => ['Item' => ['id' => 3, 'title' => 'third']],
+            3 => ['clear' => true, 'Item' => ['id' => 4, 'title' => 'fourth']],
+            4 => ['Item' => ['id' => 5, 'title' => 'fifth']],
+        ];
+        $result = Hash::remove($data, '{n}[clear].Item[id=4]');
+        /* $result ressemble maintenant à:
+            [
+                ['clear' => true, 'Item' => ['id' => 1, 'title' => 'first']],
+                ['Item' => ['id' => 2, 'title' => 'second']],
+                ['Item' => ['id' => 3, 'title' => 'third']],
+                ['clear' => true],
+                ['Item' => ['id' => 5, 'title' => 'fifth']],
+            ]
+        */
 
 .. php:staticmethod:: combine(array $data, $keyPath = null, $valuePath = null, $groupPath = null)
 
-    :rtype: array
-
-    Crée un tableau associatif en utilisant $keyPath en clé pour le chemin
-    à construire, et optionnellement $valuePath comme chemin pour récupèrer
-    les valeurs. Si $valuePath n'est pas spécifiée, ou ne matche rien, les
+    Crée un tableau associatif en utilisant ``$keyPath`` en clé pour le chemin
+    à construire, et optionnellement ``$valuePath`` comme chemin pour récupérer
+    les valeurs. Si ``$valuePath`` n'est pas spécifiée, ou ne matche rien, les
     valeurs seront initialisées à null. Vous pouvez grouper en option les
     valeurs par ce qui est obtenu en suivant le chemin spécifié dans
-    $groupPath.::
+    ``$groupPath``::
 
         $a = [
             [
@@ -193,6 +230,14 @@ Les Types d'Attribut Correspondants
             [
                 [2] =>
                 [14] =>
+            ]
+        */
+
+        $result = Hash::combine($a, '{n}.User.id', '{n}.User.Data.user');
+        /* $result ressemble maintenant à:
+            [
+                [2] => 'mariano.iglesias'
+                [14] => 'phpnut'
             ]
         */
 
@@ -248,8 +293,8 @@ Les Types d'Attribut Correspondants
             ]
         */
 
-    Vous pouvez fournir des tableaux pour les deux $keyPath et $valuePath. Si
-    vous le faîtes, la première valeur sera utlisée comme un format de chaîne
+    Vous pouvez fournir des tableaux pour les deux ``$keyPath`` et ``$valuePath``. Si
+    vous le faîtes, la première valeur sera utilisée comme un format de chaîne
     de caractères, pour les valeurs extraites par les autres chemins::
 
         $result = Hash::combine(
@@ -282,8 +327,6 @@ Les Types d'Attribut Correspondants
         */
 
 .. php:staticmethod:: format(array $data, array $paths, $format)
-
-    :rtype: array
 
     Retourne une série de valeurs extraites d'un tableau, formaté avec un
     format de chaîne de caractères::
@@ -338,8 +381,6 @@ Les Types d'Attribut Correspondants
 
 .. php:staticmethod:: contains(array $data, array $needle)
 
-    :rtype: boolean
-
     Détermine si un Hash ou un tableau contient les clés et valeurs exactes
     d'un autre::
 
@@ -362,8 +403,6 @@ Les Types d'Attribut Correspondants
         // true
 
 .. php:staticmethod:: check(array $data, string $path = null)
-
-    :rtype: boolean
 
    Vérifie si un chemin particulier est défini dans un tableau::
 
@@ -401,10 +440,8 @@ Les Types d'Attribut Correspondants
 
 .. php:staticmethod:: filter(array $data, $callback = ['Hash', 'filter'])
 
-    :rtype: array
-
     Filtre les éléments vides en dehors du tableau, en excluant '0'. Vous
-    pouvez aussi fournir un $callback personnalisé pour filtrer les éléments
+    pouvez aussi fournir un ``$callback`` personnalisé pour filtrer les éléments
     de tableau. Votre callback devrait retourner ``false`` pour retirer
     les éléments du tableau résultant::
 
@@ -417,7 +454,7 @@ Les Types d'Attribut Correspondants
         ];
         $res = Hash::filter($data);
 
-        /* $data ressemble maintenant à:
+        /* $res ressemble maintenant à:
             [
                 [0] => 0
                 [2] => true
@@ -431,8 +468,6 @@ Les Types d'Attribut Correspondants
         */
 
 .. php:staticmethod:: flatten(array $data, string $separator = '.')
-
-    :rtype: array
 
     Réduit un tableau multi-dimensionnel en un tableau à une seule dimension::
 
@@ -462,8 +497,6 @@ Les Types d'Attribut Correspondants
 
 .. php:staticmethod:: expand(array $data, string $separator = '.')
 
-    :rtype: array
-
     Développe un tableau qui a déjà été aplatie avec
     :php:meth:`Hash::flatten()`::
 
@@ -492,8 +525,6 @@ Les Types d'Attribut Correspondants
         */
 
 .. php:staticmethod:: merge(array $data, array $merge[, array $n])
-
-    :rtype: array
 
     Cette fonction peut être vue comme un hybride entre le ``array_merge`` et
     le ``array_merge_recursive`` de PHP. La différence entre les deux est que
@@ -547,9 +578,6 @@ Les Types d'Attribut Correspondants
         */
 
 .. php:staticmethod:: numeric(array $data)
-
-    :rtype: boolean
-
     Vérifie pour voir si toutes les valeurs dans le tableau sont numériques::
 
         $data = ['one'];
@@ -561,8 +589,6 @@ Les Types d'Attribut Correspondants
         // $res est à false
 
 .. php:staticmethod:: dimensions (array $data)
-
-    :rtype: integer
 
     Compte les dimensions d'un tableau. Cette méthode va seulement considérer
     la dimension du premier élément dans le tableau::
@@ -594,45 +620,59 @@ Les Types d'Attribut Correspondants
     le tableau::
 
         $data = ['1' => '1.1', '2', '3' => ['3.1' => '3.1.1']];
-        $result = Hash::maxDimensions($data, true);
+        $result = Hash::maxDimensions($data);
         // $result == 2
 
         $data = ['1' => ['1.1' => '1.1.1'], '2', '3' => ['3.1' => ['3.1.1' => '3.1.1.1']]];
-        $result = Hash::maxDimensions($data, true);
+        $result = Hash::maxDimensions($data);
         // $result == 3
 
 .. php:staticmethod:: map(array $data, $path, $function)
 
-    Crée un nouveau tableau, en extrayant $path, et mappe $function à travers
+    Crée un nouveau tableau, en extrayant ``$path``, et mappe ``$function`` à travers
     les résultats. Vous pouvez utiliser les deux, expression et le matching
     d'éléments avec cette méthode::
 
         // Appel de la fonction noop $this->noop() sur chaque element de $data
-        $result = Hash::map($data, "{n}", array($this, 'noop'));
+        $result = Hash::map($data, "{n}", [$this, 'noop']);
 
-        function noop($array) {
-         // Fait des choses au tableau et retourne les résultats
-         return $array;
+        public function noop(array $array)
+        {
+            // Fait des choses au tableau et retourne les résultats
+            return $array;
         }
 
 .. php:staticmethod:: reduce(array $data, $path, $function)
 
-    Crée une valeur unique, en extrayant $path, et en réduisant les résultats
-    extraits avec $function. Vous pouvez utiliser les deux, expression et le
+    Crée une valeur unique, en extrayant ``$path``, et en réduisant les résultats
+    extraits avec ``$function``. Vous pouvez utiliser les deux, expression et le
     matching d'éléments avec cette méthode.
 
 .. php:staticmethod:: apply(array $data, $path, $function)
 
-    Appliquer un callback à un ensemble de valuers extraites en utilisant
-    $function. La fonction va récupérer les valeurs extraites en premier
-    argument.
+    Appliquer un callback à un ensemble de valeurs extraites en utilisant
+    ``$function``. La fonction va récupérer les valeurs extraites en premier
+    argument::
+
+        $data = [
+            ['date' => '01-01-2016', 'booked' => true],
+            ['date' => '01-01-2016', 'booked' => false],
+            ['date' => '02-01-2016', 'booked' => true]
+        ];
+        $result = Hash::apply($data, '{n}[booked=true].date', 'array_count_values');
+        /* $result ressemble maintenant à:
+            [
+                '01-01-2016' => 1,
+                '02-01-2016' => 1,
+            ]
+        */
 
 .. php:staticmethod:: sort(array $data, $path, $dir, $type = 'regular')
 
     :rtype: array
 
     Trie un tableau selon n'importe quelle valeur, déterminé par une
-    :ref:`hash-path-syntax`. Seuls les élements de type expression sont
+    :ref:`hash-path-syntax`. Seuls les éléments de type expression sont
     supportés par cette méthode::
 
         $a = [
@@ -655,7 +695,7 @@ Les Types d'Attribut Correspondants
             ]
         */
 
-    ``$dir`` peut être soit ``asc``, soit ``desc`. Le ``$type``
+    ``$dir`` peut être soit ``asc``, soit ``desc``. Le ``$type``
     peut être une des valeurs suivantes:
 
     * ``regular`` pour le trier régulier.
@@ -663,12 +703,9 @@ Les Types d'Attribut Correspondants
       équivalentes.
     * ``string`` pour le tri des valeurs avec leur valeur de chaîne.
     * ``natural`` pour trier les valeurs d'une façon humaine. Va trier
-      ``foo10`` en-dessous de ``foo2`` par exemple. Le tri naturel
-      a besoin de PHP 5.4 ou supérieur.
+      ``foo10`` en-dessous de ``foo2`` par exemple.
 
 .. php:staticmethod:: diff(array $data, array $compare)
-
-    :rtype: array
 
     Calcule la différence entre deux tableaux::
 
@@ -692,8 +729,6 @@ Les Types d'Attribut Correspondants
         */
 
 .. php:staticmethod:: mergeDiff(array $data, array $compare)
-
-    :rtype: array
 
     Cette fonction fusionne les deux tableaux et pousse les différences
     dans les données à la fin du tableau résultant.
@@ -737,9 +772,7 @@ Les Types d'Attribut Correspondants
 
 .. php:staticmethod:: normalize(array $data, $assoc = true)
 
-    :rtype: array
-
-    Normalise un tableau. Si ``$assoc`` est à true, le tableau résultant
+    Normalise un tableau. Si ``$assoc`` est à ``true``, le tableau résultant
     sera normalisé en un tableau associatif. Les clés numériques avec les
     valeurs, seront convertis en clés de type chaîne avec des valeurs null.
     Normaliser un tableau, facilite l'utilisation des résultats avec
@@ -790,8 +823,7 @@ Les Types d'Attribut Correspondants
 .. php:staticmethod:: nest(array $data, array $options = [])
 
     Prend un ensemble de tableau aplati, et crée une structure de données
-    imbriquée ou chaînée. Utilisé par des méthodes comme
-    ``Model::find('threaded')``.
+    imbriquée ou chaînée.
 
     **Options:**
 
@@ -808,50 +840,50 @@ Les Types d'Attribut Correspondants
     Exemple::
 
         $data = [
-            ['ModelName' => ['id' => 1, 'parent_id' => null]],
-            ['ModelName' => ['id' => 2, 'parent_id' => 1]],
-            ['ModelName' => ['id' => 3, 'parent_id' => 1]],
-            ['ModelName' => ['id' => 4, 'parent_id' => 1]],
-            ['ModelName' => ['id' => 5, 'parent_id' => 1]],
-            ['ModelName' => ['id' => 6, 'parent_id' => null]],
-            ['ModelName' => ['id' => 7, 'parent_id' => 6]],
-            ['ModelName' => ['id' => 8, 'parent_id' => 6]],
-            ['ModelName' => ['id' => 9, 'parent_id' => 6]],
-            ['ModelName' => ['id' => 10, 'parent_id' => 6]]
+            ['ThreadPost' => ['id' => 1, 'parent_id' => null]],
+            ['ThreadPost' => ['id' => 2, 'parent_id' => 1]],
+            ['ThreadPost' => ['id' => 3, 'parent_id' => 1]],
+            ['ThreadPost' => ['id' => 4, 'parent_id' => 1]],
+            ['ThreadPost' => ['id' => 5, 'parent_id' => 1]],
+            ['ThreadPost' => ['id' => 6, 'parent_id' => null]],
+            ['ThreadPost' => ['id' => 7, 'parent_id' => 6]],
+            ['ThreadPost' => ['id' => 8, 'parent_id' => 6]],
+            ['ThreadPost' => ['id' => 9, 'parent_id' => 6]],
+            ['ThreadPost' => ['id' => 10, 'parent_id' => 6]]
         ];
 
         $result = Hash::nest($data, ['root' => 6]);
         /* $result ressemble maintenant à:
             [
                 (int) 0 => [
-                    'ModelName' => [
+                    'ThreadPost' => [
                         'id' => (int) 6,
                         'parent_id' => null
                     ],
                     'children' => [
                         (int) 0 => [
-                            'ModelName' => [
+                            'ThreadPost' => [
                                 'id' => (int) 7,
                                 'parent_id' => (int) 6
                             ],
                             'children' => []
                         ],
                         (int) 1 => [
-                            'ModelName' => [
+                            'ThreadPost' => [
                                 'id' => (int) 8,
                                 'parent_id' => (int) 6
                             ],
                             'children' => []
                         ],
                         (int) 2 => [
-                            'ModelName' => [
+                            'ThreadPost' => [
                                 'id' => (int) 9,
                                 'parent_id' => (int) 6
                             ],
                             'children' => []
                         ],
                         (int) 3 => [
-                            'ModelName' => [
+                            'ThreadPost' => [
                                 'id' => (int) 10,
                                 'parent_id' => (int) 6
                             ],
@@ -861,7 +893,6 @@ Les Types d'Attribut Correspondants
                 ]
             ]
             */
-
 
 .. meta::
     :title lang=fr: Hash

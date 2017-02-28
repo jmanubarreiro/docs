@@ -1,45 +1,36 @@
-Models
-######
+Acceso a la base de datos & ORM
+###############################
 
-.. note::
-    Esta página todavía no ha sido traducida y pertenece a la documentación de
-    CakePHP 2.X. Si te animas puedes ayudarnos `traduciendo la documentación
-    desde Github <https://github.com/cakephp/docs>`_.
+En CakePHP el acceso a la base de datos se hace por medio de dos objetos primarios. 
+El primero son **repositories** -repositorios- o **table objects** -objetos de tabla-. 
+Estos objetos proveen acceso a colecciones de datos. Nos permiten guardar nuevos 
+registros, modificar y borrar existentes, definir relaciones y realizar operaciones en masa.
+El segundo tipo de objeto son **entities** -entidades-. Las Entidades representan registros 
+individuales y permiten definir funcionalidad y comportamiento a nivel de registro/fila.
 
-Models are the classes that sit as the business layer in your application.
-This means that they should be responsible for managing almost everything
-that happens regarding your data, its validity, interactions and evolution
-of the information workflow in your domain of work.
+Estas dos clases son responsables de manejar todo lo que sucede con datos, validez, interacción y 
+evolución en tu área de trabajo.
 
-In CakePHP your application's domain model gets split into 2 primary object
-types. The first are **repositories** or **table objects**. These objects
-provide access to collections of data. They allow you to save new records,
-modify/delete existing ones, define relations, and perform bulk operations. The
-second type of objects are **entities**. Entities represent individual records
-and allow you to define row/record level behavior & functionality.
+El ORM incluído en CakePHP se especializa en base de datos relacionales, pero puede ser extendido 
+para soportar alternativas.
 
-CakePHP's built-in ORM specializes in relational databases, but can be extended
-to support alternative datasources.
+El ORM de CakePHP toma ideas y conceptos de los modelos ActiveRecord y Datamapper. Aspira a 
+crear una implementación híbrida que combine aspectos de los dos modelos para crear un ORM rápido 
+y fácil de usar.
 
-The CakePHP ORM borrows ideas and concepts from both ActiveRecord and Datamapper
-patterns. It aims to create a hybrid implementation that combines aspects of
-both patterns to create a fast, simple to use ORM.
-
-Before we get started exploring the ORM, make sure you :ref:`configure your
+Antes de comentar explorando el ORM, asegurate de configurar tu conexion :ref:`configure your
 database connections <database-configuration>`.
 
 .. note::
 
-    If you are familiar with previous versions of CakePHP, you should read the
-    :doc:`/appendices/orm-migration` for important differences between CakePHP 3.0
-    and older versions of CakePHP.
+    Si estás familiarizado con las versiones anteriores de CakePHP, deberías leer :doc:`/appendices/orm-migration` 
+    para entender las diferencias entre CakePHP 3.0 y las versiones anteriores.
 
-Quick Example
-=============
+Ejemplo rápido
+==============
 
-To get started you don't have to write any code. If you've followed the CakePHP
-conventions for your database tables you can just start using the ORM. For
-example if we wanted to load some data from our ``articles`` table we could do::
+Para comenzar no es necesario escribir código. Si has seguido las convenciones de nombres para las tablas puedes 
+comenzar a utilizar el ORM. Por ejemplo si quisieramos leer datos de nuestra tabla ``articles``::
 
     use Cake\ORM\TableRegistry;
     $articles = TableRegistry::get('Articles');
@@ -48,45 +39,41 @@ example if we wanted to load some data from our ``articles`` table we could do::
         echo $row->title;
     }
 
-Note that we didn't have to create any code or wire any configuration up.
-The conventions in CakePHP allow us to skip some boilerplate code, and allow the
-framework to insert base classes when your application has not created
-a concrete class. If we wanted to customize our ArticlesTable class adding some
-associations or defining some additional methods we would add the following to
-``src/Model/Table/ArticlesTable.php`` after the ``<?php`` opening tag::
+Como se ve, no es necesario agregar código extra ni ninguna otra configuración, gracias al uso de las convenciones 
+de CakePHP. Si quisieramos modificar nuestra clase ArticlesTable para agregar asociaciones o definir métodos 
+adicionales deberiamos agregar las siguientes lineas en **src/Model/Table/ArticlesTable.php** ::
 
     namespace App\Model\Table;
 
     use Cake\ORM\Table;
 
-    class ArticlesTable extends Table {
+    class ArticlesTable extends Table
+    {
 
     }
 
-Table classes use the CamelCased version of the table name with the ``Table``
-suffix as the class name. Once your class has been created you get a reference
-to it using the :php:class:`~Cake\\ORM\\TableRegistry` as before::
+Las clases Table usan una version en CamelCase del nombre de la tabla, con el sufijo ``Table``. 
+Una vez que tú clase fue creada, puedes obtener una referencia a esta usando :php:class:`~Cake\\ORM\\TableRegistry` como antes::
 
     use Cake\ORM\TableRegistry;
     // Now $articles is an instance of our ArticlesTable class.
     $articles = TableRegistry::get('Articles');
 
-Now that we have a concrete table class, we'll probably want to use a concrete
-entity class. Entity classes let you define accessor and mutator methods, define
-custom logic for individual records and much more. We'll start off by adding the
-following to ``src/Model/Entity/Article.php`` after the ``<?php`` opening tag::
+Ahora que tenemos una clase Table concreta, probablemente querramos usar una clase Entity concreta. 
+Las clases Entity permiten definir métodos de acceso y mutación, lógica para registros individuales y mucho mas. 
+Comenzaremos agregando las siguientes lineas en **src/Model/Entity/Article.php**::
 
     namespace App\Model\Entity;
 
     use Cake\ORM\Entity;
 
-    class Article extends Entity {
+    class Article extends Entity
+    {
 
     }
 
-Entities use the singular CamelCase version of the table name as their class
-name by default. Now that we have created our entity class, when we
-load entities from the database we'll get instances of our new Article class::
+Las Entity usan la version CamelCase en singular del nombre de la tabla como su nombre. Ahora que hemos creado una clase Entity, cuando 
+carguemos entidades de nuestra base de datos, vamos a obtener instancias de nuestra clase Article::
 
     use Cake\ORM\TableRegistry;
 
@@ -99,23 +86,26 @@ load entities from the database we'll get instances of our new Article class::
         echo $row->title;
     }
 
-CakePHP uses naming conventions to link the Table and Entity class together. If
-you need to customize which entity a table uses you can use the
-``entityClass()`` method to set a specific classname.
+CakePHP usa convenciones de nombres para asociar las clases Table y Entity. Si necesitas modificar qué entidad utilizada una tabla, 
+puedes usar el método ``entityClass()`` para especificar el nombre de una clase.
 
-See the chapters on :ref:`table-objects` and :ref:`entities` for more information
-on how to use table objects and entities in your application.
+Vea :doc:`/orm/table-objects` y :doc:`/orm/entities` para mas información sobre como utilizar objetos Table y Entity en su aplicación.
 
-More Information
-================
+Más información
+===============
 
 .. toctree::
     :maxdepth: 2
 
+    orm/database-basics
     orm/query-builder
     orm/table-objects
     orm/entities
+    orm/retrieving-data-and-resultsets
+    orm/validation
+    orm/saving-data
+    orm/deleting-data
+    orm/associations
     orm/behaviors
-    orm/database-basics
     orm/schema-system
     console-and-shells/orm-cache

@@ -5,19 +5,19 @@ Xml
 
 .. php:class:: Xml
 
-La classe Xml vous permet de facilement transformer des tableaux en
-SimpleXMLElement ou en objets DOMDocument, et de nouveau les transformer en tableaux.
+La classe Xml vous permet de transformer des tableaux en SimpleXMLElement ou en
+objets DOMDocument, et de nouveau les transformer en tableaux.
 
 Importer les données vers la classe Xml
 =======================================
 
-.. php:staticmethod:: build($input, $options = [])
+.. php:staticmethod:: build($input, array $options = [])
 
-Vous pouvez utiliser ``Xml::build()`` pour construire les objets XML. Depending on your
-``$options`` parameter, this method will return a SimpleXMLElement (default)
-or DOMDocument object. You can use ``Xml::build()``` to build XML
-objects from a variety of sources.  For example, you can load XML from
-strings::
+Vous pouvez utiliser ``Xml::build()`` pour construire des objets XML. Selon
+votre paramètre ``$options``, cette méthode va retourner un objet
+SimpleXMLElement (default) ou un objet DOMDocument. Vous pouvez utiliser
+``Xml::build()`` pour construire les objets XML à partir d'une variété de
+sources. Par exemple, vous pouvez charger le XML à partir de chaînes::
 
     $text = '<?xml version="1.0" encoding="utf-8"?>
     <post>
@@ -34,20 +34,20 @@ Vous pouvez aussi construire des objets Xml à partir de fichiers locaux::
 
 Vous pouvez aussi construire des objets Xml en utilisant un tableau::
 
-    $data = array(
-        'post' => array(
+    $data = [
+        'post' => [
             'id' => 1,
             'title' => 'Best post',
             'body' => ' ... '
-        )
-    );
+        ]
+    ];
     $xml = Xml::build($data);
 
 Si votre entrée est invalide, la classe Xml enverra une Exception::
 
-    $xmlString = 'What is XML?'
+    $xmlString = 'What is XML?';
     try {
-        $xmlObject = Xml::build($xmlString); // Here will throw a Exception
+        $xmlObject = Xml::build($xmlString); // Ici une Exception va être lancée
     } catch (\Cake\Utility\Exception\XmlException $e) {
         throw new InternalErrorException();
     }
@@ -55,14 +55,14 @@ Si votre entrée est invalide, la classe Xml enverra une Exception::
 .. note::
 
     `DOMDocument <http://php.net/domdocument>`_ et
-    `SimpleXML <http://php.net/simplexml>`_ implement different API's.
-    Assurez vous d'utiliser les bonnes méthodes sur l'objet que vous
+    `SimpleXML <http://php.net/simplexml>`_ implémentent différentes APIs.
+    Assurez-vous d'utiliser les bonnes méthodes sur l'objet que vous
     requêtez à partir d'un Xml.
 
-Transformer une chaîne de caractères XML en tableau
+Transformer une Chaîne de Caractères XML en Tableau
 ===================================================
 
-.. php:staticmethod:: toArray($xml);
+.. php:staticmethod:: toArray($obj);
 
 Convertir des chaînes XML en tableaux est aussi facile avec la classe Xml. Par
 défaut, vous obtiendrez un objet SimpleXml en retour::
@@ -78,9 +78,9 @@ Transformer un tableau en une chaîne de caractères XML
 
 ::
 
-    $xmlArray = array('root' => array('child' => 'value'));
-    // You can use Xml::build() too.
-    $xmlObject = Xml::fromArray($xmlArray, array('format' => 'tags'));
+    $xmlArray = ['root' => ['child' => 'value']];
+    // Vous pouvez aussi utiliser Xml::build().
+    $xmlObject = Xml::fromArray($xmlArray, ['format' => 'tags']);
     $xmlString = $xmlObject->asXML();
 
 Votre tableau ne doit avoir qu'un élément de "niveau supérieur" et il ne doit
@@ -89,34 +89,35 @@ une Exception.
 Des Exemples de tableaux invalides::
 
     // Niveau supérieur avec une clé numérique
-    array(
-        array('key' => 'value')
-    );
+    [
+        ['key' => 'value']
+    ];
 
     // Plusieurs clés au niveau supérieur
-    array(
+    [
         'key1' => 'première valeur',
         'key2' => 'autre valeur'
-    );
+    ];
 
-By default array values will be output as XML tags, if you want to define
-attributes or text values you can should prefix the keys that are supposed to be
-attributes with ``@``. For value text, use ``@`` as the key::
+Par défaut les valeurs de tableau vont être sorties en tags XML, si vous
+souhaitez définir les attributs ou les valeurs de texte, vous pouvez préfixer
+les clés qui sont supposées être des attributs avec ``@``. Pour value text,
+utilisez ``@`` en clé::
 
-    $xmlArray = array(
-        'project' => array(
+    $xmlArray = [
+        'project' => [
             '@id' => 1,
             'name' => 'Name of project, as tag',
             '@' => 'Value of project'
-        )
-    );
+        ]
+    ];
     $xmlObject = Xml::fromArray($xmlArray);
     $xmlString = $xmlObject->asXML();
 
-The content of ``$xmlString`` will be::
+Le contenu de ``$xmlString`` va être::
 
     <?xml version="1.0"?>
-    <project id="1">Value of project<name>Name of project, as tag</name></project>
+    <project id="1">Value of project<name>Nom du projet, en tag</name></project>
 
 Utiliser des Namespaces
 -----------------------
@@ -125,50 +126,51 @@ Pour utiliser les Namespaces XML, dans votre tableau vous devez créer une clé
 avec le nom ``xmlns:`` vers un namespace générique ou avec le préfixe
 ``xmlns:`` dans un namespace personnalisé. Regardez les exemples::
 
-    $xmlArray = array(
-        'root' => array(
-            'xmlns:' => 'http://cakephp.org',
+    $xmlArray = [
+        'root' => [
+            'xmlns:' => 'https://cakephp.org',
             'child' => 'value'
-        )
-    );
+        ]
+    ];
     $xml1 = Xml::fromArray($xmlArray);
 
     $xmlArray(
-        'root' => array(
-            'tag' => array(
-                'xmlns:pref' => 'http://cakephp.org',
-                'pref:item' => array(
+        'root' => [
+            'tag' => [
+                'xmlns:pref' => 'https://cakephp.org',
+                'pref:item' => [
                     'item 1',
                     'item 2'
-                )
-            )
-        )
+                ]
+            ]
+        ]
     );
     $xml2 = Xml::fromArray($xmlArray);
 
 La valeur de ``$xml1`` et ``$xml2`` sera, respectivement::
 
     <?xml version="1.0"?>
-    <root xmlns="http://cakephp.org"><child>value</child>
+    <root xmlns="https://cakephp.org"><child>value</child>
 
 
     <?xml version="1.0"?>
-    <root><tag xmlns:pref="http://cakephp.org"><pref:item>item 1</pref:item><pref:item>item 2</pref:item></tag></root>
+    <root><tag xmlns:pref="https://cakephp.org"><pref:item>item 1</pref:item><pref:item>item 2</pref:item></tag></root>
 
 Créer un enfant
 ---------------
 
-After you have created your XML document, you just use the native interfaces for
-your document type to add, remove, or manipulate child nodes::
+Après avoir créé votre document XML, vous utilisez seulement les interfaces
+natives pour votre type de document à ajouter, à retirer, ou manipuler les
+noeuds enfant::
 
-    // Using SimpleXML
+    // Utilisation de SimpleXML
     $myXmlOriginal = '<?xml version="1.0"?><root><child>value</child></root>';
     $xml = Xml::build($myXmlOriginal);
     $xml->root->addChild('young', 'new value');
 
-    // Using DOMDocument
+    // Utilisation de DOMDocument
     $myXmlOriginal = '<?xml version="1.0"?><root><child>value</child></root>';
-    $xml = Xml::build($myXmlOriginal, array('return' => 'domdocument'));
+    $xml = Xml::build($myXmlOriginal, ['return' => 'domdocument']);
     $child = $xml->createElement('young', 'new value');
     $xml->firstChild->appendChild($child);
 
@@ -176,7 +178,6 @@ your document type to add, remove, or manipulate child nodes::
 
     Après avoir manipulé votre XML en utilisant SimpleXMLElement ou DomDocument
     vous pouvez utiliser ``Xml::toArray()`` sans problèmes.
-
 
 .. meta::
     :title lang=fr: Xml

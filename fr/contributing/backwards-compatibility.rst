@@ -20,8 +20,8 @@ bugs ou améliorent la performance.
 
 Pour clarifier les changements que vous pouvez attendre dans chaque version
 en entier, nous avons plus d'informations détaillées pour les développeurs
-utilisant CakePHP et pour les développeurs travaillant sur CakePHP qui aident
-à définir les attentes de ce qui peut être fait dans des versions mineures.
+utilisant CakePHP et pour les développeurs travaillant sur CakePHP qui
+définissent les attentes de ce qui peut être fait dans des versions mineures.
 Les versions majeures peuvent avoir autant de changements que nécessaires.
 
 Guides de Migration
@@ -42,7 +42,7 @@ Interfaces
 ----------
 
 En-dehors des versions majeures, les interfaces fournies par CakePHP **ne**
-vont **pas** avoir de modification des méthodes existantes. De nouvelles
+vont **pas** connaître de modification des méthodes existantes. De nouvelles
 méthodes peuvent être ajoutées, mais aucune méthode existante ne sera changée.
 
 Classes
@@ -73,7 +73,7 @@ que vous pouvez attendre de CakePHP:
 +===============================+==========================+
 | Typehint against the class    | Oui                      |
 +-------------------------------+--------------------------+
-| Créé une nouvelle instance    | Oui                      |
+| Crée une nouvelle instance    | Oui                      |
 +-------------------------------+--------------------------+
 | Etendre la classe             | Oui                      |
 +-------------------------------+--------------------------+
@@ -104,8 +104,9 @@ que vous pouvez attendre de CakePHP:
 | Ajouter un argument           | Non [1]_                 |
 | pour une méthode qui surcharge|                          |
 +-------------------------------+--------------------------+
-| Ajouter un argument par défaut| Oui                      |
-| pour une méthode existante    |                          |
+| Ajouter une valeur d'argument | Oui                      |
+| par défaut pour une méthode   |                          |
+| existante                     |                          |
 +-------------------------------+--------------------------+
 
 Travailler avec CakePHP
@@ -159,11 +160,16 @@ Dans une version mineure, vous pouvez:
 +-------------------------------+--------------------------+
 | Changer le nom de méthode     | Oui [2]_                 |
 +-------------------------------+--------------------------+
-| Ajouter un argument avec la   | Oui                      |
-| valeur par défaut             |                          |
+| Ajouter un nouvel argument    | Oui                      |
+| avec la valeur par défaut     |                          |
 +-------------------------------+--------------------------+
-| Ajouter une argument          | Non                      |
-| nécessaire                    |                          |
+| Ajouter un nouvel argument    | Non                      |
+| requis pour une méthode       |                          |
+| existante.                    |                          |
++-------------------------------+--------------------------+
+| Retirer une valeur par défaut | Non                      |
+| à partir d'un argument        |                          |
+| existant                      |                          |
 +-------------------------------+--------------------------+
 
 
@@ -175,4 +181,3 @@ Dans une version mineure, vous pouvez:
        bénéfice.
 .. [3] Nous essayons d'éviter ceci à tout prix. Tout retrait doit être documenté
        dans le guide de migration.
-

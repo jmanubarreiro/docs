@@ -12,11 +12,17 @@ use the ``Number`` class::
 
     use Cake\I18n\Number;
 
-    class UsersController extends AppController {
+    class UsersController extends AppController
+    {
 
-        public $components = array('Auth');
+        public function initialize()
+        {
+            parent::initialize();
+            $this->loadComponent('Auth');
+        }
 
-        public function afterLogin() {
+        public function afterLogin()
+        {
             $storageUsed = $this->Auth->user('storage_used');
             if ($storageUsed > 5000000) {
                 // Notify users of quota
@@ -27,7 +33,7 @@ use the ``Number`` class::
 
 .. start-cakenumber
 
-All of these functions return the formatted number; They do not
+All of these functions return the formatted number; they do not
 automatically echo the output into the view.
 
 Formatting Currency Values
@@ -67,16 +73,16 @@ output. The following options are available:
 +=====================+====================================================+
 | before              | Text to display before the rendered number.        |
 +---------------------+----------------------------------------------------+
-| after               | Text to display before the rendered number.        |
+| after               | Text to display after the rendered number.         |
 +---------------------+----------------------------------------------------+
-| zero                | The text to use for zero values, can be a string   |
+| zero                | The text to use for zero values; can be a string   |
 |                     | or a number. ie. 0, 'Free!'.                       |
 +---------------------+----------------------------------------------------+
 | places              | Number of decimal places to use, ie. 2             |
 +---------------------+----------------------------------------------------+
 | precision           | Maximal number of decimal places to use, ie. 2     |
 +---------------------+----------------------------------------------------+
-| locale              | The locale name to use for formating number,       |
+| locale              | The locale name to use for formatting number,      |
 |                     | ie. "fr_FR".                                       |
 +---------------------+----------------------------------------------------+
 | fractionSymbol      | String to use for fraction numbers, ie. ' cents'.  |
@@ -91,7 +97,7 @@ output. The following options are available:
 |                     | with the international currency code.              |
 +---------------------+----------------------------------------------------+
 
-If $currency value is ``null``, the default currency will be retrieved form
+If $currency value is ``null``, the default currency will be retrieved from
 :php:meth:`Cake\\I18n\\Number::defaultCurrency()`
 
 
@@ -109,11 +115,11 @@ it will clear the currently stored value. By default, it will retrieve the
 Formatting Floating Point Numbers
 =================================
 
-.. php:method:: precision(float $value, int $precision = 3)
+.. php:method:: precision(float $value, int $precision = 3, array $options = [])
 
 This method displays a number with the specified amount of
 precision (decimal places). It will round in order to maintain the
-level of precision defined.::
+level of precision defined. ::
 
     // Called as NumberHelper
     echo $this->Number->precision(456.91873645, 2);
@@ -140,7 +146,7 @@ Formatting Percentages
 Like :php:meth:`Cake\\I18n\\Number::precision()`, this method formats a number
 according to the supplied precision (where numbers are rounded to meet the
 given precision). This method also expresses the number as a percentage
-and prepends the output with a percent sign.::
+and appends the output with a percent sign. ::
 
     // Called as NumberHelper. Output: 45.69%
     echo $this->Number->toPercentage(45.691873645);
@@ -210,17 +216,17 @@ resides.
 +=====================+====================================================+
 | places              | Number of decimal places to use, ie. 2             |
 +---------------------+----------------------------------------------------+
-| precision           | Maximal number of decimal places to use, ie. 2     |
+| precision           | Maximum number of decimal places to use, ie. 2     |
 +---------------------+----------------------------------------------------+
 | pattern             | An ICU number pattern to use for formatting the    |
 |                     | number ie. #,###.00                                |
 +---------------------+----------------------------------------------------+
-| locale              | The locale name to use for formating number,       |
+| locale              | The locale name to use for formatting number,      |
 |                     | ie. "fr_FR".                                       |
 +---------------------+----------------------------------------------------+
 | before              | Text to display before the rendered number.        |
 +---------------------+----------------------------------------------------+
-| after               | Text to display before the rendered number.        |
+| after               | Text to display after the rendered number.         |
 +---------------------+----------------------------------------------------+
 
 Example::
@@ -251,6 +257,25 @@ Example::
     ]);
     // Output '123 456,79 !'
 
+.. php:method:: ordinal(mixed $value, array $options = [])
+
+This method will output an ordinal number.
+
+Examples::
+
+    echo Number::ordinal(1);
+    // Output '1st'
+
+    echo Number::ordinal(2);
+    // Output '2nd'
+
+    echo Number::ordinal(2, [
+        'locale' => 'fr_FR'
+    ]);
+    // Output '2e'
+
+    echo Number::ordinal(410);
+    // Output '410th'
 
 Format Differences
 ==================
@@ -277,14 +302,14 @@ The ``$options`` parameter takes the same keys as :php:meth:`Number::format()` i
 +=====================+====================================================+
 | places              | Number of decimal places to use, ie. 2             |
 +---------------------+----------------------------------------------------+
-| precision           | Maximal number of decimal places to use, ie. 2     |
+| precision           | Maximum number of decimal places to use, ie. 2     |
 +---------------------+----------------------------------------------------+
-| locale              | The locale name to use for formating number,       |
+| locale              | The locale name to use for formatting number,      |
 |                     | ie. "fr_FR".                                       |
 +---------------------+----------------------------------------------------+
 | before              | Text to display before the rendered number.        |
 +---------------------+----------------------------------------------------+
-| after               | Text to display before the rendered number.        |
+| after               | Text to display after the rendered number.         |
 +---------------------+----------------------------------------------------+
 
 Example::
@@ -306,6 +331,20 @@ Example::
     // Output '[+123,456.79]'
 
 .. end-cakenumber
+
+Configure formatters
+====================
+
+.. php:method:: config(string $locale, int $type = NumberFormatter::DECIMAL, array $options = [])
+
+This method allows you to configure formatter defaults which persist across calls
+to various methods.
+
+Example::
+
+    Number::config('en_IN', \NumberFormatter::CURRENCY, [
+        'pattern' => '#,##,##0'
+    ]);
 
 .. meta::
     :title lang=en: NumberHelper

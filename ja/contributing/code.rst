@@ -1,127 +1,142 @@
 コード
-######
+#######
 
-パッチとプルリクエストはCakePHPにコードを寄贈する最善の方法です。
-パッチは `GitHub <http://github.com/cakephp/cakephp>`_ でチケットに添付できます。
-プルリクエストはGitHubで作ることができ、コードに貢献するための一般的により良い方法です。
+パッチと Pull Request はコードを CakePHP に送って貢献するための素晴らしい方法です。
+Pull Request は GitHub で作成することができるもので、パッチファイルをチケットのコメントで
+伝えるよりも推奨される方法です。
 
-初期設定
-========
+最初のセットアップ
+===================
 
-CakePHPのパッチの作業に入る前に、環境を整えることをお勧めします。
-以下のソフトウェアが必要となるでしょう:
+CakePHP の修正に取りかかる前に自分の環境を整えることをお勧めします。
+以下のソフトウェアが必要になります。
 
 * Git
-* PHP 5.2.8 以上
-* PHPUnit 3.5.10 以上
+* PHP |minphpversion| 以上
+* PHPUnit 5.7.0 以上
 
-名前・ハンドルネームとEメールアドレスのユーザー情報を設定してください::
+ユーザ情報（自分の名前/ハンドル名とメールアドレス）をセットしてください。 ::
 
     git config --global user.name 'Bob Barker'
     git config --global user.email 'bob.barker@example.com'
 
 .. note::
 
-    もしGitの初心者なら、優秀かつ無料である `ProGit <http://progit.org>`_ のbook(訳注: `日本語版のbook <http://progit.org/book/ja>`_)を読むことを強くお勧めします。
+    Git を使うのが初めてなら、無料で素敵なドキュメント
+    `ProGit <https://git-scm.com/book/ja/>`_ をぜひお読みください。
 
-GitHubからCakePHPのソースコードのクローンを取得してください:
+CakePHP のソースコードの clone を GitHub から取得してください。
 
-* `GitHub <http://github.com>`_ のアカウントを持っていないなら、作成しましょう。
-* `CakePHP repository <http://github.com/cakephp/cakephp>`_ を、 **Fork** ボタンをクリックして、Forkしてください。
+* `GitHub <http://github.com>`_ アカウントを持っていないなら、作成してください。
+* `CakePHP リポジトリ <http://github.com/cakephp/cakephp>`_ の **Fork**
+  ボタンをクリックして Fork してください。
 
-forkがされた後に、ローカルマシーンにforkをクローンしてください::
+Fork できたら、Fork したものを自分のローカルマシンへと clone してください。 ::
 
     git clone git@github.com:YOURNAME/cakephp.git
 
-オリジナルのCakePHPレポジトリをリモートレポジトリとして追加してください。
-後にCakePHPレポジトリから変更を取ってくる為に使います。
-これは、CakePHPを常に最新の状態に保つことができるようになるでしょう::
+オリジナルの CakePHP リポジトリを remote リポジトリとして追加してください。
+これは後で CakePHP リポジトリから変更分を fetch するのに使うことになり、
+こうすることで CakePHP を最新の状態にしておくのです。 ::
 
     cd cakephp
     git remote add upstream git://github.com/cakephp/cakephp.git
 
-CakePHPのセットアップを済ませたなら、 ``$test``
-:ref:`データベースコネクション <database-configuration>`
-の定義をし、
-:ref:`全体テスト <running-tests>` を実行することができるようになっているはずです。
+いまや CakePHP はセットアップされましたので
+:ref:`データベース接続 <database-configuration>` で ``$test`` を定義すれば、
+:ref:`すべてのテストを実行する <running-tests>` ことができるでしょう。
 
-パッチ化作業
-============
+修正に取りかかる
+==================
 
-バグ、機能または機能の拡張に取り組むたびに、トピックブランチを作成してください。
+バグや新機能、改善に取り組むたびに毎回、 トピック・ブランチを作成してください。
 
-作成したブランチは修正・向上をする為のバージョンを元にする必要があります。
-例えば、 ``2.3`` のバグを修正しているとすると、ブランチのベースとして ``2.3`` ブランチを使用するとよいでしょう。現在の安定版に対してバグ修正をする場合は ``master`` ブランチを使用しましょう。
-これにより後にとても簡単に変更をマージすることができます::
+ブランチは 修正/改善対象のバージョンをベースにして作成してください。たとえば、 ``3.x``
+のバグを修正するなら、ブランチのベースとして ``master`` ブランチを使うことになります。
+もし、 2.x 系のバグ修正なら、 ``2.x`` ブランチを使用してください。これで、Github は、
+あなたに対象のブランチを編集させないので、後で変更をマージする際にとても簡単になります。 ::
 
-    # 2.3のバグの修正をする
+    # 3.x のバグを修正
     git fetch upstream
-    git checkout -b ticket-1234 upstream/2.3
+    git checkout -b ticket-1234 upstream/master
+
+    # 2.x のバグを修正
+    git fetch upstream
+    git checkout -b ticket-1234 upstream/2.x
 
 .. tip::
 
-    ブランチには説明的な名前を使用してください。
-    チケットまたは機能名への参照は良い習慣となります。
-    例えば、ticket-1234、feature-awesomeなどです。
+    ブランチの名前は説明的につけてください。チケット名や機能名を含めるのは良い慣習です。
+    例) ticket-1234, feature-awesome
 
-上記はupstream(CakePHP)の2.3ブランチを基本としたローカルブランチを作成します。
-修正作業をし、必要な数のコミットを作ってください。
-ただし、以下のことを心がけてください:
+上記は upstream (CakePHP) 2.x ブランチをベースにローカル・ブランチを作成します。
+修正に取り組み、必要なだけ commit してください。ただし、注意点があります:
 
 * :doc:`/contributing/cakephp-coding-conventions` に従ってください。
-* バグが修正されたこと、または新しい機能をの動作をを示すテストケースを追加してください。
-* コミットを整然としたものにし、十分に明確かつ簡潔なコミットメッセージを書いてください。
+* バグが修正されたこと、もしくは新機能が機能することが判るテストケースを追加してください。
+* 理にかなったコミットを心がけ、コミット文は解りやすく簡潔に書いてください。
 
+Pull Request を送信する
+=========================
 
-プルリクエストの送信
-====================
+変更し終え、 CakePHP へとマージされる準備が整ったら、あなたのブランチを
+更新したくなることでしょう。 ::
 
-一旦変更が完了し、CakePHPへマージする準備ができているなら、ブランチの更新をしたほうがいいでしょう::
-
-    git checkout 2.3
+    # master のトップに修正をリベース
+    git checkout master
     git fetch upstream
-    git merge upstream/2.3
+    git merge upstream/master
     git checkout <branch_name>
-    git rebase 2.3
+    git rebase master
 
-これは作業の開始時からCakePHPに起こった全ての変更を取得＋マージします。
-その後、リベースするか、現在のコード上に変更を再生します。
-``rebase`` の最中に衝突(*conflict*)が起こるかもしれません。
-リベースが早く終わった場合は、どのファイルが衝突したか・マージされてないかを ``git status`` で確認することができます。
-各々の衝突を解決して、その後リベースを続けてください::
+これは作業開始以降に CakePHP で行われたすべての変更を fetch + merge します。
+その後に rebase 、つまり現在のコードの先端にあなたの変更を適用します。
+``rebase`` 中、コンフリクトに出会うかもしれません。もし rebase が早期終了したら、
+``git status`` で、どのファイルがコンフリクト/マージ失敗したのかを見ることができます。
+各コンフリクトを解決させてください。その後、 rebase を continue してください。 ::
 
-    git add <filename> # 全ての衝突したファイルにこれを行なってください。
+    git add <filename> # コンフリクトしたファイルごとにこれを行ってください。
     git rebase --continue
 
-全てのテストが継続してパスしていることを確かめてください。
-それから、フォークにブランチをプッシュしてください::
+あなたのテストがすべて通過し続けているか確認してください。
+その後、あなたのブランチをあなたの Fork へと push します。 ::
 
     git push origin <branch-name>
 
-一旦GitHubにブランチが配置されたら、
-`cakephp-core <http://groups.google.com/group/cakephp-core>`_
-メーリングリストで議論、またはGitHubでプルリクエストを送ることができます。
+ブランチを push した後 rebase した場合、force push を使用する必要があります。 ::
 
-変更のマージ先を選択する
---------------------------------
+    git push --force origin <branch-name>
 
-プルリクエストを作成した後にベースブランチを変更することはできないので、
-作成する前に正しいベースブランチを選択しているかを確認する必要があります。
+あなたのブランチが GitHub に上がったら、GitHub で Pull Request を送ってください。
 
-* もし変更内容が **バグフィックス** で、現在のリリース版から新しい機能の追加や既存の動作の変更が行われていない場合、
-  **master** をマージ対象にしてください。
-* もし変更内容がフレームワークに **新機能** を追加するものだった場合、次期バージョンのブランチを選択してください。
-  例えば、現在リリースされているバージョンが ``2.2.2`` だったら、新しい機能を受け入れるブランチは ``2.3`` となります。
-* もし変更内容が既存の機能やAPIに変更を及ぼすものだった場合は、次期メジャーバージョンのブランチを選択するべきでしょう。
-  例えば、現在リリースされているバージョンが ``2.2.2`` だったら、次期メジャーバージョンは ``3.0`` になります。
-  既存の動作に影響を及ぼさずにすむので、そのブランチをベースブランチにしましょう。
+変更対象のマージ先を選ぶ
+-------------------------
 
+Pull Request を作る際には、ベースとなるブランチが正しく選ばれているか良く確認してください。
+ひとたび Pull Request を作った後ではもう変更することはできません。
+
+* あなたの変更が **バグ修正** であり、新機能を追加しておらず、
+  現在のリリースに存在している既存の振る舞いを正すだけなら、
+  マージ先として **master** を選んでください。
+* あなたの変更が **新機能** もしくはフレームワークへの追加なら、
+  次のバージョン番号のブランチを選んでください。
+  たとえば、現在の安定版リリースが ``3.2.10`` なら、
+  新機能を受け入れるブランチは ``3.next`` になります。
+* あなたの変更が既存の機能性を壊すものであったり、API の仕様を変えるものであるなら、
+  次のメジャーリリースを選ばなければなりません。たとえば、現在のリリースが ``3.2.2`` なら、
+  次に既存の振る舞いを変更できるのは ``4.x`` となりますので、そのブランチを選んでください。
 
 .. note::
 
-    CakePHPに寄贈される全てのコードはMITライセンスの元にライセンスされ、Cake Software Foundationが全ての寄贈されたコードの所有者になり、全ての寄贈されたコードは
-    `貢献者ライセンス契約 <http://cakefoundation.org/pages/cla>`_
-    (*Contributors license agreement*)
-    の対象となることに注意してください。
+    あなたが貢献したすべてのコードは MIT License に基づき CakePHP にライセンスされることを
+    覚えておいてください。 `Cake Software Foundation
+    <http://cakefoundation.org/pages/about>`_ がすべての貢献されたコードの所有者になります。
+    貢献する人は `CakePHP Community Guidelines
+    <http://community.cakephp.org/guidelines>`_ に従うようお願いします。
 
-保守ブランチへマージされたバグ修正は、コアチームによって定期的に今後のリリースにもマージされます。
+メンテナンス・ブランチへとマージされたすべてのバグ修正は、
+コアチームにより定期的に次期リリースにもマージされます。
+
+.. meta::
+    :title lang=ja: コード
+    :keywords lang=ja: cakephp source code,code patches,test ref,descriptive name,bob barker,initial setup,global user,database connection,clone,repository,user information,enhancement,back patches,checkout

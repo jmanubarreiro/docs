@@ -1,5 +1,5 @@
-Time
-####
+Date & Time
+###########
 
 .. php:namespace:: Cake\I18n
 
@@ -10,22 +10,35 @@ d'une ``View``, utilisez la classe ``Time``::
 
     use Cake\I18n\Time;
 
-    class UsersController extends AppController {
+    class UsersController extends AppController
+    {
 
-        public $components = ['Auth'];
+        public function initialize()
+        {
+            parent::initialize();
+            $this->loadComponent('Auth');
+        }
 
-        public function afterLogin() {
+        public function afterLogin()
+        {
             $time = new Time($this->Auth->user('date_of_birth'));
             if ($time->isToday()) {
-                // greet user with a happy birthday message
-                $this->Flash->success(__('Happy birthday to you...'));
+                // accueillir l'utilisateur avec un message de bon anniversaire
+                $this->Flash->success(__('Bon anniversaire à toi...'));
             }
         }
     }
 
-En-dessous, CakePHP utilise `Carbon <https://github.com/briannesbitt/Carbon>`_
-pour construire l'utilitaire Time. Tout ce que vous pouvez faire avec
-``Carbon`` et ``DateTime``, vous pouvez le faire avec ``Time``.
+En interne, CakePHP utilise `Chronos <https://github.com/cakephp/chronos>`_
+pour faire fonctionner l'utilitaire ``Time``. Tout ce que vous pouvez faire
+avec ``Chronos`` et ``DateTime``, vous pouvez le faire avec ``Time`` et ``Date``.
+
+.. note::
+    Avant 3.2.0, CakePHP utilisait `Carbon
+    <https://github.com/briannesbitt/Carbon>`__.
+
+Pour plus d'informations sur Chronos, rendez-vous sur
+`la documentation de l'API <https://api.cakephp.org/chronos/1.0/>`_.
 
 .. start-time
 
@@ -36,14 +49,14 @@ Il y a plusieurs façons de créer des instances ``Time``::
 
     use Cake\I18n\Time;
 
-    // Créé à partir d'une chaîne datetime.
+    // Crée à partir d'une chaîne datetime.
     $time = Time::createFromFormat(
         'Y-m-d H:i:s',
         $datetime,
         'America/New_York'
     );
 
-    // Créé à partir d'un timestamp
+    // Crée à partir d'un timestamp
     $time = Time::createFromTimestamp($ts);
 
     // Récupère le temps actuel.
@@ -58,7 +71,7 @@ Le constructeur de la classe ``Time`` peut prendre les mêmes paramètres que
 la classe PHP interne ``DateTime``. Quand vous passez un nombre ou une valeur
 numérique, elle sera interprétée comme un timestamp UNIX.
 
-Dans les cas de test, vous pouvez facilement mock out ``now()`` en utilisant
+Dans les cas de test, vous pouvez mock out ``now()`` en utilisant
 ``setTestNow()``::
 
     // Fixe le temps.
@@ -101,19 +114,32 @@ Vous pouvez obtenir des composantes internes d'une date en accédant à ses
 propriétés::
 
     $now = Time::now();
-    echo $now->y; // 2014
-    echo $now->m; // 5
-    echo $now->d; // 10
+    echo $now->year; // 2014
+    echo $now->month; // 5
+    echo $now->day; // 10
     echo $now->timezone; // America/New_York
 
 Il est aussi permis d'assigner directement ces propriétés pour modifier la
 date::
 
-    $time->y = 2015;
+    $time->year = 2015;
     $time->timezone = 'Europe/Paris';
 
 Formatage
 =========
+
+.. php:staticmethod:: setJsonEncodeFormat($format)
+
+Cette méthode définit le format par défaut utilisé lors de la conversion d'un
+objet en json::
+
+    Time::setJsonEncodeFormat('yyyy-MM-dd HH:mm:ss');  // For any mutable DateTime
+    FrozenTime::setJsonEncodeFormat('yyyy-MM-dd HH:mm:ss');  // For any immutable DateTime
+    Date::setJsonEncodeFormat('yyyy-MM-dd HH:mm:ss');  // For any mutable Date
+    FrozenDate::setJsonEncodeFormat('yyyy-MM-dd HH:mm:ss');  // For any immutable Date
+
+.. note::
+    Cette méthode doit être appelée statiquement.
 
 .. php:method:: i18nFormat($format = null, $timezone = null, $locale = null)
 
@@ -125,17 +151,49 @@ dates formatées. CakePHP facilite cela::
     // Affiche un stamp datetime localisé.
     echo $now;
 
-    // Affiche '4/20/14, 10:10 PM' pour la locale en-US
+    // Affiche '10/31/14, 12:00 AM' pour la locale en-US
     $now->i18nFormat();
 
     // Utilise la date complète et le format time
     $now->i18nFormat(\IntlDateFormatter::FULL);
 
     // Utilise la date complète mais un format court de temps
-    $now->i18nFormat([\IntlDateFormatter::FULL, \IntlDateFormatter::Short]);
+    $now->i18nFormat([\IntlDateFormatter::FULL, \IntlDateFormatter::SHORT]);
 
-    // affiche '2014-04-20 22:10'
-    $now->i18nFormat('YYYY-MM-dd HH:mm:ss');
+    // affiche '2014-10-31 00:00:00'
+    $now->i18nFormat('yyyy-MM-dd HH:mm:ss');
+
+Il est possible de spécifier le format d'affichage désiré. Vous pouvez soit
+passer une `constante IntlDateFormatter
+<http://www.php.net/manual/en/class.intldateformatter.php>`_ ou une chaine
+complète de formatage tel que spécifié dans cette ressource:
+http://www.icu-project.org/apiref/icu4c/classSimpleDateFormat.html#details.
+
+Vous pouvez aussi formater les dates avec des calendriers non-grégoriens::
+
+    // Affiche 'Friday, Aban 9, 1393 AP at 12:00:00 AM GMT'
+    $result = $now->i18nFormat(\IntlDateFormatter::FULL, null, 'en-IR@calendar=persian');
+
+Les types de calendrier suivants sont supportés:
+
+* japanese
+* buddhist
+* chinese
+* persian
+* indian
+* islamic
+* hebrew
+* coptic
+* ethiopic
+
+.. versionadded:: 3.1
+    Le support des calendriers non-grégoriens a été ajouté dans 3.1
+
+.. note::
+    Pour les chaînes constantes, par exemple pour IntlDateFormatter::FULL, Intl
+    utilise la librairie ICU qui alimente ses données à partir de CLDR
+    (http://cldr.unicode.org/) dont la version peut varier selon l'installation
+    PHP et donner des résultats différents.
 
 .. php:method:: nice()
 
@@ -153,7 +211,7 @@ dans un timezone, mais que vous voulez les afficher dans un timezone propre
 
     $now->i18nFormat(\IntlDateFormatter::FULL, 'Europe/Paris');
 
-Laisser le premier paramètre à null va utiliser la chaine de formatage par
+Laisser le premier paramètre à ``null`` va utiliser la chaine de formatage par
 défaut::
 
     $now->i18nFormat(null, 'Europe/Paris');
@@ -169,24 +227,35 @@ Définir la Locale par défaut et la Chaîne Format
 ------------------------------------------------
 
 La locale par défaut avec laquelle les dates sont affichées quand vous utilisez
-``nice`` ``18nFormat`` est prise à partir de la directive
+``nice`` ``i18nFormat`` est prise à partir de la directive
 `intl.default_locale <http://www.php.net/manual/en/intl.configuration.php#ini.intl.default-locale>`_.
 Vous pouvez cependant modifier ceci par défaut à la volée::
 
-    Time::$defaultLocale = 'es-ES';
+    Time::setDefaultLocale('es-ES'); // For any mutable DateTime
+    FrozenTime::setDefaultLocale('es-ES'); // For any immutable DateTime
+    Date::setDefaultLocale('es-ES'); // For any mutable Date
+    FrozenDate::setDefaultLocale('es-ES'); // For any immutable Date
 
-A partir de maintenant, les dates vont s'afficher avec un format de préférence
-Espagnol, à moins qu'une locale différente ne soit spécifiée directement dans
-la méthode de formatage.
+A partir de maintenant, les datetimes vont s'afficher avec un format de
+préférence Espagnol, à moins qu'une locale différente ne soit spécifiée
+directement dans la méthode de formatage.
 
 De même, il est possible de modifier la chaîne de formatage par défaut à
 utiliser pour le format ``i18nFormat``::
 
-    Time::setToStringFormat(\IntlDateFormatter::Short);
+    Time::setToStringFormat(\IntlDateFormatter::SHORT); // For any mutable DateTime
+    FrozenTime::setToStringFormat(\IntlDateFormatter::SHORT); // For any immutable DateTime
+    Date::setToStringFormat(\IntlDateFormatter::SHORT); // For any mutable Date
+    FrozenDate::setToStringFormat(\IntlDateFormatter::SHORT); // For any immutable Date
 
-    Time::setToStringFormat([\IntlDateFormatter::FULL, \IntlDateFormatter::Short]);
+    // La même méthode existe pour les Date, FrozenDate, et FrozenTime
+    Time::setToStringFormat([
+        \IntlDateFormatter::FULL,
+        \IntlDateFormatter::SHORT
+    ]);
 
-    Time::setToStringFormat('YYYY-MM-dd HH:mm:ss');
+    // La même méthode existe pour les Date, FrozenDate, et FrozenTime
+    Time::setToStringFormat('yyyy-MM-dd HH:mm:ss');
 
 Il est recommandé de toujours utiliser les constantes plutôt que de directement
 passer une date en format chaîne de caractère.
@@ -200,7 +269,7 @@ Souvent, il est utile d'afficher les temps liés au présent::
 
     $now = new Time('Aug 22, 2011');
     echo $now->timeAgoInWords(
-        ['format' => 'F jS, Y', 'end' => '+1 year']
+        ['format' => 'MMM d, YYY', 'end' => '+1 year']
     );
     // On Nov 10th, 2011 this would display: 2 months, 2 weeks, 6 days ago
 
@@ -245,7 +314,8 @@ Comparer Avec le Present
 .. php:method:: isThisMonth()
 .. php:method:: isThisYear()
 
-Vous pouvez comparer une instance ``Time`` avec le présent de plusieurs façons::
+Vous pouvez comparer une instance ``Time`` avec le temps présent de plusieurs
+façons::
 
     $time = new Time('2014-06-15');
 
@@ -254,15 +324,15 @@ Vous pouvez comparer une instance ``Time`` avec le présent de plusieurs façons
     echo $time->isThisMonth();
     echo $time->isThisYear();
 
-Chacune des méthodes ci-dessus va retourner ``true``/``false`` selon si oui ou non
-l'instance ``Time`` correspond au présent.
+Chacune des méthodes ci-dessus va retourner ``true``/``false`` selon si oui ou
+non l'instance ``Time`` correspond au temps présent.
 
 Comparer Avec les Intervals
 ===========================
 
 .. php:method:: isWithinNext($interval)
 
-Vous pouvez regarder si une instance ``Time`` tombe dans un interval en
+Vous pouvez regarder si une instance ``Time`` tombe dans un intervalle en
 utilisant ``wasWithinLast()`` et ``isWithinNext()``::
 
     $time = new Time('2014-06-15');
@@ -273,17 +343,110 @@ utilisant ``wasWithinLast()`` et ``isWithinNext()``::
     // A moins de 2 semaines.
     echo $time->isWithinNext('2 weeks');
 
-.. php:method:: isWithinPast($interval)
+.. php:method:: wasWithinLast($interval)
 
-Vous pouvez aussi comparer une instance ``Time`` dans un interval dans le passé::
+Vous pouvez aussi comparer une instance ``Time`` dans un intervalle dans le
+passé::
 
     // Dans les 2 derniers jours.
-    echo $time->isWithinPast(2);
+    echo $time->wasWithinLast(2);
 
     // Dans les 2 dernières semaines.
-    echo $time->isWithinPast('2 weeks');
+    echo $time->wasWithinLast('2 weeks');
 
 .. end-time
+
+Dates
+=====
+
+.. php:class: Date
+
+.. versionadded:: 3.2
+
+La classe ``Date`` dans CakePHP implémente les mêmes API et méthodes que
+:php:class:`Cake\\I18n\\Time`. La différence principale entre ``Time`` et
+``Date`` est que ``Date`` ne suit pas les composants liés à l'heure et est
+toujours en UTC.
+Par exemple::
+
+    use Cake\I18n\Date;
+    $date = new Date('2015-06-15');
+
+    $date->modify('+2 hours');
+    // Affiche 2015-06-15 00:00:00
+    echo $date->format('Y-m-d H:i:s');
+
+    $date->modify('+36 hours');
+    // Affiche 2015-06-15 00:00:00
+    echo $date->format('Y-m-d H:i:s');
+
+Les tentatives de modification de timezone sur une instance de ``Date`` seront
+toujours ignorées::
+
+    use Cake\I18n\Date;
+    $date = new Date('2015-06-15');
+    $date->setTimezone(new \DateTimeZone('America/New_York'));
+
+    // Affiche UTC
+    echo $date->format('e');
+
+.. _immutable-time:
+
+Dates et Heures Immutables
+==========================
+
+.. php:class:: FrozenTime
+.. php:class:: FrozenDate
+
+CakePHP offre des classes de date et d'heure immutables qui implémentent la
+même interface que leurs équivalents mutables. Les objets immutables sont
+utiles pour éviter les modifications accidentelles de données, ou lorsque vous
+voulez éviter les problèmes liés à l'ordre de dépendances. Prenez le code
+suivant::
+
+    use Cake\I18n\Time;
+    $time = new Time('2015-06-15 08:23:45');
+    $time->modify('+2 hours');
+
+    // Cette méthode modifie également l'instance $time
+    $this->someOtherFunction($time);
+
+    // La sorie ici est inconnue.
+    echo $time->format('Y-m-d H:i:s');
+
+Si les appels aux méthodes sont réordonnés, ou si ``someOtherFunction``
+évolue la sortie peut être inattendue. La mutabilité de vos objets crée un
+couplage temporal. Si nous utilisions des objets immutables, nous pourrions
+éviter ce type de problème::
+
+    use Cake\I18n\FrozenTime;
+    $time = new FrozenTime('2015-06-15 08:23:45');
+    $time = $time->modify('+2 hours');
+
+    // La modification de cette méthode ne change pas $time
+    $this->someOtherFunction($time);
+
+    // La sortie est connue.
+    echo $time->format('Y-m-d H:i:s');
+
+Les Date et heures immutables sont utiles dans les entities car elles
+évitent les modifications accidentelles, et forcent les modifications à être
+explicitement exprimées. Utiliser des objets immutables aide l'ORM à mieux
+suivre les modifications et assurer que les colones date/datetime sont
+persistées correctement::
+
+    // Cette modification sera perdue lrsque l'article sera enregistré.
+    $article->updated->modify('+1 hour');
+
+    // En remplaçant l'objet time, la propriété sera auvegardée
+    $article->updated = $article->updated->modify('+1 hour');
+
+Accepter des Données Requêtées Localisées
+=========================================
+
+Quand vous créez des inputs de texte qui manipulent des dates, vous voudrez
+probablement accepter et parser des chaînes datetime localisées. Consultez
+:ref:`parsing-localized-dates`.
 
 .. meta::
     :title lang=fr: Time

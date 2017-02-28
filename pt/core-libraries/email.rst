@@ -1,99 +1,132 @@
 Email
 #####
 
-.. php:namespace:: Cake\Network\Email
+.. php:namespace:: Cake\Mailer
+
+.. note::
+    Atualmente, a documentação desta página não é suportada em português.
+
+    Por favor, sinta-se a vontade para nos enviar um *pull request* para o
+    `Github <https://github.com/cakephp/docs>`_ ou use o botão
+    **IMPROVE THIS DOC** para propor suas mudanças diretamente.
+
+    Você pode consultar a versão em inglês deste tópico através do seletor de
+    idiomas localizado ao lado direito do campo de buscas da documentação.
+
+.. warning::
+    Antes da versão 3.1, as classes ``Email`` e ``Transport`` estavam com o
+    namespace ``Cake\Network\Email`` em vez do namespace ``Cake\Mailer``.
 
 .. php:class:: Email(mixed $profile = null)
 
-``Email`` is a new class to send email. With this
-class you can send email from any place inside of your application.
+``Email`` é uma nova classe para enviar E-mail. Com essa classe você pode enviar
+e-mail de qualquer lugar em sua aplicação.
 
-Basic Usage
-===========
+Uso Básico
+==========
 
-First of all, you should ensure the class is loaded::
+Primeiro de tudo, você deve garantir que a classe está carregada::
 
-    use Cake\Network\Email\Email;
+    use Cake\Mailer\Email;
 
-After you've loaded ``Email``, you can send an email with the following::
+Depois que você carregou ``Email``, you pode enviar um e-mail com o seguinte::
+
+    $email = new Email('default');
+    $email->from(['remetente@example.com' => 'Meu Site'])
+        ->to('destinatario@exemplo.com')
+        ->subject('Assunto')
+        ->send('Minha mensagem');
+
+Com os métodos construtores da classe ``Email``, você é capaz de definir suas
+propriedades com o encadeamento de método.
+
+``Email`` tem vários métodos para definir os destinatários - ``to()``, ``cc()``,
+``bcc()``, ``addTo()``, ``addCc()`` e ``addBcc()``. A diferença é que os três
+primeiros irão substituir o que já foi definido antes e mais tarde será apenas
+como adicionar mais destinatários ao seu respectivo campo::
 
     $email = new Email();
-    $email->from(['me@example.com' => 'My Site'])
-        ->to('you@example.com')
-        ->subject('About')
-        ->send('My message');
+    $email->to('to@example.com', 'To Example');
+    $email->addTo('to2@example.com', 'To2 Example');
+    // Os destinatários são: to@example.com and to2@example.com
+    $email->to('test@example.com', 'ToTest Example');
+    // O destinatário é: test@example.com
 
-Since ``Email``'s setter methods return the instance of the class, you are able
-to set its properties with method chaining.
+Escolhendo Rementente
+---------------------
 
-Choosing the Sender
--------------------
-
-When sending email on behalf of other people, it's often a good idea to define the
-original sender using the Sender header. You can do so using ``sender()``::
+Quando enviamos um e-mail em nome de outra pessoa, é uma boa ideia definirmos
+quem é o remetente original usando o cabeçalho Sender. Você pode fazer isso
+usando ``sender()``::
 
     $email = new Email();
     $email->sender('app@example.com', 'MyApp emailer');
 
 .. note::
 
-    It's also a good idea to set the envelope sender when sending mail on another
-    person's behalf. This prevents them from getting any messages about
-    deliverability.
+    É também uma boa ideia para definir o envelope remetente quando enviar um
+    correio em nome de outra pessoa. Isso as impede de obter quaisquer mensagens
+    sobre a capacidade de entrega.
 
 .. _email-configuration:
 
-Configuration
-=============
+Configuração
+============
 
-Configuration for ``Email`` defaults is created using ``config()`` and
-``configTransport()``. You should put your email presets in the
-``config/app.php`` file.  The ``config/app.php.default`` file is an
-example of this file. It is not required to define email configuration in
-``config/app.php``. ``Email`` can be used without it and use the respective
-methods to set all configurations separately or load an array of configs.
+A configuração de ``Email`` padrão é criada usando ``config()`` e
+``configTransport()``. Você deve colocar as predefinições de e-mail no arquivo
+**config/app.php**. O arquivo **config/app.default.php** é um exemplo deste
+arquivo. Não é necessário definir a configuração de e-mail em
+**config/app.php**. ``Email`` pode ser usado sem ele e usar os respectivos
+métodos para definir todas as configurações separadamente ou carregar uma
+variedade de configurações.
 
-By defining profiles and transports, you can keep your application code free of
-configuration data, and avoid duplication that makes maintenance and deployment
-less difficult.
+Ao definir perfis e transportes, você pode manter o código do aplicativo livre
+dos dados de configuração, e evitar a duplicação que faz manutenção e
+implantação mais difícil.
 
-To load a predefined configuration, you can use the ``profile()`` method or pass it
-to the constructor of ``Email``::
+Para carregar uma configuração pré-definida, você pode usar o método ``profile()`` 
+ou passá-lo para o construtor de ``Email``::
 
     $email = new Email();
     $email->profile('default');
 
-    // Or in constructor
+    // Ou no Construtor
     $email = new Email('default');
 
-Instead of passing a string which matches a preset configuration name, you can
-also just load an array of options::
+Em vez de passar uma string que corresponde a um nome de configuração
+predefinida, você também pode apenas carregar uma variedade de opções::
 
     $email = new Email();
     $email->profile(['from' => 'me@example.org', 'transport' => 'my_custom']);
 
-    // Or in constructor
+    // Ou no Construtor
     $email = new Email(['from' => 'me@example.org', 'transport' => 'my_custom']);
 
-Configuring Transports
-----------------------
+.. versionchanged:: 3.1
+    O perfil ``default`` do e-mail é automaticamente setado quando uma instância
+    `Email`` é criada.
+
+Configurando Transportes
+------------------------
 
 .. php:staticmethod:: configTransport($key, $config = null)
 
-Email messages are delivered by transports. Different transports allow you to
-send messages via PHP's ``mail()`` function, SMTP servers, or not at all which
-is useful for debugging. Configuring transports allows you to keep configuration
-data out of your application code and makes deployment simpler as you can simply
-change the configuration data. An example transport configuration looks like::
+As mensagens de email são entregues por transportes. Diferentes transportes
+permitem o envio de mensagens via funções PHP ``mail`` do PHP servidores SMTP
+(ou não em todos, que é útil para depuração. Configurar transportes permite-lhe
+manter os dados de configuração fora de seu código do aplicativo e torna a
+implantação mais simples, como você pode simplesmente mudar os dados de
+configuração. Um exemplo de configuração de transporte é parecido com::
 
-    use Cake\Network\Email\Email;
+    use Cake\Mailer\Email;
 
-    // Sample Mail configuration
+    // Configuração Simples de Email
     Email::configTransport('default', [
         'className' => 'Mail'
     ]);
 
-    // Sample smtp configuration.
+    // Configuração smtp Simples
     Email::configTransport('gmail', [
         'host' => 'ssl://smtp.gmail.com',
         'port' => 465,
@@ -102,102 +135,121 @@ change the configuration data. An example transport configuration looks like::
         'className' => 'Smtp'
     ]);
 
-You can configure SSL SMTP servers, like Gmail. To do so, put the ``ssl://``
-prefix in the host and configure the port value accordingly. You can also
-enable TLS SMTP using the ``tls`` option::
+Você pode configurar servidores SSL SMTP, como o Gmail. Para fazer isso, colocar
+o prefixo ``ssl://`` no hospedeiro e configurar o valor de porta em
+conformidade. Você também pode ativar TLS SMTP usando o ``tls`` opção::
 
-    use Cake\Network\Email\Email;
+    use Cake\Mailer\Email;
 
     Email::configTransport('gmail', [
         'host' => 'smtp.gmail.com',
-        'port' => 465,
+        'port' => 587,
         'username' => 'my@gmail.com',
         'password' => 'secret',
         'className' => 'Smtp',
         'tls' => true
     ]);
 
-The above configuration would enable TLS communication for email messages.
+A configuração acima possibilita uma comunicação TLS para mensagens de e-mail.
+
+.. warning::
+    Você vai precisar ter ativado o acesso para aplicações menos seguras em sua
+    conta do Google para que isso funcione:
+    `Permitindo aplicações menos seguras para acessar sua conta <https://support.google.com/accounts/answer/6010255>`__.
 
 .. note::
+    Para usar SSL + SMTP, você precisará ter o SSL configurado no seu PHP.
 
-    To use SSL + SMTP, you will need to have the SSL configured in your PHP
-    install.
+As opções de configuração também pode ser fornecido como uma string :term:`DSN`.
+Isso é útil quando se trabalha com variáveis de ambiente ou prestadores
+:term:`PaaS`::
 
+    Email::configTransport('default', [
+        'url' => 'smtp://my@gmail.com:secret@smtp.gmail.com:465?tls=true',
+    ]);
+
+Ao usar uma string DSN você pode definir quaisquer parâmetros/opções adicionais
+como argumentos de string de consulta.
 
 .. php:staticmethod:: dropTransport($key)
 
-Once configured, transports cannot be modified. In order to modify a transport
-you must first drop it and then reconfigure it.
+Uma vez configurado, os transportes não pode ser modificado. A fim de modificar
+um transporte, você deve primeiro soltá-lo e, em seguida, configurá-lo.
 
 .. _email-configurations:
 
-Configuration Profiles
+Perfis de Configuração
 ----------------------
 
-Defining delivery profiles allows you to consolidate common email settings into
-re-usable profiles. Your application can have as many profiles as necessary. The
-following configuration keys are used:
+Definição de perfis de entrega permitem consolidar as configurações de e-mail
+comuns em perfis reutilizáveis. Seu aplicativo pode ter tantos perfis como
+necessário. As seguintes chaves de configuração são usados:
 
-- ``'from'``: Email or array of sender. See ``Email::from()``.
-- ``'sender'``: Email or array of real sender. See ``Email::sender()``.
-- ``'to'``: Email or array of destination. See ``Email::to()``.
-- ``'cc'``: Email or array of carbon copy. See ``Email::cc()``.
-- ``'bcc'``: Email or array of blind carbon copy. See ``Email::bcc()``.
-- ``'replyTo'``: Email or array to reply the e-mail. See ``Email::replyTo()``.
-- ``'readReceipt'``: Email address or an array of addresses to receive the
-  receipt of read. See ``Email::readReceipt()``.
-- ``'returnPath'``: Email address or and array of addresses to return if have
-  some error. See ``Email::returnPath()``.
-- ``'messageId'``: Message ID of e-mail. See ``Email::messageId()``.
-- ``'subject'``: Subject of the message. See ``Email::subject()``.
-- ``'message'``: Content of message. Do not set this field if you are using rendered content.
-- ``'headers'``: Headers to be included. See ``Email::setHeaders()``.
-- ``'viewRender'``: If you are using rendered content, set the view classname.
-  See ``Email::viewRender()``.
-- ``'template'``: If you are using rendered content, set the template name. See
-  ``Email::template()``.
-- ``'theme'``: Theme used when rendering template. See ``Email::theme()``.
-- ``'layout'``: If you are using rendered content, set the layout to render. If
-  you want to render a template without layout, set this field to null. See
-  ``Email::template()``.
-- ``'viewVars'``: If you are using rendered content, set the array with
-  variables to be used in the view. See ``Email::viewVars()``.
-- ``'attachments'``: List of files to attach. See ``Email::attachments()``.
-- ``'emailFormat'``: Format of email (html, text or both). See ``Email::emailFormat()``.
-- ``'transport'``: Transport configuration name. See
-  :php:meth:`~Cake\\Network\\Email\\Email::configTransport()`.
-- ``'log'``: Log level to log the email headers and message. ``true`` will use
-  LOG_DEBUG. See also ``CakeLog::write()``
-- ``'helpers'``: Array of helpers used in the email template.
+- ``'from'``: E-mail ou array do remetente. Visto ``Email::from()``.
+- ``'sender'``: E-mail ou array do Remetente original. Visto
+  ``Email::sender()``.
+- ``'to'``: E-mail ou array do Destinatário. Visto ``Email::to()``.
+- ``'cc'``: E-mail ou array da Copia de Carbono. Visto ``Email::cc()``.
+- ``'bcc'``: E-mail ou array da cópia oculta. Visto ``Email::bcc()``.
+- ``'replyTo'``: Email ou array do E-mail de respostas. Visto
+  ``Email::replyTo()``.
+- ``'readReceipt'``: Endereço de E-mail ou array de endereços para receber a
+  recepção de leitura. Visto ``Email::readReceipt()``.
+- ``'returnPath'``: Endereço de E-mail ou um array de endereços para retornar se
+  teve alguns erros. Visto ``Email::returnPath()``.
+- ``'messageId'``: ID da mensagem do e-mail. Visto ``Email::messageId()``.
+- ``'subject'``: Assunto da mensagem. Visto ``Email::subject()``.
+- ``'message'``: Conteúdo de mensagem. Não defina este campo se você estiver
+  usando o conteúdo processado.
+- ``'headers'``: Cabeçalhos sejam incluídas. Visto ``Email::setHeaders()``.
+- ``'viewRender'``: Se você estiver usando conteúdo renderizado, definir o nome
+  da classe da view. Visto ``Email::viewRender()``.
+- ``'template'``: Se você estiver usando conteúdo renderizado, definir o nome do
+  template. Visto ``Email::template()``.
+- ``'theme'``: Tema usado quando o template é renderizado. Visto
+  ``Email::theme()``.
+- ``'layout'``: Se você estiver usando conteúdo renderizado, definir o layout
+  para renderizar. Se você quer renderizar um template sem layout, definir este
+  campo como null. Visto ``Email::template()``.
+- ``'viewVars'``: Se você estiver usando conteúdo renderizado, definir o array
+  com as variáveis para serem usadas na view. Visto ``Email::viewVars()``.
+- ``'attachments'``: Lista de arquivos para anexar. Visto
+  ``Email::attachments()``.
+- ``'emailFormat'``: Formato do e-mail (html, text ou both). Visto
+  ``Email::emailFormat()``.
+- ``'transport'``: Nome da configuração de transporte. Visto
+  :php:meth:`~Cake\\Mailer\\Email::configTransport()`.
+- ``'log'``: Nível de log para registrar os cabeçalhos de e-mail e mensagem.
+  ``true`` usará LOG_DEBUG. Visto tabmém como ``CakeLog::write()``
+- ``'helpers'``: Array de helpers usado no template do e-mail.
 
-All these configurations are optional, except ``'from'``.
+Todas essas configurações são opcionais, exceto ``'from'``.
 
 .. note::
+    Os valores das chaves acima usando e-mail ou array, como from, to, cc, etc
+    será passado como primeiro parâmetro de métodos correspondentes. O
+    equivalente de: ``Email::from('my@example.com', 'My Site')`` pode ser
+    difinido como  ``'from' => ['my@example.com' => 'My Site']`` na sua
+    configuração.
 
-    The values of above keys using Email or array, like from, to, cc, etc will be passed
-    as first parameter of corresponding methods. The equivalent for:
-    ``Email::from('my@example.com', 'My Site')``
-    would be defined as  ``'from' => ['my@example.com' => 'My Site']`` in your config
+Definindo Cabeçalho
+===================
 
-Setting Headers
-===============
+Em ``Email`` você está livre para definir os cabeçalhos que você deseja. Quando
+migrar usando e-mail, não se esqueça de colocar o prefixo ``X-`` em seus
+cabeçalhos.
 
-In ``Email`` you are free to set whatever headers you want. When migrating
-to use Email, do not forget to put the ``X-`` prefix in your headers.
+Visto como ``Email::setHeaders()`` e ``Email::addHeaders()``.
 
-See ``Email::setHeaders()`` and ``Email::addHeaders()``
+Enviando E-mail com Templates
+=============================
 
-Sending Templated Emails
-========================
+E-mails são frequentemente muito mais do que apenas uma simples mensagem de texto. A fim de
+facilitar, o CakePHP fornece uma maneira de enviar e-mails usando o CakePHP. Veja em :doc:`view layer </views>`.
 
-Emails are often much more than just a simple text message. In order
-to facilitate that, CakePHP provides a way to send emails using CakePHP's
-:doc:`view layer </views>`.
-
-The templates for emails reside in a special folder in your application's
-``Template`` directory called ``Email``. Email views can also use layouts
-and elements just like normal views::
+Os templates para e-mails residir em uma pasta especial em sua aplicação no
+diretório ``Template`` chamado ``Email``. Visualizações de e-mail também pode
+usar layouts e os elementos assim como vistas normais::
 
     $email = new Email();
     $email->template('welcome', 'fancy')
@@ -206,9 +258,9 @@ and elements just like normal views::
         ->from('app@domain.com')
         ->send();
 
-The above would use ``src/Template/Email/html/welcome.ctp`` for the view
-and ``src/Template/Layout/Email/html/fancy.ctp`` for the layout. You can
-send multipart templated email messages as well::
+O acima usaria **src/Template/Email/html/welcome.ctp** para a vista e
+**src/Template/Layout/E-mail/html/fancy.ctp** para o layout. Você pode enviar
+mensagens de e-mail com templates de várias partes, veja::
 
     $email = new Email();
     $email->template('welcome', 'fancy')
@@ -217,75 +269,74 @@ send multipart templated email messages as well::
         ->from('app@domain.com')
         ->send();
 
-This would use the following view files:
+Este usaria os seguintes arquivos de template:
 
-* ``src/Template/Email/text/welcome.ctp``
-* ``src/Template/Layout/Email/text/fancy.ctp``
-* ``src/Template/Email/html/welcome.ctp``
-* ``src/Template/Layout/Email/html/fancy.ctp``
+* **src/Template/Email/text/welcome.ctp**
+* **src/Template/Layout/Email/text/fancy.ctp**
+* **src/Template/Email/html/welcome.ctp**
+* **src/Template/Layout/Email/html/fancy.ctp**
 
-When sending templated emails you have the option of sending either
-``text``, ``html`` or ``both``.
+Ao enviar e-mails com templates, você tem a opção de enviar qualquer ``text``,
+``html`` ou ``both``.
 
-You can set view variables with ``Email::viewVars()``::
+Você pode definir as váriaveis da view com ``Email::viewVars()``::
 
     $email = new Email('templated');
     $email->viewVars(['value' => 12345]);
 
-In your email templates you can use these with::
+Em seus templates de e-mail, você pode usar isso com::
 
-    <p>Here is your value: <b><?= $value ?></b></p>
+    <p>Aqui está o seu valor: <b><?= $value ?></b></p>
 
-You can use helpers in emails as well, much like you can in normal view files.
-By default only the ``HtmlHelper`` is loaded. You can load additional
-helpers using the ``helpers()`` method::
+Você pode usar helpers em e-mails, bem como você pode em arquivos de modelo
+normais. Por padrão, somente o ``HtmlHelper`` é carregado. Você pode carregar
+helpers adicionais usando os métodos ``helpers()``::
 
-    $Email->helpers(['Html', 'Custom', 'Text']);
+    $email->helpers(['Html', 'Custom', 'Text']);
 
-When setting helpers be sure to include 'Html' or it will be removed from the
-helpers loaded in your email template.
+Ao definir ajudantes se esqueça de incluir 'Html' ou ele será removido do
+helpers carregado no seu template de e-mail.
 
-If you want to send email using templates in a plugin you can use the familiar
-:term:`plugin syntax` to do so::
+Se você quiser enviar e-mail usando templates em um plugin, você pode usar o
+familiar :term:`Sintaxe Plugin` para faze-lô::
 
     $email = new Email();
     $email->template('Blog.new_comment', 'Blog.auto_message');
 
-The above would use templates from the Blog plugin as an example.
+O acima usaria templates a partir do plug-in Blog como um exemplo.
 
-In some cases, you might need to override the default template provided by plugins.
-You can do this using themes by telling Email to use appropriate theme using
-``Email::theme()`` method::
+Em alguns casos, pode ser necessário substituir o template padrão fornecido pelo
+plugins. Você pode fazer isso usando temas, dizendo par ao E-mail usar o tema
+apropriado usando o método ``Email::theme()``::
 
     $email = new Email();
     $email->template('Blog.new_comment', 'Blog.auto_message');
     $email->theme('TestTheme');
 
-This allows you to override the ``new_comment`` template in your theme without
-modifying the Blog plugin. The template file needs to be created in the
-following path:
-``src/Template/Plugin/TestTheme/Blog/Email/text/new_comment.ctp``.
+Isso permite que você substituir o ``new_comment`` em seu tema, sem modificar o
+plug-in Blog. O arquivo de template precisa ser criado no seguinte caminho:
+**src/Template/Plugin/TestTheme/Blog/Email/text/new_comment.ctp**.
 
-Sending Attachments
-===================
+Envio de Anexos
+===============
 
 .. php:method:: attachments($attachments = null)
 
-You can attach files to email messages as well. There are a few
-different formats depending on what kind of files you have, and how
-you want the filenames to appear in the recipient's mail client:
+Você pode anexar arquivos a mensagens de email também. Há alguns diferentes
+formatos, dependendo do tipo de arquivos que você tem, e como você quer os nomes
+dos arquivos para aparecer no email do destinatário:
 
-1. String: ``$Email->attachments('/full/file/path/file.png')`` will attach this
-   file with the name file.png.
-2. Array: ``$Email->attachments(['/full/file/path/file.png'])`` will have
-   the same behavior as using a string.
-3. Array with key:
-   ``$Email->attachments(['photo.png' => '/full/some_hash.png'])`` will
-   attach some_hash.png with the name photo.png. The recipient will see
-   photo.png, not some_hash.png.
-4. Nested arrays::
+1. String: ``$email->attachments('/full/file/path/file.png')`` irá anexar este
+   arquivo com o nome file.png.
+2. Array: ``$email->attachments(['/full/file/path/file.png'])`` tem o mesmo
+   comportamento como o uso de uma String.
+3. Array com chave:
+   ``$email->attachments(['photo.png' => '/full/some_hash.png'])`` irá anexar
+   alguns hash.png com o nome photo.png. O destinatário verá photo.png, não
+   hash.png.
+4. Arrays aninhados::
 
-    $Email->attachments([
+    $email->attachments([
         'photo.png' => [
             'file' => '/full/some_hash.png',
             'mimetype' => 'image/png',
@@ -293,132 +344,37 @@ you want the filenames to appear in the recipient's mail client:
         ]
     ]);
 
-   The above will attach the file with different mimetype and with custom
-   Content ID (when set the content ID the attachment is transformed to inline).
-   The mimetype and contentId are optional in this form.
+   O acima irá anexar o arquivo com diferentes mimetypes e com identificação de
+   conteúdo personalizado (quando definir o ID de conteúdo do anexo é
+   transformado para linha).
+   O mimetype e contentId são opcionais nessa forma.
 
-   4.1. When you are using the ``contentId``, you can use the file in the HTML
-   body like ``<img src="cid:my-content-id">``.
+   4.1. Quando você estiver usando o ``contentId``, você pode usar o arquivo no
+   corpo HTML como ``<img src="cid:my-content-id">``.
 
-   4.2. You can use the ``contentDisposition`` option to disable the
-   ``Content-Disposition`` header for an attachment. This is useful when
-   sending ical invites to clients using outlook.
+   4.2. Você pode usar a opção ``contentDisposition`` conteúdo para desativar
+   cabeçalho ``Content-Disposition`` para um anexo. Isso é útil quando é feito o
+   envio de convites para o iCal para clientes usando o Outlook.
 
-   4.3 Instead of the ``file`` option you can provide the file contents as
-   a string using the ``data`` option. This allows you to attach files without
-   needing file paths to them.
+   4.3 Em vez de a opção ``file`` você pode fornecer o conteúdo do arquivo como
+   uma string usando a opção ``data``. Que lhe permite anexar arquivos sem a
+   necessidade de caminhos de arquivo para eles.
 
-Using Transports
-================
+Usando Transportes
+==================
 
-Transports are classes designed to send the e-mail over some protocol or method.
-CakePHP supports the Mail (default), Debug and SMTP transports.
+Transportes são classes atribuídas a enviar o e-mail sobre algum protocolo ou
+método. CakePHP suporta o o transporte de Mail (padrão), Debug e SMTP.
 
-To configure your method, you must use the :php:meth:`Cake\\Network\Email\\Email::transport()`
-method or have the transport in your configuration::
+Para configurar o método, você deve usar o método
+:php:meth:`Cake\\Mailer\\Email::transport()` ou ter o transporte em sua
+configuração::
 
     $email = new Email();
 
-    // Use a named transport already configured using Email::configTransport()
+    // Usar um transporte chamado já configurado usando Email::configTransport()
     $email->transport('gmail');
 
-    // Use a constructed object.
+     // Usando um método Construtor
     $transport = new DebugTransport();
     $email->transport($transport);
-
-Creating Custom Transports
---------------------------
-
-You are able to create your custom transports to integrate with others email
-systems (like SwiftMailer). To create your transport, first create the file
-``src/Network/Email/ExampleTransport.php`` (where Example is the name of your
-transport). To start off your file should look like::
-
-    use Cake\Network\Email\AbstractTransport;
-
-    class ExampleTransport extends AbstractTransport {
-
-        public function send(Email $email) {
-            // Magic inside!
-        }
-
-    }
-
-You must implement the method ``send(Email $email)`` with your custom logic.
-Optionally, you can implement the ``config($config)`` method. ``config()`` is
-called before send() and allows you to accept user configurations. By default,
-this method puts the configuration in protected attribute ``$_config``.
-
-If you need to call additional methods on the transport before send, you can use
-:php:meth:`Cake\\Network\\Email\\Email::transportClass()` to get an instance of the transport.
-Example::
-
-    $yourInstance = $Email->transport('your')->transportClass();
-    $yourInstance->myCustomMethod();
-    $Email->send();
-
-Relaxing Address Validation Rules
----------------------------------
-
-.. php:method:: emailPattern($pattern = null)
-
-If you are having validation issues when sending to non-compliant addresses, you
-can relax the pattern used to validate email addresses. This is sometimes
-necessary when dealing with some Japanese ISP's::
-
-    $email = new Email('default');
-
-    // Relax the email pattern, so you can send
-    // to non-conformant addresses.
-    $email->emailPattern($newPattern);
-
-
-Sending Messages Quickly
-========================
-
-Sometimes you need a quick way to fire off an email, and you don't necessarily
-want do setup a bunch of configuration ahead of time.
-:php:meth:`Cake\\Network\Email\\Email::deliver()` is intended for that purpose.
-
-You can create your configuration using
-:php:meth:`Cake\\Network\\Email\\Email::config()`, or use an array with all
-options that you need and use the static method ``Email::deliver()``.
-Example::
-
-    Email::deliver('you@example.com', 'Subject', 'Message', ['from' => 'me@example.com']);
-
-This method will send an email to "you@example.com", from "me@example.com" with
-subject "Subject" and content "Message".
-
-The return of ``deliver()`` is a :php:class:`Cake\\Email\\Email` instance with all
-configurations set. If you do not want to send the email right away, and wish
-to configure a few things before sending, you can pass the 5th parameter as
-``false``.
-
-The 3rd parameter is the content of message or an array with variables (when
-using rendered content).
-
-The 4th parameter can be an array with the configurations or a string with the
-name of configuration in ``Configure``.
-
-If you want, you can pass the to, subject and message as null and do all
-configurations in the 4th parameter (as array or using ``Configure``).
-Check the list of :ref:`configurations <email-configurations>` to see all accepted configs.
-
-
-Sending Emails from CLI
-========================
-
-When sending emails within a CLI script (Shells, Tasks, ...) you should manually
-set the domain name for CakeEmail to use. It will serve as the host name for the
-message id (since there is no host name in a CLI environment)::
-
-    $Email->domain('www.example.org');
-    // Results in message ids like ``<UUID@www.example.org>`` (valid)
-    // Instead of `<UUID@>`` (invalid)
-
-A valid message id can help to prevent emails ending up in spam folders.
-
-.. meta::
-    :title lang=en: Email
-    :keywords lang=en: sending mail,email sender,envelope sender,php class,database configuration,sending emails,meth,shells,smtp,transports,attributes,array,config,flexibility,php email,new email,sending email,models

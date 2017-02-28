@@ -3,9 +3,9 @@ Folder & File
 
 .. php:namespace:: Cake\Filesystem
 
-Les utilitaires Folder et File sont des classes pratiques pour aider à la
-lecture, l'écriture/l'ajout de fichiers; Lister les fichiers d'un dossier
-et autres tâches habituelles liées aux répertoires.
+Les utilitaires Folder et File sont des classes pratiques pour la lecture,
+l'écriture/l'ajout de fichiers, lister les fichiers d'un dossier et toute autre
+tâche habituelle liée aux répertoires.
 
 Utilisation Basique
 ===================
@@ -33,7 +33,7 @@ Maintenant nous pouvons faire une boucle sur les fichiers et les lire,
         // $file->write('J'écris dans ce fichier');
         // $file->append('J'ajoute à la fin de ce fichier.');
         // $file->delete(); // Je supprime ce fichier
-        $file->close(); // Assurez vous de fermer le fichier quand c'est fini
+        $file->close(); // Assurez-vous de fermer le fichier quand c'est fini
     }
 
 API de Folder
@@ -53,13 +53,13 @@ API de Folder
 
 .. php:attr:: sort
 
-    Dit si la liste des résultats doit être oui ou non rangée par name.
-    
+    Dit si la liste des résultats doit être oui ou non rangée selon name.
+
 .. php:attr:: mode
 
-    Mode à utiliser pour la création de dossiers. par défaut à ``0755``. Ne
-    fait rien sur les machines windows.
-    
+    Mode à utiliser pour la création de dossiers. par défaut à ``0755``. Ne fait
+    rien sur les machines Windows.
+
 .. php:staticmethod:: addPathElement(string $path, string $element)
 
     Retourne $path avec $element ajouté, avec le bon slash entre-deux::
@@ -92,21 +92,21 @@ API de Folder
 
 .. php:method:: copy(array|string $options = [])
 
-    Copie de façon récursive un répertoire. Le seul paramètre $options peut
-    être soit un chemin à copier soit un tableau d'options::
-    
+    Copie de façon récursive un répertoire. Le seul paramètre $options peut être
+    soit un chemin à copier soit un tableau d'options::
+
         $folder1 = new Folder('/path/to/folder1');
         $folder1->copy('/path/to/folder2');
         // mettra le folder1 et tout son contenu dans folder2
 
         $folder = new Folder('/path/to/folder');
-        $folder->copy(array(
+        $folder->copy([
             'to' => '/path/to/new/folder',
             'from' => '/path/to/copy/from', // Will cause a cd() to occur
             'mode' => 0755,
-            'skip' => array('skip-me.php', '.git'),
+            'skip' => ['skip-me.php', '.git'],
             'scheme' => Folder::SKIP  // Ne fait pas les répertoires/fichiers qui existent déjà.
-        ));
+        ]);
 
     y a 3 schémas supportés:
 
@@ -115,21 +115,21 @@ API de Folder
     * ``Folder::MERGE`` fusionne les répertoires source/destination. Les
       fichiers dans le répertoire source vont remplacer les fichiers dans le
       répertoire de cible. Les contenus du répertoire seront fusionnés.
-    * ``Folder::OVERWRITE`` écrase les fichiers & répertoires existant dans la
-      répertoire cible avec ceux dans le répertoire source. Si les deux source
-      et destination contiennent le même sous-répertoire, les contenus du
+    * ``Folder::OVERWRITE`` écrase les fichiers & répertoires existant dans le
+      répertoire cible avec ceux dans le répertoire source. Si la source et la
+      destination contiennent le même sous-répertoire, les contenus du
       répertoire de cible vont être retirés et remplacés avec celui de la
       source.
 
 .. php:staticmethod:: correctSlashFor(string $path)
 
-    Retourne un ensemble correct de slashes pour un $path donné. ('\\' pour
-    les chemins Windows et '/' pour les autres chemins).
+    Retourne un ensemble correct de slashes pour un $path donné. ('\\' pour les
+    chemins Windows et '/' pour les autres chemins).
 
 .. php:method:: create(string $pathname, integer $mode = false)
 
-    Crée une structure de répertoire de façon récursive. Peut être utilisé
-    pour créer des structures de chemin profond comme `/foo/bar/baz/shoe/horn`::
+    Crée une structure de répertoire de façon récursive. Peut être utilisée pour
+    créer des structures de chemin profond comme `/foo/bar/baz/shoe/horn`::
 
         $folder = new Folder();
         if ($folder->create('foo' . DS . 'bar' . DS . 'baz' . DS . 'shoe' . DS . 'horn')) {
@@ -142,7 +142,7 @@ API de Folder
 
         $folder = new Folder('foo');
         if ($folder->delete()) {
-            // Successfully deleted foo and its nested folders
+            // Supprime foo et ses dossiers imbriqués avec succès
         }
 
 .. php:method:: dirsize()
@@ -158,7 +158,7 @@ API de Folder
     Retourne un tableau de tous les fichiers correspondants dans le répertoire
     courant::
 
-        // Trouve tous les .png dans votre dossier app/webroot/img/ et range les résultats
+        // Trouve tous les .png dans votre dossier webroot/img/ et range les résultats
         $dir = new Folder(WWW_ROOT . 'img');
         $files = $dir->find('.*\.png', true);
         /*
@@ -174,14 +174,14 @@ API de Folder
 
 .. note::
 
-    Les méthodes find et findRecursive de folder ne trouvent seulement que
-    des fichiers. Si vous voulez obtenir des dossiers et fichiers, regardez
+    Les méthodes find et findRecursive de folder ne trouvent seulement que des
+    fichiers. Si vous voulez obtenir des dossiers et fichiers, regardez
     :php:meth:`Folder::read()` ou :php:meth:`Folder::tree()`.
 
 .. php:method:: findRecursive(string $pattern = '.*', boolean $sort = false)
 
-    Retourne un tableau de tous les fichiers correspondants dans et
-    en-dessous du répertoire courant::
+    Retourne un tableau de tous les fichiers correspondants dans et en-dessous
+    du répertoire courant::
 
         // Trouve de façon récursive les fichiers commençant par test ou index
         $dir = new Folder(WWW_ROOT);
@@ -189,18 +189,18 @@ API de Folder
         /*
         Array
         (
-            [0] => /var/www/cake/app/webroot/index.php
-            [1] => /var/www/cake/app/webroot/test.php
-            [2] => /var/www/cake/app/webroot/img/test-skip-icon.png
-            [3] => /var/www/cake/app/webroot/img/test-fail-icon.png
-            [4] => /var/www/cake/app/webroot/img/test-error-icon.png
-            [5] => /var/www/cake/app/webroot/img/test-pass-icon.png
+            [0] => /var/www/cake/webroot/index.php
+            [1] => /var/www/cake/webroot/test.php
+            [2] => /var/www/cake/webroot/img/test-skip-icon.png
+            [3] => /var/www/cake/webroot/img/test-fail-icon.png
+            [4] => /var/www/cake/webroot/img/test-error-icon.png
+            [5] => /var/www/cake/webroot/img/test-pass-icon.png
         )
         */
 
 .. php:method:: inCakePath(string $path = '')
 
-    Retourne true si le Fichier est dans un CakePath donné.
+    Retourne ``true`` si le Fichier est dans un CakePath donné.
 
 .. php:method:: inPath(string $path = '', boolean $reverse = false)
 
@@ -208,10 +208,10 @@ API de Folder
 
         $Folder = new Folder(WWW_ROOT);
         $result = $Folder->inPath(APP);
-        // $result = true, /var/www/example/app/ is in /var/www/example/app/webroot/
+        // $result = true, /var/www/example/ est dans /var/www/example/webroot/
 
         $result = $Folder->inPath(WWW_ROOT . 'img' . DS, true);
-        // $result = true, /var/www/example/app/webroot/ est dans /var/www/example/app/webroot/img/
+        // $result = true, /var/www/example/webroot/ est dans /var/www/example/webroot/img/
 
 .. php:staticmethod:: isAbsolute(string $path)
 
@@ -275,12 +275,12 @@ API de Folder
 
 .. php:method:: realpath(string $path)
 
-    Récupère le vrai chemin (taking ".." and such into account).
+    Récupère le vrai chemin (en prenant en compte ".." etc...).
 
 .. php:staticmethod:: slashTerm(string $path)
 
-    Retourne $path avec le slash ajouté à la fin (corrigé pour 
-    Windows ou d'autres OS).
+    Retourne $path avec le slash ajouté à la fin (corrigé pour Windows ou
+    d'autres OS).
 
 .. php:method:: tree(null|string $path = null, array|boolean $exceptions = true, null|string $type = null)
 
@@ -304,7 +304,7 @@ L'API de File
 
 .. php:attr:: name
 
-    Le nom du fichier avec l'extension. Différe de :php:meth:`File::name()`
+    Le nom du fichier avec l'extension. Diffère de :php:meth:`File::name()`
     qui retourne le nom sans l'extension.
 
 .. php:attr:: info
@@ -317,7 +317,7 @@ L'API de File
 
 .. php:attr:: lock
 
-    Active le blocage du fichier en lecture et écriture.
+    Active le blocage du fichier en lecture et en écriture.
 
 .. php:attr:: path
 
@@ -329,7 +329,7 @@ L'API de File
 
 .. php:method:: close()
 
-    Ferme le fichier courant si il est ouvert.
+    Ferme le fichier courant s'il est ouvert.
 
 .. php:method:: copy(string $dest, boolean $overwrite = true)
 
@@ -345,7 +345,7 @@ L'API de File
 
 .. php:method:: executable()
 
-    Retourne ``true`` si le Fichier est executable.
+    Retourne ``true`` si le Fichier est exécutable.
 
 .. php:method:: exists()
 
@@ -402,10 +402,9 @@ L'API de File
 
 .. php:staticmethod:: prepare(string $data, boolean $forceWindows = false)
 
-    Prépare une chaîne de caractères ascii pour l'écriture. Convertit les
-    lignes de fin en un terminator correct pour la plateforme courante. Si
-    c'est windows "\r\n" sera utilisé, toutes les autres plateformes
-    utiliseront "\n"
+    Prépare une chaîne de caractères ascii pour l'écriture. Convertit les lignes
+    de fin en un terminator correct pour la plateforme courante. Si c'est
+    Windows "\\r\\n" sera utilisé, toutes les autres plateformes utiliseront "\\n".
 
 .. php:method:: pwd()
 
@@ -413,8 +412,8 @@ L'API de File
 
 .. php:method:: read(string $bytes = false, string $mode = 'rb', boolean $force = false)
 
-    Retourne les contenus du Fichier en chaîne de caractère ou retourne ``false``
-    en cas d'échec.
+    Retourne les contenus du Fichier en chaîne de caractère ou retourne
+    ``false`` en cas d'échec.
 
 .. php:method:: readable()
 
@@ -426,7 +425,7 @@ L'API de File
 
 .. php:method:: size()
 
-    Retourne le Filesize.
+    Retourne le Filesize en bytes.
 
 .. php:method:: writable()
 
@@ -444,8 +443,8 @@ L'API de File
 
 .. php:method:: replaceText( $search, $replace )
 
-    Remplace le texte dans un fichier. Retourne ``false`` en cas d'échec et ``true`` en cas de succès.
-
+    Remplace le texte dans un fichier. Retourne ``false`` en cas d'échec et
+    ``true`` en cas de succès.
 
 .. meta::
     :title lang=fr: Folder & File

@@ -3,28 +3,29 @@ Request Handling
 
 .. php:class:: RequestHandlerComponent(ComponentCollection $collection, array $config = [])
 
-The Request Handler component is used in CakePHP to obtain
-additional information about the HTTP requests that are made to
-your applications. You can use it to inform your controllers about
-AJAX as well as gain additional insight into content types that the
-client accepts and automatically changes to the appropriate layout
-when file extensions are enabled.
+The Request Handler component is used in CakePHP to obtain additional
+information about the HTTP requests that are made to your application. You can
+use it to see what content types clients prefer, automatcally parse request
+input, define how content types map to view classes or template paths.
 
-By default RequestHandler will automatically detect AJAX requests
-based on the HTTP-X-Requested-With header that many JavaScript
-libraries use. When used in conjunction with
-:php:meth:`Cake\\Routing\\Router::extensions()`, RequestHandler will
-automatically switch the layout and view files to those that match the requested
-type. Furthermore, if a helper with the same name as the requested
-extension exists, it will be added to the Controllers Helper array.
-Lastly, if XML/JSON data is POST'ed to your Controllers, it will be
-parsed into an array which is assigned to ``$this->request->data``,
-and can then be saved as model data. In order to make use of
-RequestHandler it must be included in your $components array::
+By default RequestHandler will automatically detect AJAX requests based on the
+``X-Requested-With`` HTTP header that many JavaScript libraries use. When used
+in conjunction with :php:meth:`Cake\\Routing\\Router::extensions()`,
+RequestHandler will automatically switch the layout and template files to those
+that match non-HTML media types. Furthermore, if a helper with the same name as
+the requested extension exists, it will be added to the Controllers Helper
+array. Lastly, if XML/JSON data is POST'ed to your Controllers, it will be
+parsed into an array which is assigned to ``$this->request->getData()``, and can then
+be accessed as you would standard POST data. In order to make use of
+RequestHandler it must be included in your ``initialize()`` method::
 
-    class WidgetsController extends AppController {
-
-        public $components = ['RequestHandler'];
+    class WidgetsController extends AppController
+    {
+        public function initialize()
+        {
+            parent::initialize();
+            $this->loadComponent('RequestHandler');
+        }
 
         // Rest of controller
     }
@@ -43,11 +44,17 @@ the client and its request.
     types is accepted by the client. If null returns an array of the
     content-types that the client accepts. For example::
 
-        class ArticlesController extends AppController {
+        class ArticlesController extends AppController
+        {
 
-            public $components = ['RequestHandler'];
+            public function initialize()
+            {
+                parent::initialize();
+                $this->loadComponent('RequestHandler');
+            }
 
-            public function beforeFilter() {
+            public function beforeFilter(Event $event)
+            {
                 if ($this->RequestHandler->accepts('html')) {
                     // Execute code only if client accepts an HTML (text/html)
                     // response.
@@ -121,28 +128,37 @@ However, you want to allow caching for non-AJAX requests. The
 following would accomplish that::
 
         if ($this->request->is('ajax')) {
-            $this->disableCache();
+            $this->response->disableCache();
         }
         // Continue Controller action
 
 Automatically Decoding Request Data
 ===================================
 
-.. php:method:: addInputType($type, $handler)
-
 Add a request data decoder. The handler should contain a callback, and any
 additional arguments for the callback. The callback should return
 an array of data contained in the request input. For example adding a CSV
-handler in your controllers' beforeFilter could look like::
+handler could look like::
 
-    $parser = function ($data) {
-        $rows = str_getcsv($data, "\n");
-        foreach ($rows as &$row) {
-            $row = str_getcsv($row, ',');
+    class ArticlesController extends AppController
+    {
+        public function initialize()
+        {
+            parent::initialize();
+            $parser = function ($data) {
+                $rows = str_getcsv($data, "\n");
+                foreach ($rows as &$row) {
+                    $row = str_getcsv($row, ',');
+                }
+                return $rows;
+            };
+            $this->loadComponent('RequestHandler', [
+                'inputTypeMap' => [
+                    'csv' => [$parser]
+                ]
+            ]);
         }
-        return $rows;
-    };
-    $this->RequestHandler->addInputType('csv', [$parser]);
+    }
 
 You can use any `callable <http://php.net/callback>`_ for the handling function.
 You can also pass additional arguments to the callback, this is useful for
@@ -150,8 +166,15 @@ callbacks like ``json_decode``::
 
     $this->RequestHandler->addInputType('json', ['json_decode', true]);
 
-The above will make ``$this->request->data`` an array of the JSON input data,
-without the additional ``true`` you'd get a set of ``StdClass`` objects.
+    // After 3.1.0 you should use
+    $this->RequestHandler->config('inputTypeMap.json', ['json_decode', true]);
+
+The above will make ``$this->request->getData()`` an array of the JSON input data,
+without the additional ``true`` you'd get a set of ``stdClass`` objects.
+
+.. deprecated:: 3.1.0
+    As of 3.1.0 the ``addInputType()`` method is deprecated. You should use
+    ``config()`` to add input types at runtime.
 
 Checking Content-Type Preferences
 =================================
@@ -220,15 +243,16 @@ the client. The response status code is then set to ``304 Not Modified``.
 You can opt-out this automatic checking by setting the ``checkHttpCache``
 setting to ``false``::
 
-    public $components = [
-        'RequestHandler' => [
+    public function initialize()
+    {
+        parent::initialize();
+        $this->loadComponent('RequestHandler', [
             'checkHttpCache' => false
-    ]];
+        ]);
+    }
 
-Using custom ViewClasses
+Using Custom ViewClasses
 ========================
-
-.. php:method:: viewClassMap($type, $viewClass)
 
 When using JsonView/XmlView you might want to override the default serialization
 with a custom View class, or add View classes for other types.
@@ -236,14 +260,21 @@ with a custom View class, or add View classes for other types.
 You can map existing and new types to your custom classes. You can also set this
 automatically by using the ``viewClassMap`` setting::
 
-    public $components = [
-        'RequestHandler' => [
+    public function initialize()
+    {
+        parent::initialize();
+        $this->loadComponent('RequestHandler', [
             'viewClassMap' => [
                 'json' => 'ApiKit.MyJson',
                 'xml' => 'ApiKit.MyXml',
                 'csv' => 'ApiKit.Csv'
             ]
-    ]];
+        ]);
+    }
+
+.. deprecated:: 3.1.0
+    As of 3.1.0 the ``viewClassMap()`` method is deprecated. You should use
+    ``config()`` to change the viewClassMap at runtime.
 
 .. meta::
     :title lang=en: Request Handling

@@ -4,17 +4,13 @@ Apêndices
 Os apêndices contêm informações sobre os novos recursos
 introduzidos em cada versão e a forma de executar a migração entre versões.
 
-Guia de Migração para a versão 3.0
+Guia de Migração para a versão 3.x
 ==================================
-
-A versão 3.0 ainda está em desenvolvimento, e qualquer mudança
-estará disponível apenas no branch ``3.0`` do git.
 
 .. toctree::
     :maxdepth: 1
 
-    appendices/3-0-migration-guide
-    appendices/orm-migration
+    appendices/3-x-migration-guide
 
 Informações Gerais
 ==================

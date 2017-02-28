@@ -4,17 +4,13 @@ Appendices
 Appendices contain information regarding the new features
 introduced in each version and the migration path between versions.
 
-3.0 Migration Guide
+3.x Migration Guide
 ===================
-
-3.0 is still under development, and any documented changes
-will only be available in the ``3.0`` branch in git.
 
 .. toctree::
     :maxdepth: 1
 
-    appendices/3-0-migration-guide
-    appendices/orm-migration
+    appendices/3-x-migration-guide
 
 General Information
 ===================

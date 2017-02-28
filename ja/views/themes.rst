@@ -1,79 +1,68 @@
 テーマ
 ######
 
-テーマにはページの見た目を簡単に素早く切り替えられるようになるという利点があります。
+テーマには、ページの見た目や雰囲気を簡単に素早く切り替えられるようになるという利点があります。
+CakePHP のテーマは、テンプレートファイルを供給することに集中したシンプルなプラグインです。
+もし必要であれば、テンプレートファイルに追加してヘルパーやセルもまた供給することができます。
+ヘルパーやセルをテーマで使うときは、 :term:`プラグイン記法` を使い続ける必要があります。
 
-テーマを使うためには、コントローラの中でテーマ名を指定して下さい。 ::
+テーマを使うためには、コントローラのアクションをテーマ名にするか
+``beforeRender()`` をコールバックしてください。::
 
-    class ExampleController extends AppController {
-        public $theme = 'Example';
+    class ExamplesController extends AppController
+    {
+        // For CakePHP before 3.1
+        public $theme = 'Modern';
+
+        public function beforeRender(\Cake\Event\Event $event)
+        {
+            $this->viewBuilder()->theme('Modern');
+        }
     }
 
-.. versionchanged:: 2.1
-   バージョン2.1より前では、``$this->viewClass = 'Theme'`` という設定が必要でした。
-   2.1ではこの設定は不要になり、通常の ``View`` クラスがテーマをサポートします。
+テーマのテンプレートファイルは、同じ名前のプラグイン内にある必要があります。
+例えば、上記のテーマは **plugins/Modern/src/Template** で見つかるでしょう。
+CakePHP は plugin/theme の名前にキャメルケースを期待しています。これは大切な
+ことなので覚えておいてください。
+さらに **plugins/Modern/src/Template** の中のフォルダ構造は **src/Template/** と
+全く同じにしてください。
 
-またテーマの設定や変更はアクション、または ``beforeFilter`` や ``beforeRender`` などのコールバック関数の中から行えます。 ::
+例えば、Posts コントローラの edit アクションのためのビューファイルは
+**plugins/Modern/src/Template/Posts/edit.ctp** に配置されて、レイアウトファイルは
+**plugins/Modern/src/Template/Layout/** に配置されます。カスタマイズされた
+テンプレートにプラグイン・テーマを供給することもできます。
+TagsController を含んだ 'Cms' と名付けられたプラグインがある場合、テーマ Modern は
+edit テンプレートを **plugins/Modern/src/Template/Plugin/Cms/Tags/edit.ctp**
+に置き換えます。
 
-    $this->theme = 'AnotherExample';
-
-テーマのビューファイルは ``/app/View/Themed/`` フォルダに配置する必要があります。
-Themed フォルダの中にテーマ名のフォルダを作成して下さい。上記の例でいうと、テーマは
-``/app/View/Themed/AnotherExample`` に配置するかたちになります。
-これは大事なことなのですが、CakePHPはCamelCaseのテーマ名を期待しているということを覚えておいてください。
-さらに、``/app/View/Themed/Example/``
-以下は ``/app/View/`` と全く同じ構造にして下さい。
-
-例えば、Postsコントローラのeditアクションのためのビューファイルは ``/app/View/Themed/Example/Posts/edit.ctp``
-となります。また、レイアウトファイルは ``/app/View/Themed/Example/Layouts/`` に配置されます。
-
-
-ビューファイルがテーマに見つからない時、CakePHPは ``/app/View/`` フォルダの中を探します。
-これによって、マスタービューファイルを作成して、テーマフォルダには上書きが必要なファイルだけを配置すればよくなります。
+テーマの中にビューファイルを見つけられなかった場合、CakePHP はビューファイルを
+**src/Template/** に配置しようとします。この方法によって、マスターテンプレートファイルを
+作成して、テーマフォルダには上書きが必要なファイルだけを配置すればよくなります。
 
 テーマアセット
---------------
+==============
 
-テーマにはビューファイルのように静的なアセットを含めることができます。テーマはwebrootディレクトリにあるアセットをいくつでも必要なだけ読み込めます。
-その結果、テーマのパッケージングと配布は簡単になっています。開発中であってもテーマのアセットへのリクエストは
-:php:class:`Dispatcher` によってハンドリングされます。プロダクション環境でのパフォーマンスを改善するためには、
-テーマのアセットをアプリケーションのwebrootディレクトリにコピーするかシンボリックリンクを貼ることをお勧めします。
-詳しくは以下を参照して下さい。
+テーマは CakePHP の標準のプラグインなので、必要なアセットを webroot ディレクトリに
+含めることができます。これは、テーマの配布と容易なパッケージングを可能にさせます。
+開発中、テーマのアセットへのリクエストは :php:class:`Cake\\Routing\\Dispatcher` 
+によってハンドリングされます。プロダクション環境でパフォーマンスを改善するためには、
+:ref:`symlink-assets` を推奨します。
 
-新しいテーマのwebrootを使うには ``app/View/Themed/<themeName>/webroot<path_to_file>`` のようなディレクトリをテーマの中に作成して下さい。
-ディスパッチャはビューパスから正しいテーマのアセットの検索をハンドリングします。
 
-..
-  All of CakePHP's built-in helpers are aware of themes and will create the
-  correct paths automatically. Like view files, if a file isn't in the theme
-  folder, it will default to the main webroot folder::
+CakePHP の全ての組み込みヘルパーはテーマを認識しており、正確なパスを自動的に生成します。
+テンプレートファイル同様に、ファイルがテーマフォルダの中に無かったら
+メインの webroot フォルダをデフォルトにします。::
 
-CakePHPのすべての組み込みヘルパーはテーマに対応しており、自動的に正しいパスが作成されます。
-ビューファイルのようにテーマフォルダにファイルが無い場合、メインのwebrootフォルダがデフォルトととなります。 ::
-
-    //'purple_cupcake'という名前のテーマの時
+    // 'purple_cupcake'という名前のテーマの時
     $this->Html->css('main.css');
 
-    //パスの作成は以下の通り
-    /theme/purple_cupcake/css/main.css
+    // 以下のパスを生成する
+    /purple_cupcake/css/main.css
 
-    //リンク
-    app/View/Themed/PurpleCupcake/webroot/css/main.css
-
-プラグインとテーマアセットのパフォーマンスを改善する
-----------------------------------------------------
-
-PHPを通してアセットを提供するとPHPを通さずにアセットを提供した場合より確実に遅くなることはよく知られています。
-コアチームは出来るだけ速いプラグインとテーマのアセットを提供しようとコツコツと努力を重ねていますが、
-より高い性能が必要とされる状況はあるかもしれません。そのような状況では、シンボリックリンクを張るかプラグインとテーマのアセットを
-CakePHPによって使われている ``app/webroot`` のパスに一致するディレクトリにコピーすることが推奨されます。
-
--  ``app/Plugin/DebugKit/webroot/js/my_file.js`` は
-   ``app/webroot/debug_kit/js/my_file.js`` になります。
--  ``app/View/Themed/Navy/webroot/css/navy.css`` は
-   ``app/webroot/themed/Navy/css/navy.css`` になります。
+    // 以下をリンクする
+    plugins/PurpleCupcake/webroot/css/main.css
 
 
 .. meta::
-    :title lang=en: Themes
-    :keywords lang=en: production environments,theme folder,layout files,development requests,callback functions,folder structure,default view,dispatcher,symlink,case basis,layouts,assets,cakephp,themes,advantage
+    :title lang=ja: Themes
+    :keywords lang=ja: production environments,theme folder,layout files,development requests,callback functions,folder structure,default view,dispatcher,symlink,case basis,layouts,assets,cakephp,themes,advantage

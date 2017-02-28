@@ -2,7 +2,7 @@ Contribuindo
 ############
 
 Existem várias maneiras de contribuir com o CakePHP.
-As seções abaixo irão abordar estas formas de contribuição:
+As seções abaixo irão abordar essas formas de contribuição:
 
 .. toctree::
     :maxdepth: 1
@@ -15,4 +15,4 @@ As seções abaixo irão abordar estas formas de contribuição:
 
 .. meta::
     :title lang=pt: Contribuindo
-    :keywords lang=pt: contribuindo,open source,ajudando
+    :keywords lang=pt: contribuindo,open source,ajudando,documentação,doc,docs

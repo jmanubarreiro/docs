@@ -1,5 +1,15 @@
-Glossary
-########
+Glossário
+#########
+
+.. note::
+    Atualmente, a documentação desta página não é suportada em português.
+
+    Por favor, sinta-se a vontade para nos enviar um *pull request* para o
+    `Github <https://github.com/cakephp/docs>`_ ou use o botão
+    **IMPROVE THIS DOC** para propor suas mudanças diretamente.
+
+    Você pode consultar a versão em inglês deste tópico através do seletor de
+    idiomas localizado ao lado direito do campo de buscas da documentação.
 
 .. glossary::
 
@@ -18,7 +28,7 @@ Glossary
             // Would generate
             class="my-class" target="_blank"
 
-        If an option can be minimized or accepts it's name as the value, then ``true``
+        If an option can be minimized or accepts its name as the value, then ``true``
         can be used::
 
             // Given
@@ -27,7 +37,7 @@ Glossary
             // Would generate
             checked="checked"
 
-    plugin syntax
+    sintaxe plugin
         Plugin syntax refers to the dot separated class name indicating classes
         are part of a plugin::
 
@@ -74,7 +84,11 @@ Glossary
         to allow you to code things once and re-use them across your
         application.
 
+    PaaS
+        Platform as a Service. Platform as a Service providers will provide
+        cloud based hosting, database and caching resources. Some popular
+        providers include Heroku, EngineYard and PagodaBox
 
-.. meta::
-    :title lang=en: Glossary
-    :keywords lang=en: html attributes,array class,array controller,glossary glossary,target blank,dot notation,routing configuration,forgery,replay,router,syntax,config,submissions
+    DSN
+        Data Source Name. A connection string format that is formed like a URI.
+        CakePHP supports DSN's for Cache, Database, Log and Email connections.

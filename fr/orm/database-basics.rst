@@ -1,21 +1,139 @@
-Database Basics
-###############
+Notions de Base de Base de Données
+##################################
 
-L'ORM et l'accès à la base de données dans CakePHP a été totalement reconstruit
-pour 3.0. Il amène une nouvelle API pour la construction des requêtes, améliore
-le schéma reflection/génération, un type de système flexible et plus.
+La couche d'accès à la base de données de CakePHP fournit une abstraction et
+aide avec la plupart des aspects du traitement des bases de données
+relationnelles telles que, le maintien des connexions au serveur, la
+construction de requêtes, la protection contre les injections SQL, l'inspection
+et la modification des schémas, et avec le débogage et le profilage les requêtes
+envoyées à la base de données.
+
+Tour Rapide
+===========
+
+Les fonctions décrites dans ce chapitre illustrent les possibilités de l'API
+d'accès à la base de données de plus bas niveau. Si vous souhaitez plutôt en
+apprendre plus sur l'ORM complet, vous pouvez lire les sections portant sur le
+:doc:`/orm/query-builder` et :doc:`/orm/table-objects`.
+
+La manière la plus simple de créer une connexion à la base de données est
+d'utiliser une chaine ``DSN``::
+
+    use Cake\Datasource\ConnectionManager;
+
+    $dsn = 'mysql://root:password@localhost/my_database';
+    ConnectionManager::config('default', ['url' => $dsn]);
+
+Une fois créé, vous pouvez accéder à l'objet Connection pour commencer à
+l'utiliser::
+
+    $connection = ConnectionManager::get('default');
+
+Bases de Données Supportées
+---------------------------
+
+CakePHP supporte les serveurs de base de données relationnelles suivants:
+
+* MySQL 5.1+
+* SQLite 3
+* PostgreSQL 8+
+* SQLServer 2008+
+* Oracle (avec un plugin créé par la communauté)
+
+Pour chacun des drivers de base de données ci-dessus, assurez-vous d'avoir
+la bonne extension PDO installée. Les API procédurales ne sont pas supportées.
+
+La base de données Oracle est supportée via le
+`Driver pour les bases de données Oracle <https://github.com/CakeDC/cakephp-oracle-driver>`_ du plugin créé par la
+communauté.
+
+.. _running-select-statements:
+
+Exécuter des Instructions Select
+--------------------------------
+
+Exécuter une instruction SQL pur est un jeu d'enfant::
+
+    use Cake\Datasource\ConnectionManager;
+
+    $connection = ConnectionManager::get('default');
+    $results = $connection->execute('SELECT * FROM articles')->fetchAll('assoc');
+
+Vous pouvez utiliser des instructions préparées pour insérer des paramètres::
+
+    $results = $connection
+        ->execute('SELECT * FROM articles WHERE id = :id', ['id' => 1])
+        ->fetchAll('assoc');
+
+il est également possible d'utiliser des types de données complexes en tant
+qu'arguments::
+
+    $results = $connection
+        ->execute(
+            'SELECT * FROM articles WHERE created >= :created',
+            ['created' => DateTime('1 day ago')],
+            ['created' => 'datetime']
+        )
+        ->fetchAll('assoc');
+
+Au lieu d'écrire du SQL manuellement, vous pouvez utiliser le générateur de
+requêtes::
+
+    $results = $connection
+        ->newQuery()
+        ->select('*')
+        ->from('articles')
+        ->where(['created >' => new DateTime('1 day ago'), ['created' => 'datetime']])
+        ->order(['title' => 'DESC'])
+        ->execute()
+        ->fetchAll('assoc');
+
+Exécuter des Instructions Insert
+--------------------------------
+
+Insérer une ligne dans une base de données est habituellement l'affaire
+de quelques lignes::
+
+    use Cake\Datasource\ConnectionManager;
+
+    $connection = ConnectionManager::get('default');
+    $connection->insert('articles', [
+        'title' => 'A New Article',
+        'created' => new DateTime('now')
+    ], ['created' => 'datetime']);
+
+Exécuter des Instructions Update
+--------------------------------
+
+Mettre à jour une ligne de base de données est aussi intuitif, l'exemple suivant
+procédera à la mise à jour de l'article comportant l'**id** 10::
+
+    use Cake\Datasource\ConnectionManager;
+    $connection = ConnectionManager::get('default');
+    $connection->update('articles', ['title' => 'New title'], ['id' => 10]);
+
+Exécuter des Instructions Delete
+--------------------------------
+
+De même, la méthode ``delete()`` est utilisée pour supprimer des lignes de la
+base de données, l'exemple suivant procédera à suppression de l'article
+comportant l'**id** 10::
+
+    use Cake\Datasource\ConnectionManager;
+    $connection = ConnectionManager::get('default');
+    $connection->delete('articles', ['id' => 10]);
 
 .. _database-configuration:
 
 Configuration
 =============
 
-Par convention, les connections de la base de données sont configurées dans
-``config/app.php``. L'information de la connection définie dans ce fichier
-se trouve dans :php:class:`Cake\\DataSource\\ConnectionManager` en créant la
-configuration de la connection de votre application sera utilisée. L'information
-de la connection d'Exemple peut être trouvé dans ``config/app.default.php``.
-Une configuration de connection d'exemple ressemblera à ceci::
+Par convention, les connexions à la base de données sont configurées dans
+**config/app.php**. L'information de connexion définie dans ce fichier
+est envoyée au :php:class:`Cake\\DataSource\\ConnectionManager` créant la
+configuration de la connexion que votre application utilisera. Un exemple
+d'information sur la connexion se trouve dans **config/app.default.php**.
+Un exemple d'information sur la configuration ressemblera à ceci::
 
     'Datasources' => [
         'default' => [
@@ -23,18 +141,18 @@ Une configuration de connection d'exemple ressemblera à ceci::
             'driver' => 'Cake\Database\Driver\Mysql',
             'persistent' => false,
             'host' => 'localhost',
-            'login' => 'my_app',
+            'username' => 'my_app',
             'password' => 'sekret',
             'database' => 'my_app',
-            'prefix' => false,
             'encoding' => 'utf8',
-            'timezone' => 'UTC'
+            'timezone' => 'UTC',
+            'cacheMetadata' => true,
         ]
     ],
 
-Ce qui est au-dessus va créer une connection 'default', avec les paramètres
-fournies. Vous pouvez définir autant de connections que vous le souhaitez dans
-votre fichier de configuration. Vous pouvez aussi définir le connections
+Ce qui est au-dessus va créer une connexion 'default', avec les paramètres
+fournis. Vous pouvez définir autant de connexions que vous le souhaitez dans
+votre fichier de configuration. Vous pouvez aussi définir des connexions
 supplémentaires à la volée en utilisant
 :php:meth:`Cake\\DataSource\\ConnectionManager::config()`. Un exemple de ceci
 serait::
@@ -46,190 +164,227 @@ serait::
         'driver' => 'Cake\Database\Driver\Mysql',
         'persistent' => false,
         'host' => 'localhost',
-        'login' => 'my_app',
+        'username' => 'my_app',
         'password' => 'sekret',
         'database' => 'my_app',
-        'prefix' => false,
         'encoding' => 'utf8',
-        'timezone' => 'UTC'
+        'timezone' => 'UTC',
+        'cacheMetadata' => true,
     ]);
 
-Par défaut, tous les objets Table vont utiliser la connection ``default``. Pour
-utiliser une connection non-default, regardez
-:ref:`configuring-table-connections`.
+Les options de configuration peuvent également être fournies en tant que chaine
+:term:`DSN`. C'est utile lorsque vous travaillez avec des variables
+d'environnement ou des fournisseurs :term:`PaaS`::
 
-Il y a un certain nombre de clés supportés dans la configuration de la base
-de données. Une liste complète est comme suit:
+    ConnectionManager::config('default', [
+        'url' => 'mysql://my_app:sekret@localhost/my_app?encoding=utf8&timezone=UTC&cacheMetadata=true',
+    ]);
+
+Lorsque vous utilisez une chaine DSN, vous pouvez définir des paramètres/options
+supplémentaires en tant qu'arguments de query string.
+
+Par défaut, tous les objets Table vont utiliser la connexion ``default``. Pour
+utiliser une autre connexion, reportez-vous à
+:ref:`la configuration des connexions<configuring-table-connections>`.
+
+Il y a un certain nombre de clés supportées dans la configuration de la base
+de données. Voici la liste complète:
 
 className
-    Le nom de la classe du driver utilisée pour faire fonctionner la connection.
-    Ceci peut être soit un nom de classe court en utilisant
-    :term:`syntaxe de plugin`, un nom complet en namespace, soit être une instance
-    de driver construite. Les exemples de noms de classe court sont Mysql,
-    Sqlite, Postgres, et Sqlserver.
+    Nom de classe complète (incluant le *namespace*) de la classe qui
+    représente une connexion au serveur de base de données.
+    Cette classe a pour rôle de charger le driver de base de données, de
+    fournir les mécanismes de transaction et de préparer les requêtes SQL
+    (entres autres choses).
+driver
+    Le nom de la classe du driver utilisée pour implémenter les spécificités
+    du moteur de base de données. Cela peut être soit un nom de classe court
+    en utilisant la :term:`syntaxe de plugin`, un nom complet en namespace,
+    soit être une instance de driver construite. Les exemples de noms de classe
+    courts sont Mysql, Sqlite, Postgres, et Sqlserver.
 persistent
-    S'il faut utiliser ou non une connection persistente à la base de données.
+    S'il faut utiliser ou non une connexion persistante à la base de données.
 host
     Le nom d'hôte du serveur de base de données (ou une adresse IP).
-login
-    L'username pour votre compte.
+username
+    Le nom d'utilisateur pour votre compte.
 password
     Le mot de passe pour le compte.
 database
-    Le nom de la base de données pour cette connection à utiliser.
-port (*optional*)
+    Le nom de la base de données à utiliser pour cette connexion. Éviter
+    d'utiliser ``.`` dans votre nom de base de données. Comme cela complique
+    l'identifier quoting, CakePHP ne supporte pas ``.`` dans les noms de base de
+    données.
+port (*optionnel*)
     Le port TCP ou le socket Unix utilisé pour se connecter au serveur.
 encoding
-    Indique le character set à utiliser lors de l'envoi de statements SQL au
-    serveur. Ceci est par défaut à l'encodage par défaut de la base de données
-    pout toutes les bases de données autres que DB2. Si vous souhaitez utiliser
-    l'encodage UTF-8 avec les connections mysql, vous devez utiliser
+    Indique le jeu de caractères à utiliser lors de l'envoi d'instructions SQL
+    au serveur. L'encodage par défaut est celui de la base de données
+    pour toutes les bases de données autres que DB2. Si vous souhaitez utiliser
+    l'encodage UTF-8 avec les connexions MySQL, vous devez utiliser
     'utf8' sans trait d'union.
 timezone
-    La définition du timezone du Serveur.
+    La définition du timezone du serveur.
 schema
-    Utilisé dans la base de données dans les configurations de la base de
-    données PostgreSQL pour spécifier le schema à utiliser.
+    Utilisé pour spécifier le schema à utiliser pour les bases de données
+    PostgreSQL.
 unix_socket
     Utilisé par les drivers qui le supportent pour se connecter via les fichiers
-    socket Unix. Si vous utilisez Postgres et voulez utiliser les sockets Unix,
-    laissez clé host vide.
+    socket Unix. Si vous utilisez PostgreSQL et que vous voulez utiliser les
+    sockets Unix, laissez la clé host vide.
 ssl_key
-    Le chemin du fichier vers la clé du fichier SSL. (supporté seulement par MySQL).
+    Le chemin du fichier vers la clé du fichier SSL. (supporté seulement par
+    MySQL).
 ssl_cert
-    Le chemin du fichier vers le fichier du certificat SSL. (supporté seulement par MySQL).
+    Le chemin du fichier vers le fichier du certificat SSL. (supporté seulement
+    par MySQL).
 ssl_ca
-    Le chemin du fichier vers l'autorité de certification SSL. (supporté seulement par MySQL).
+    Le chemin du fichier vers l'autorité de certification SSL. (supporté
+    seulement par MySQL).
 init
     Une liste de requêtes qui doivent être envoyées au serveur de la base de
-    données lorsque la connection est créée. Cette options est seulement
-    supportée seuelemement par le Serveur MySQL, Postgres, et SQL cette fois-ci.
-dsn
-    Un nom de source de données compatible totalement avec PDO.
+    données lorsque la connexion est créée.
 log
-    Défini à true pour activer les logs des requêtes. Quand les requêtes sont
-    activées, elles seront écrites à un niveau ``debug`` avec le scope
+    Défini à ``true`` pour activer les logs des requêtes. Si activé,
+    les requêtes seront écrites au niveau ``debug`` avec le scope
     ``queriesLog``.
 quoteIdentifiers
-    Défini à true si vous utilisez les mots réservés ou les caractères spéciaux
-    avec les noms de votre table ou les noms de colonnes. Activer cette
-    configuration va entraîner la construction des requêtes en utilisant
-    :ref:`query-builder` avec les identifiers quotés lors de la création de SQL.
-    Cela devrait être noté que ceci diminue la performance parce que chaque
-    requête a besoin d'être traversée et manipulée avant d'être executée.
+    Défini à ``true`` si vous utilisez les mots réservés ou les caractères
+    spéciaux avec les noms de tables ou de colonnes. Activer
+    cette configuration va entraîner la construction des requêtes en utilisant
+    le :doc:`/orm/query-builder` avec les identifiers quotés lors de la création
+    de SQL. Notez que ceci diminue la performance parce que chaque requête a
+    besoin d'être traversée et manipulée avant d'être exécutée.
 flags
     Un tableau associatif de constantes PDO qui doivent être passées
-    à l'instance PDO soulignée. Regardez la documentation de PDO pour les flags
-    supportés par le driver que vous utilisez.
+    à l'instance PDO sous-jacente. Regardez la documentation de PDO pour les
+    flags supportés par le driver que vous utilisez.
+cacheMetadata
+    Soit un booléen ``true``, soit une chaîne contenant la configuration du
+    cache pour stocker les meta données. Désactiver la mise en cache des
+    metadata n'est pas conseillé et peut entraîner de faibles performances.
+    Consultez la section sur :ref:`database-metadata-cache` pour plus
+    d'information.
 
-A ce moment-là, vous pouvez aller voir
+Au point où nous sommes, vous pouvez aller voir
 :doc:`/intro/conventions`. Le nommage correct pour vos
-tables (et l'ajout de quelques colonnes) peut vous faire gagner une
-fonctionnalité gratuite et vous aider à éviter la configuration. Par
+tables (et pour quelques colonnes) peut vous offrir des
+fonctionnalités gratuites et vous aider à éviter la configuration. Par
 exemple, si vous nommez votre table de base de données big\_boxes, votre table
 BigBoxesTable, et votre controller BigBoxesController, tout fonctionnera
-ensemble automatiquement. Par convention, utiliser les underscores, les
-minuscules et les formes pluriels pour vos noms de table de la base de données
-) par exemple: bakers, pastry\_stores, et savory\_cakes.
+ensemble automatiquement. Par convention, utilisez les underscores, les
+minuscules et les formes plurielles pour vos noms de table de la base de
+données - par exemple: bakers, pastry\_stores, et savory\_cakes.
 
 .. php:namespace:: Cake\Datasource
 
-Gérer les Connections
-=====================
+Gérer les Connexions
+====================
 
 .. php:class:: ConnectionManager
 
-La classe ``ConnectionManager`` agit comme un registry pour accéder aux
-connections à base de données que votre application fait. Elle fournit un
-endroit où les autres objets peuvent obtenir des références à des connections
+La classe ``ConnectionManager`` agit comme un registre pour accéder aux
+connexions à la base de données que votre application. Elle fournit
+un endroit où les autres objets peuvent obtenir des références aux connexions
 existantes.
 
-Accéder à des Connections
--------------------------
+Accéder à des Connexions
+------------------------
 
 .. php:staticmethod:: get($name)
 
-Une fois configurées, les connections peuvent être récupérées en utilisant
+Une fois configurées, les connexions peuvent être récupérées en utilisant
 :php:meth:`Cake\\Datasource\\ConnectionManager::get()`. Cette méthode va
-construire et charger une connection si elle n'a pas été déjà construite
-avant, ou retourner la connextion connue existante::
+construire et charger une connexion si elle n'a pas été déjà construite
+avant, ou retourner la connexion connue existante::
 
     use Cake\Datasource\ConnectionManager;
 
     $conn = ConnectionManager::get('default');
 
-La tentative de chargement de connections qui n'existent pas va lancer une
+La tentative de chargement de connexions qui n'existent pas va lancer une
 exception.
 
-Créer des Connections à l'execution
------------------------------------
+Créer des Connexions à l'exécution
+----------------------------------
 
-.. php:staticmethod:: create($name, $config)
+En utilisant ``config()`` et ``get()`` vous pouvez créer à tout moment de
+nouvelles connexions qui ne sont pas défines dans votre fichier de
+configuration::
 
-La méthode ``create`` vous permet de définir des nouvelles connections qui
-ne sont pas définies dans vos fichiers de configuration à l'execution::
+    ConnectionManager::config('my_connection', $config);
+    $conn = ConnectionManager::get('my_connection');
 
-    $conn = ConnectionManager::create('my_connection', $config);
-
-Regarder :ref:`database-configuration` pour plus d'informations sur la
-configuration de données utilisée lors de la création de connections.
-
-.. php:namespace:: Cake\Database
+Consultez le chapitre sur la :ref:`configuration <database-configuration>`
+pour plus d'informations sur les données de configuration utilisées lors de
+la création de connexions.
 
 .. _database-data-types:
+
+.. php:namespace:: Cake\Database
 
 Types de Données
 ================
 
 .. php:class:: Type
 
-Puisque tout vendor de base de données n'inclut pas la même définition des types
-de données, ou les mêmes noms pour des types de données similaires, CakePHP
-fournit un ensemble de types de données abstraites à utiliser avec la
-couche de la base de données. Les types que CakePHP supporte sont:
+Puisque tous les fournisseurs de base de données n'intègrent pas la même
+définition des types de données, ou les mêmes noms pour des types de données
+similaires, CakePHP fournit un ensemble de types de données abstraites à
+utiliser avec la couche de la base de données. Les types supportés par CakePHP
+sont:
 
 string
-    Généralement backed by CHAR or VARCHAR columns. Utiliser l'option ``fixed``
-    va forcer une colonne CHAR. Dans SQLServer, les types NCHAR et NVARCHAR sont
-    utilisés.
+    Généralement construit en colonnes CHAR ou VARCHAR. Utiliser l'option
+    ``fixed`` va forcer une colonne CHAR. Dans SQL Server, les types NCHAR et
+    NVARCHAR sont utilisés.
 text
-    Maps vers les types TEXT
+    Correspond aux types TEXT.
 uuid
-    Maps vers le type UUID si une base de données en fournit un, sinon cela
+    Correspond au type UUID si une base de données en fournit un, sinon cela
     générera un champ CHAR(36).
 integer
-    Maps vers le type INTEGER fourni par la base de données.
+    Correspond au type INTEGER fourni par la base de données. BIT n'est pour
+    l'instant pas supporté.
 biginteger
-    Maps vers le type BIGINT fourni par la base de données.
+    Correspond au type BIGINT fourni par la base de données.
 float
-    Maps soit vers DOUBLE, soit vers FLOAT selon la base de données.
-    L'option ``precision`` peut être utilisée pour définir la précision utilisée.
+    Correspond soit à DOUBLE, soit à FLOAT selon la base de données.
+    L'option ``precision`` peut être utilisée pour définir la précision
+    utilisée.
 decimal
-    Maps vers le type DECIMAL. Supporte les options ``length`` et  ``precision``.
+    Correspond au type DECIMAL. Supporte les options ``length`` et
+    ``precision``.
 boolean
-    Maps vers BOOLEAN à part pour MySQL, où TINYINT(1) est utilisé pour
-    représenter les boléens.
+    Correspond au BOOLEAN sauf pour MySQL, où TINYINT(1) est utilisé pour
+    représenter les booléens. BIT(1) n'est pour l'instant pas supporté.
 binary
-    Maps vers le type BLOB ou BYTEA fourni par la base de données.
+    Correspond au type BLOB ou BYTEA fourni par la base de données.
 date
-    Maps vers un type de colonne DATE sans timezone.
+    Correspond au type de colonne DATE sans timezone. La valeur de retour de ce
+    type de colonne est :php:class:`Cake\\I18n\\Date` qui étend la classe
+    native ``DateTime``.
 datetime
-    Maps vers un type de colonne DATETIME sans timezone. Dans postgres et
-    SQLServer, ceci retourne un type TIMESTAMP. The default return value of this
-    column type is :php:class:`Cake\\Utility\\Time` which extends the built-in
-    ``DateTime`` class and `Carbon <https://github.com/briannesbitt/Carbon>`_.
+    Correspond au type de colonne DATETIME sans timezone. Dans PostgreSQL et
+    SQL Server, ceci retourne un type TIMESTAMP. La valeur retournée par défaut
+    de ce type de colonne est :php:class:`Cake\\I18n\\Time` qui étend
+    les classes intégrées ``DateTime`` et
+    `Chronos <https://github.com/cakephp/chronos>`_.
 timestamp
-    Maps vers le type TIMESTAMP.
+    Correspond au type TIMESTAMP.
 time
-    Maps vers un type TIME dans toutes les bases de données.
+    Correspond au type TIME dans toutes les bases de données.
+json
+    Correspond au type JSON s'il est disponible, sinon il correspond à TEXT. Le
+    type 'json' a été ajouté dans la version 3.3.0.
 
-Ces types sont utilisés pour les fonctionnalités de reflection de schema que
-CakePHP fournit, et les fonctionnalités de génération de schema que CakePHP
-utilise lors des fixtures de test.
+Ces types sont utilisés à la fois pour les fonctionnalités de reflection de
+schema fournies par CakePHP, et pour les fonctionnalités de génération de schema
+que CakePHP utilise lors des fixtures de test.
 
 Chaque type peut aussi fournir des fonctions de traduction entre les
 représentations PHP et SQL. Ces méthodes sont invoquées selon le type hints
-fourni lorsque les queries sont faites. Par exemple une colonne qui est marquée
+fourni lorsque les requêtes sont faites. Par exemple une colonne qui est marquée
 en 'datetime' va automatiquement convertir les paramètres d'input d'instances
 ``DateTime`` en timestamp ou chaines de dates formatées. Egalement, les
 colonnes 'binary' vont accepter un fichier qui gère, et génère le fichier lors
@@ -242,43 +397,66 @@ Ajouter des Types Personnalisés
 
 .. php:staticmethod:: map($name, $class)
 
-Si vous avez besoin d'utiliser des types de vendor spécifiques qui ne sont pas
-construit dans CakePHP, vous pouvez ajouter des nouveaux types supplémentaires
+Si vous avez besoin d'utiliser des types spécifiques qui ne sont pas
+fournis CakePHP, vous pouvez ajouter des nouveaux types supplémentaires
 au système de type de CakePHP. Ces classes de type s'attendent à implémenter
 les méthodes suivantes:
 
 * toPHP
 * toDatabase
 * toStatement
+* marshal
 
 Une façon facile de remplir l'interface basique est d'étendre
-:php:class:`Cake\Database\Type`. Par exemple, si vous souhaitez ajouter un type
-JSON, nous pourrions faire la classe type suivante::
+:php:class:`Cake\\Database\\Type`. Par exemple, si vous souhaitez ajouter un
+type JSON, nous pourrions faire la classe type suivante::
+
+    // Dans src/Database/Type/JsonType.php
 
     namespace App\Database\Type;
 
     use Cake\Database\Driver;
     use Cake\Database\Type;
+    use PDO;
 
-    class JsonType extends Type {
+    class JsonType extends Type
+    {
 
-        public function toPHP($value, Driver $driver) {
+        public function toPHP($value, Driver $driver)
+        {
             if ($value === null) {
                 return null;
             }
             return json_decode($value, true);
         }
 
-        public function toDatabase($value, Driver $driver) {
+        public function marshal($value)
+        {
+            if (is_array($value) || $value === null) {
+                return $value;
+            }
+            return json_decode($value, true);
+        }
+
+        public function toDatabase($value, Driver $driver)
+        {
             return json_encode($value);
+        }
+
+        public function toStatement($value, Driver $driver)
+        {
+            if ($value === null) {
+                return PDO::PARAM_NULL;
+            }
+            return PDO::PARAM_STR;
         }
 
     }
 
 Par défaut, la méthode ``toStatement`` va traiter les valeurs en chaines qui
 vont fonctionner pour notre nouveau type. Une fois que nous avons créé notre
-nouveau type, nous avons besoin de l'ajouter dans le mapping de type. Pendant
-le bootstrap de notre application, nous devrions faire ce qui suit::
+nouveau type, nous avons besoin de l'ajouter dans la correspondance de type.
+Pendant le bootstrap de notre application, nous devrions faire ce qui suit::
 
     use Cake\Database\Type;
 
@@ -286,40 +464,186 @@ le bootstrap de notre application, nous devrions faire ce qui suit::
 
 Nous pouvons ensuite surcharger les données de schema reflected pour utiliser
 notre nouveau type, et la couche de base de données de CakePHP va
-automatiquement convertir notre données JSON lors de la création de queries.
+automatiquement convertir nos données JSON lors de la création de requêtes.
+Vous pouvez utiliser les types personnalisés créés en faisant la correspondance
+des types dans la :ref:`méthode _initializeSchema() <saving-complex-types>` de
+votre Table::
+
+    use Cake\Database\Schema\Table as Schema;
+
+    class WidgetsTable extends Table
+    {
+
+        protected function _initializeSchema(Schema $schema)
+        {
+
+            $schema->columnType('widget_prefs', 'json');
+            return $schema;
+        }
+
+    }
+
+.. _mapping-custom-datatypes-to-sql-expressions:
+
+Mapping Custom Datatypes to SQL Expressions
+--------------------------------------------
+
+.. versionadded:: 3.3.0
+    Support for mapping custom data types to SQL expressions was added in 3.3.0.
+
+The previous example maps a custom datatype for a 'json' column type which is
+easily represented as a string in a SQL statement. Complex SQL data
+types cannot be represented as strings/integers in SQL queries. When working
+with these datatypes your Type class needs to implement the
+``Cake\Database\Type\ExpressionTypeInterface`` interface. This interface lets
+your custom type represent a value as a SQL expression. As an example, we'll
+build a simple Type class for handling ``POINT`` type data out of MySQL. First
+we'll define a 'value' object that we can use to represent ``POINT`` data in
+PHP::
+
+    // in src/Database/Point.php
+    namespace App\Database;
+
+    // Our value object is immutable.
+    class Point
+    {
+        protected $_lat;
+        protected $_long;
+
+        // Factory method.
+        public static function parse($value)
+        {
+            // Parse the data from MySQL.
+            return new static($value[0], $value[1]);
+        }
+
+        public function __construct($lat, $long)
+        {
+            $this->_lat = $lat;
+            $this->_long = $long;
+        }
+
+        public function lat()
+        {
+            return $this->_lat;
+        }
+
+        public function long()
+        {
+            return $this->_long;
+        }
+    }
+
+With our value object created, we'll need a Type class to map data into this
+value object and into SQL expressions::
+
+    namespace App\Database\Type;
+
+    use App\Database\Point;
+    use Cake\Database\Expression\FunctionExpression;
+    use Cake\Database\Type as BaseType;
+    use Cake\Database\Type\ExpressionTypeInterface;
+
+    class PointType extends BaseType implements ExpressionTypeInterface
+    {
+        public function toPHP($value, Driver $d)
+        {
+            return Point::parse($value);
+        }
+
+        public function marshal($value)
+        {
+            if (is_string($value)) {
+                $value = explode(',', $value);
+            }
+            if (is_array($value)) {
+                return new Point($value[0], $value[1]);
+            }
+            return null;
+        }
+
+        public function toExpression($value)
+        {
+            if ($value instanceof Point) {
+                return new FunctionExpression(
+                    'POINT',
+                    $value->lat(),
+                    $value->long()
+                );
+            }
+            if (is_array($value)) {
+                return new FunctionExpression('POINT', $value[0], $value[1]);
+            }
+            // Handle other cases.
+        }
+    }
+
+The above class does a few interesting things:
+
+* The ``toPHP`` method handles parsing the SQL query results into a value
+  object.
+* The ``marshal`` method handles converting, data such as given request data, into our value object.
+  We're going to accept string values like ``'10.24,12.34`` and arrays for now.
+* The ``toExpression`` method handles converting our value object into the
+  equivalent SQL expressions. In our example the resulting SQL would be
+  something like ``POINT(10.24, 12.34)``.
+
+Once we've built our custom type, we'll need to :ref:`connect our type
+to our table class <saving-complex-types>`.
+
+.. _immutable-datetime-mapping:
+
+Activer les Objets DateTime Immutables
+--------------------------------------
+
+.. versionadded:: 3.2
+    les objets date/heure immutables ont été ajoutés en 3.2.
+
+Puisque les objets Date/Time sont facilement mutables en place, CakePHP vous
+permet d'activer les objets immutables. le meilleur endroit pour cela est le
+fichier **config/bootstrap.php** ::
+
+    Type::build('datetime')->useImmutable();
+    Type::build('date')->useImmutable();
+    Type::build('time')->useImmutable();
+    Type::build('timestamp')->useImmutable();
+
+.. note::
+    Les nouvelles applications auront les objets immutables activés par défaut.
 
 Les Classes de Connection
 =========================
 
 .. php:class:: Connection
 
-Les classes de Connection fournissent une interface simple pour intéragir avec
-les connections à la base de données d'une façon pratique. Elles ont pour
+Les classes de Connection fournissent une interface simple pour interagir avec
+les connexions à la base de données d'une façon pratique. Elles ont pour
 objectif d'être une interface plus abstraite à la couche de driver et de fournir
-des fonctionnalités pour l'execution des queries, le logging des queries, et
+des fonctionnalités pour l'exécution des requêtes, le logging des requêtes, et
 de faire des opérations transactionnelles.
 
 .. _database-queries:
 
-L'execution de Queries
-----------------------
+L'exécution des Requêtes
+------------------------
 
 .. php:method:: query($sql)
 
-Une fois que vous avez un objet connection, vous voudrez probablement réaliser
-quelques queries avec. La couche d'abstraction de CakePHP fournit des
-fonctionnalités de wrapper au-dessus de PDO et des drivers natifs. Ces wrappers
+Une fois que vous avez un objet Connection, vous voudrez probablement réaliser
+quelques requêtes avec. La couche d'abstraction de CakePHP fournit des
+fonctionnalités au-dessus de PDO et des drivers natifs. Ces fonctionnalités
 fournissent une interface similaire à PDO. Il y a quelques différentes façons
-de lancer les queries selon le type de query que vous souhaitez lancer et
+de lancer les requêtes selon le type de requête que vous souhaitez lancer et
 selon le type de résultats que vous souhaitez en retour. La méthode la plus
-basique est ``query()`` qui vous permet de lancer des queries SQL déjà complètes::
+basique est ``query()`` qui vous permet de lancer des requêtes SQL déjà
+complètes::
 
     $stmt = $conn->query('UPDATE posts SET published = 1 WHERE id = 2');
 
 .. php:method:: execute($sql, $params, $types)
 
-La méthode ``query`` ne permet pas des paramètres supplémentaires. Si vous
-avez besoin de paramètres supplémentaires, vous devriez utiliser la méthode
+La méthode ``query`` n'accepte pas de paramètres supplémentaires. Si vous
+avez besoin de paramètres supplémentaires, vous devrez utiliser la méthode
 ``execute()``, ce qui permet aux placeholders d'être utilisés::
 
     $stmt = $conn->execute(
@@ -327,7 +651,7 @@ avez besoin de paramètres supplémentaires, vous devriez utiliser la méthode
         [1, 2]
     );
 
-Sans aucune typage des informations, ``execute`` va supposer que tous les
+Sans aucun typage des informations, ``execute`` va supposer que tous les
 placeholders sont des chaînes de valeur. Si vous avez besoin de lier des types
 spécifiques de données, vous pouvez utiliser leur nom de type abstrait lors
 de la création d'une requête::
@@ -342,13 +666,13 @@ de la création d'une requête::
 
 Cela vous permet d'utiliser des types de données riches dans vos applications
 et de les convertir convenablement en instructions SQL. La dernière manière
-la plus flexible de créer des requêtes est d'utiliser :ref:`query-builder`.
-Cette approche vous permet de construire des requêtes expressive complexes sans
+la plus flexible de créer des requêtes est d'utiliser :doc:`/orm/query-builder`.
+Cette approche vous permet de construire des requêtes expressives complexes sans
 avoir à utiliser une plateforme SQL spécifique::
 
     $query = $conn->newQuery();
     $query->update('posts')
-        ->set(['publised' => true])
+        ->set(['published' => true])
         ->where(['id' => 2]);
     $stmt = $query->execute();
 
@@ -375,10 +699,10 @@ démarrer l'itération sur l'ensemble des résultats::
 Utiliser les Transactions
 -------------------------
 
-Les objets de connection vous fournissent quelques manières simples pour que
+Les objets de connexion vous fournissent quelques manières simples pour que
 vous fassiez des transactions de base de données. La façon la plus basique de
-faire des transactions est via les méthodes ``begin``, ``commit`` et
-``rollback``, qui correspondent à leurs equivalents SQL::
+faire des transactions est avec les méthodes ``begin``, ``commit`` et
+``rollback``, qui correspondent à leurs équivalents SQL::
 
     $conn->begin();
     $conn->execute('UPDATE posts SET published = ? WHERE id = ?', [true, 2]);
@@ -387,18 +711,18 @@ faire des transactions est via les méthodes ``begin``, ``commit`` et
 
 .. php:method:: transactional(callable $callback)
 
-En plus de cette interface, les instances de connection fournissent aussi la
+En plus de cette interface, les instances de connexion fournissent aussi la
 méthode ``transactional`` ce qui simplifie la gestion des appels
 begin/commit/rollback::
 
-    $conn->transactional(function($conn) {
+    $conn->transactional(function ($conn) {
         $conn->execute('UPDATE posts SET published = ? WHERE id = ?', [true, 2]);
         $conn->execute('UPDATE posts SET published = ? WHERE id = ?', [false, 4]);
     });
 
-En plus des requêtes basiques, vous pouvez executer des requêtes plus complexes
-en utilisant soit :ref:`query-builder`, soit :ref:`table-objects`. La méthode
-transactional fera ce qui suit:
+En plus des requêtes basiques, vous pouvez exécuter des requêtes plus complexes
+en utilisant soit :doc:`/orm/query-builder`, soit :doc:`/orm/table-objects`. La
+méthode transactionnelle fera ce qui suit:
 
 - Appel de ``begin``.
 - Appelle la fermeture fournie.
@@ -410,12 +734,12 @@ transactional fera ce qui suit:
 Interagir avec les Requêtes
 ===========================
 
-Lors de l'utilisation de bas niveau de l'API, vous rencontrerez souvent des
+Lors de l'utilisation de l'API de plus bas niveau, vous rencontrerez souvent des
 objets statement (requête). Ces objets vous permettent de manipuler les
-requêtes préparées sous-jacentes du driver. Après avoir créé et executé un objet
+requêtes préparées sous-jacentes du driver. Après avoir créé et exécuté un objet
 query, ou en utilisant ``execute()``, vous devriez avoir une instance
-``StatementDecorator``. Elle enveloppe l'objet statement basique sous-jacent
-et fournit quelques fonctionnalités supplémentaires.
+``StatementDecorator``. Elle enveloppe l'objet statement (instruction) basique
+sous-jacent et fournit quelques fonctionnalités supplémentaires.
 
 Préparer une Requête
 --------------------
@@ -423,7 +747,7 @@ Préparer une Requête
 Vous pouvez créer un objet statement (requête) en utilisant ``execute()``, ou
 ``prepare()``. La méthode ``execute()`` retourne une requête avec les valeurs
 fournies en les liant à lui. Alors que ``prepare()`` retourne une requête
-incomplet::
+incomplète::
 
     // Les requêtes à partir de execute auront des valeurs leur étant déjà liées.
     $stmt = $conn->execute(
@@ -432,11 +756,11 @@ incomplet::
     );
 
     // Les Requêtes à partir de prepare seront des paramètres pour les placeholders.
-    // Vous avez besoin de lier les paramètres avant d'essayer de l'executer.
+    // Vous avez besoin de lier les paramètres avant d'essayer de l'exécuter.
     $stmt = $conn->prepare('SELECT * FROM articles WHERE published = ?');
 
 Une fois que vous avez préparé une requête, vous pouvez lier les données
-supplémentaires et l'executer.
+supplémentaires et l'exécuter.
 
 Lier les Valeurs
 ----------------
@@ -457,8 +781,8 @@ en utilisant ``bindValue``::
     );
 
     // Lier une valeur unique
-    $stmt->bindValue(0, true, 'boolean');
-    $stmt->bindValue(1, new DateTime('2013-01-01'), 'date');
+    $stmt->bindValue(1, true, 'boolean');
+    $stmt->bindValue(2, new DateTime('2013-01-01'), 'date');
 
 Lors de la création de requêtes, vous pouvez aussi utiliser les clés nommées
 de tableau plutôt que des clés de position::
@@ -486,8 +810,8 @@ Executer & Récupérer les Colonnes
 ---------------------------------
 
 Après la préparation d'une requête et après avoir lié les données à celle-ci,
-vous pouvez l'executer et récupérer les lignes. Les requêtes devront être
-executées en utilisant la méthode ``execute()``. Une fois executée, les
+vous pouvez l'exécuter et récupérer les lignes. Les requêtes devront être
+exécutées en utilisant la méthode ``execute()``. Une fois exécutée, les
 résultats peuvent être récupérés en utilisant ``fetch()``, ``fetchAll()`` ou
 en faisant une itération de la requête::
 
@@ -513,7 +837,7 @@ en faisant une itération de la requête::
 Récupérer les Compteurs de Ligne
 --------------------------------
 
-Après avoir executé une requête, vous pouvez récupérer le nombre de lignes
+Après avoir exécuté une requête, vous pouvez récupérer le nombre de lignes
 affectées::
 
     $rowCount = count($stmt);
@@ -530,39 +854,38 @@ méthodes fonctionnent de la même façon que celles fournies par PDO::
     $code = $stmt->errorCode();
     $info = $stmt->errorInfo();
 
-.. todo::
-    Possibly document CallbackStatement and BufferedStatement
+.. _database-query-logging:
 
-Logging de Query
-================
+Faire des Logs de Requête
+=========================
 
-Le logging de Query peut être activé lors de la configuration de votre
-connection en définissant l'option ``log`` à true. Vous pouvez changer le
-logging de query à la volée, en utlisant ``logQueries``::
+Le logs de Requête peuvent être activés lors de la configuration de votre
+connexion en définissant l'option ``log`` à ``true``. Vous pouvez changer le
+log de requête à la volée, en utilisant ``logQueries``::
 
-    // Active le logging de query.
+    // Active les logs des requêtes.
     $conn->logQueries(true);
 
-    // Stoppe le logging de query
+    // Stoppe les logs des requêtes
     $conn->logQueries(false);
 
-Quand le logging de query est activé, les requêtes seront logged dans
+Quand les logs des requêtes sont activés, les requêtes sont enregistrées dans
 :php:class:`Cake\\Log\\Log` en utilisant le niveau de 'debug', et le scope
 de 'queriesLog'. Vous aurez besoin d'avoir un logger configuré pour capter
-ces niveau & scope. Logging vers ``stderr`` peut être utile lorsque vous
-travaillez sur les tests unitaires, et le logging de fichiers/syslog peut être
-utile lorsque vous travaillez avec des requêtes web::
+ce niveau & scope. Faire des logs vers ``stderr`` peut être utile lorsque vous
+travaillez sur les tests unitaires, et les logs de fichiers/syslog peuvent être
+utiles lorsque vous travaillez avec des requêtes web::
 
     use Cake\Log\Log;
 
-    // Console logging
+    // Logs de la Console
     Log::config('queries', [
         'className' => 'Console',
         'stream' => 'php://stderr',
         'scopes' => ['queriesLog']
     ]);
 
-    // File logging
+    // Logs des Fichiers
     Log::config('queries', [
         'className' => 'File',
         'file' => 'queries.log',
@@ -571,34 +894,35 @@ utile lorsque vous travaillez avec des requêtes web::
 
 .. note::
 
-    Query logging est seulement à utiliser pour le debuggage/development. Vous
-    ne devriez jamais laisser le query loggind activé en production puisque
-    cela va avoir un impact négatif sur les performances de votre application.
+    Les logs des requêtes sont seulement à utiliser pour le
+    debuggage/development. Vous ne devriez jamais laisser les logs de requêtes
+    activées en production puisque cela va avoir un impact négatif sur les
+    performances de votre application.
 
 .. _identifier-quoting:
 
 Identifier Quoting
 ==================
 
-Par défaut CakePHP **ne** quote pas les identifiers dans les requêtes SQL
-générées. La raison pour ceci est que identifier quoting a quelques
-inconvénients:
+Par défaut CakePHP **ne** quote **pas** les identifiers dans les requêtes SQL
+générées. La raison pour ceci est que l'ajout de quote autour des identifiers
+a quelques inconvénients:
 
-* Par dessus tout la Performance - Quoting identifiers est bien plus lent et
+* Par dessus tout la Performance - Ajouter des quotes est bien plus lent et
   complexe que de ne pas le faire.
-* Pas nécessaire dans la plupart des cas - Dans des bases de données non-legacy
+* Pas nécessaire dans la plupart des cas - Dans des bases de données récentes
   qui suivent les conventions de CakePHP, il n'y a pas de raison de quoter les
   identifiers.
 
-Si vous n'utilisez pas un schema legacy qui nécessite l'identifier quoting, vous
-pouvez l'activer en utilisant le paramètre ``quoteIdentifiers`` dans votre
-:ref:`database-configuration`. Vous pouvez aussi activer cette fonctionnalité
-à la volée::
+Si vous utilisez un schema datant un peu qui nécessite de quoter les
+identifiers, vous pouvez l'activer en utilisant le paramètre
+``quoteIdentifiers`` dans votre :ref:`database-configuration`. Vous pouvez
+aussi activer cette fonctionnalité à la volée::
 
-    $conn->quoteIdentifiers(true);
+    $conn->driver()->autoQuoting(true);
 
 Quand elle est activée, l'identifier quoting va entrainer des requêtes
-supplémentaires traversal qui convertissent tous les identifiers en objets
+supplémentaires traversales qui convertissent tous les identifiers en objets
 ``IdentifierExpression``.
 
 .. note::
@@ -606,3 +930,65 @@ supplémentaires traversal qui convertissent tous les identifiers en objets
     Les portions de code SQL contenues dans les objets QueryExpression ne seront
     pas modifiées.
 
+.. _database-metadata-cache:
+
+La Mise en Cache de Metadata
+============================
+
+L'ORM de CakePHP utilise la reflection de base de données pour déterminer
+le schema, les indices et les clés étrangères de votre application. Comme
+cette metadata change peu fréquemment et peut être lourde à accéder, elle est
+habituellement mise en cache. Par défaut, les metadata sont stockées dans la
+configuration du cache ``_cake_model_``. Vous pouvez définir une configuration
+de cache personnalisée en utilisant l'option ``cacheMetatdata`` dans la
+configuration de la source de données::
+
+    'Datasources' => [
+        'default' => [
+            // Autres clés ici.
+
+            // Utilise la config de cache 'orm_metadata' pour les metadata.
+            'cacheMetadata' => 'orm_metadata',
+        ]
+    ],
+
+Vous pouvez aussi configurer les metadata mises en cache à l'exécution avec la
+méthode ``cacheMetadata()``::
+
+    // Désactive le cache
+    $connection->cacheMetadata(false);
+
+    // Active le cache
+    $connection->cacheMetadata(true);
+
+    // Utilise une config de cache personnalisée
+    $connection->cacheMetadata('orm_metadata');
+
+CakePHP intègre aussi un outil CLI pour gérer les mises en cache de metadata.
+Consultez le chapitre :doc:`/console-and-shells/orm-cache` pour plus
+d'information.
+
+Créer des Bases de Données
+==========================
+
+Si vous voulez créer une connexion (Connection) sans sélectionner de base de
+données, vous pouvez omettre le nom de la base de données::
+
+    $dsn = 'mysql://root:password@localhost/';
+
+Vous pouvez maintenant utiliser votre objet Connection pour exécuter des
+requêtes qui créent/modifient les bases de données. Par exemple pour créer une
+base de données::
+
+    $connection->query("CREATE DATABASE IF NOT EXISTS my_database");
+
+.. note::
+
+    Lorsque vous créez une base de données, il est recommandé de définir le jeu
+    de caractères ainsi que les paramètres de collation. Si ces valeurs sont
+    manquantes, la base de données utilisera les valeurs par défaut du système
+    quelles qu'elles soient.
+
+.. meta::
+    :title lang=fr: Notions de Base de Base de Données
+    :keywords lang=fr: SQL,MySQL,MariaDB,PostGres,Postgres,postgres,PostgreSQL,PostGreSQL,postGreSql,select,insert,update,delete,statement,configuration,connection,base de données,data,types,custom,,executing,queries,transactions,prepared,statements,binding,fetching,row,count,error,codes,query,logging,identifier,quoting,metadata,cache

@@ -11,20 +11,27 @@ contenu que le client accepte et modifie automatiquement dans le layout
 approprié, quand les extensions de fichier sont disponibles.
 
 Par défaut, le RequestHandler détectera automatiquement les requêtes AJAX
-basées sur le header HTTP-X-Requested-With, qui est utilisé par de nombreuses
+en se basant sur le header ``X-Requested-With``, qui est utilisé par de nombreuses
 librairies JavaScript. Quand il est utilisé conjointement avec
 :php:meth:`Router::parseExtensions()`, RequestHandler changera automatiquement
-le layout et les fichiers de vue par ceux qui correspondent au type demandé.
+le layout et les fichiers de template par ceux qui correspondent à des types
+de média non-HTML.
 En outre, s'il existe un helper avec le même nom que l'extension demandée,
 il sera ajouté au tableau des helpers des Controllers. Enfin, si une donnée
 XML/JSON est POST'ée vers vos Controllers, elle sera décomposée dans un
-tableau qui est assigné à ``$this->request->data``, et pourra alors être
-sauvegardée comme une donnée de model. Afin d'utiliser le Request Handler, il
-doit être inclu dans votre tableau $components::
+tableau qui est assigné à ``$this->request->getData()``, et pourra alors être
+accessible comme vous le feriez pour n'importe quelle donnée POST.
+Afin d'utiliser le Request Handler, il doit être chargé depuis la méthode
+``initialize()``::
 
-    class WidgetController extends AppController {
+    class WidgetController extends AppController
+    {
 
-        public $components = ['RequestHandler'];
+        public function initialize()
+        {
+            parent::initialize();
+            $this->loadComponent('RequestHandler');
+        }
 
         // suite du controller
     }
@@ -43,11 +50,17 @@ Si c'est un tableau, accepts() renverra ``true`` si un des types du contenu est
 accepté par le client. Si c'est 'null', elle renverra un tableau des types de
 contenu que le client accepte. Par exemple::
 
-        class ArticlesController extends AppController {
+        class ArticlesController extends AppController
+        {
 
-            public $components = ['RequestHandler'];
+            public function initialize()
+            {
+                parent::initialize();
+                $this->loadComponent('RequestHandler');
+            }
 
-            public function beforeFilter() {
+            public function beforeFilter(Event $event)
+            {
                 if ($this->RequestHandler->accepts('html')) {
                     // Execute le code seulement si le client accepte une
                     // response HTML  (text/html).
@@ -55,7 +68,7 @@ contenu que le client accepte. Par exemple::
                     // Execute uniquement le code XML
                 }
                 if ($this->RequestHandler->accepts(['xml', 'rss', 'atom'])) {
-                    // Execute si le client accetpte l'une des réponses 
+                    // Execute si le client accepte l'une des réponses
                     // ci-dessus: XML, RSS ou Atom.
                 }
             }
@@ -73,8 +86,8 @@ D'autres méthodes de détections du contenu des requêtes:
 
 .. php:method:: isAtom()
 
-    Renvoie ``true`` si l'appel actuel accepte les réponse Atom, false dans le cas
-    contraire.
+    Renvoie ``true`` si l'appel actuel accepte les réponse Atom, ``false`` dans
+    le cas contraire.
 
 .. php:method:: isMobile()
 
@@ -121,30 +134,37 @@ débogage. Cependant, si vous voulez utiliser le cache pour les requêtes
 non-AJAX., le code suivant vous permettra de le faire::
 
         if ($this->request->is('ajax')) {
-            $this->disableCache();
+            $this->response->disableCache();
         }
         // Continue l'action du controller
 
 Décoder Automatiquement les Données de la Requête
 =================================================
 
-.. php:method:: addInputType($type, $handler)
+Ajoute une requête de décodage de données. Le gestionnaire devrait contenir un
+callback, et tour autre argument supplémentaire pour le callback. Le callback
+devrait retourner un tableau de données contenues dans la requête. Par exemple,
+ajouter un gestionnaire de CSV pourrait ressembler à ceci::
 
-
-Ajoute une requête de décodage de données. Le gestionnaire devrait
-contenir un callback, et tour autre argument supplémentaire pour le
-callback. Le callback devrait retourner un tableau de données contenues
-dans la requête. Par exemple, ajouter un gestionnaire de CSV dans le
-callback beforeFilter de votre controller pourrait ressembler à ceci ::
-
-    $parser = function ($data) {
-        $rows = str_getcsv($data, "\n");
-        foreach ($rows as &$row) {
-            $row = str_getcsv($row, ',');
+    class ArticlesController extends AppController
+    {
+        public function initialize()
+        {
+            parent::initialize();
+            $parser = function ($data) {
+                $rows = str_getcsv($data, "\n");
+                foreach ($rows as &$row) {
+                    $row = str_getcsv($row, ',');
+                }
+                return $rows;
+            };
+            $this->loadComponent('RequestHandler', [
+                'inputTypeMap' => [
+                    'csv' => [$parser]
+                ]
+            ]);
         }
-        return $rows;
-    };
-    $this->RequestHandler->addInputType('csv', [$parser]);
+    }
 
 Vous pouvez utiliser n'importe quel `callback <http://php.net/callback>`_ pour
 la fonction de gestion. Vous pouvez aussi passer des arguments supplémentaires
@@ -152,9 +172,16 @@ au callback, c'est très utile pour les callbacks comme ``json_decode``::
 
     $this->RequestHandler->addInputType('json', ['json_decode', true]);
 
-Le contenu ci-dessus créera ``$this->request->data`` un tableau des données
+    // Depuis 3.1.0, vous devez utiliser
+    $this->RequestHandler->config('inputTypeMap.json', ['json_decode', true]);
+
+Le contenu ci-dessus créera ``$this->request->getData()`` un tableau des données
 d'entrées JSON, sans le ``true`` supplémentaire vous obtiendrez un jeu
-d'objets ``StdClass``.
+d'objets ``stdClass``.
+
+.. deprecated:: 3.1.0
+    Depuis 3.1.0 la méthode ``addInputType()`` est dépréciée. Vous devez
+    utiliser ``config()`` pour ajouter des types d'input à la volée.
 
 Vérifier les Préférences de Content-Type
 ========================================
@@ -165,7 +192,7 @@ Détermine les content-types que le client préfère. Si aucun paramètre n'est
 donné, le type de contenu le plus approchant est retourné. Si $type est un
 tableau, le premier type que le client accepte sera retourné. La préférence
 est déterminée, premièrement par l'extension de fichier analysée par
-Router, si il y en avait une de fournie et secondairement, par la liste des
+Router, s'il y en avait une de fournie et secondairement, par la liste des
 content-types définis dans ``HTTP\_ACCEPT``::
 
     $this->RequestHandler->prefers('json');
@@ -226,15 +253,16 @@ au client, augmentant la bande passante. Le code de réponse est défini
 Vous pouvez mettre en retrait ce contrôle automatique en paramétrant
 ``checkHttpCache`` à ``false``::
 
-    public $components = [
-        'RequestHandler' => [
+    public function initialize()
+    {
+        parent::initialize();
+        $this->loadComponent('RequestHandler', [
             'checkHttpCache' => false
-    ]];
+        ]);
+    }
 
 Utiliser les ViewClasses personnalisées
 =======================================
-
-.. php:method:: viewClassMap($type, $viewClass)
 
 Quand vous utilisez JsonView/XmlView, vous aurez envie peut-être de surcharger
 la serialization par défaut avec une classe View par défaut, ou ajouter des
@@ -244,14 +272,21 @@ Vous pouvez mapper les types existants et les nouveaux types à vos classes
 personnalisées. Vous pouvez aussi définir ceci automatiquement en utilisant
 la configuration ``viewClassMap``::
 
-    public $components = [
-        'RequestHandler' => [
+    public function initialize()
+    {
+        parent::initialize();
+        $this->loadComponent('RequestHandler', [
             'viewClassMap' => [
                 'json' => 'ApiKit.MyJson',
                 'xml' => 'ApiKit.MyXml',
                 'csv' => 'ApiKit.Csv'
             ]
-    ]];
+        ]);
+    }
+
+.. deprecated:: 3.1.0
+    Depuis 3.1.0, la méthode ``viewClassMap()`` est dépréciée. Vous devez
+    utiliser ``config()`` pour changer viewClassMap à la volée.
 
 .. meta::
     :title lang=fr: Request Handling (Gestion des requêtes)

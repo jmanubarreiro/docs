@@ -2,8 +2,8 @@ I18N Shell
 ##########
 
 The i18n features of CakePHP use `po files <http://en.wikipedia.org/wiki/GNU_gettext>`_
-as their translation source. This makes them easily to integrate with tools
-like `poedit <http://www.poedit.net/>`_ and other common translation tools.
+as their translation source. PO files integrate with commonly used translation tools
+like `poedit <http://www.poedit.net/>`_.
 
 The i18n shell provides a quick and easy way to generate po template files.
 These templates files can then be given to translators so they can translate the
@@ -21,7 +21,7 @@ application will be combined into a single POT file::
     bin/cake i18n extract
 
 The above will run the extraction shell. The result of this command will be the
-file ``src/Locale/default.pot``. You use the pot file as a template for creating
+file **src/Locale/default.pot**. You use the pot file as a template for creating
 po files. If you are manually creating po files from the pot file, be sure to
 correctly set the ``Plural-Forms`` header line.
 
@@ -34,6 +34,18 @@ You can generate a POT file for a specific plugin using::
 
 This will generate the required POT files used in the plugins.
 
+Extracting from multiple folders at once
+----------------------------------------
+
+Sometimes, you might need to extract strings from more than one directory of
+your application. For instance, if you are defining some strings in the
+``config`` directory of your application, you probably want to extract strings
+from this directory as well as from the ``src`` directory. You can do it by
+using the ``--paths`` option. It takes a comma-separated list of absolute paths
+to extract::
+
+    bin/cake i18n extract --paths /var/www/app/config,/var/www/app/src
+
 Excluding Folders
 -----------------
 
@@ -45,8 +57,8 @@ Any path containing a path segment with the provided values will be ignored::
 Skipping Overwrite Warnings for Existing POT Files
 --------------------------------------------------
 
-By adding --overwrite, the shell script will no longer warn you if a POT file
-already exists and will overwrite by default::
+By adding ``--overwrite``, the shell script will no longer warn you if a POT
+file already exists and will overwrite by default::
 
     bin/cake i18n extract --overwrite
 
@@ -54,26 +66,14 @@ Extracting Messages from the CakePHP Core Libraries
 ---------------------------------------------------
 
 By default, the extract shell script will ask you if you like to extract
-the messages used in the CakePHP core libraries. Set --extract-core to yes or
-no to set the default behavior::
+the messages used in the CakePHP core libraries. Set ``--extract-core`` to yes
+or no to set the default behavior::
 
     bin/cake i18n extract --extract-core yes
 
-    or
+    // or
 
     bin/cake i18n extract --extract-core no
-
-
-Create the Tables used by TranslateBehavior
-===========================================
-
-The i18n shell can also be used to initialize the default tables used by the
-:php:class:`TranslateBehavior`::
-
-    bin/cake i18n initdb
-
-This will create the ``i18n`` table used by translate behavior.
-
 
 .. meta::
     :title lang=en: I18N shell

@@ -5,16 +5,16 @@ CakePHP 3.0 features a new ORM that has been re-written from the ground up.
 While the ORM used in 1.x and 2.x has served us well for a long time it had
 a few issues that we wanted to fix.
 
-* Frankenstein - is it a record, or a table? Currently it's both.
+* Frankenstein - Is it a record, or a table? Currently it's both.
 * Inconsistent API - Model::read() for example.
 * No query object - Queries are always defined as arrays, this has some
   limitations and restrictions. For example it makes doing unions and
   sub-queries much harder.
-* Returns arrays.  This is a common complaint about CakePHP, and has probably
+* Returns arrays - This is a common complaint about CakePHP, and has probably
   reduced adoption at some levels.
 * No record object - This makes attaching formatting methods
   difficult/impossible.
-* Containable - Should be part of the ORM, not a crazy hacky behaviour.
+* Containable - Should be part of the ORM, not a crazy hacky behavior.
 * Recursive - This should be better controlled as defining which associations
   are included, not a level of recursiveness.
 * DboSource - It is a beast, and Model relies on it more than datasource.  That
@@ -45,7 +45,7 @@ operations. Now the ORM is split into more layers:
   bindings for each data type. For example datetime columns are represented as
   ``DateTime`` instances in your code now.
 * ``Cake\ORM\Table`` - The main entry point into the new ORM. Provides access
-  to a single table. Handles the definition of assocation, use of behaviors and
+  to a single table. Handles the definition of association, use of behaviors and
   creation of entities and query objects.
 * ``Cake\ORM\Behavior`` - The base class for behaviors, which act very similar
   to behaviors in previous versions of CakePHP.
@@ -71,7 +71,7 @@ Table objects are the gateway into your data. They handle many of the tasks that
 - Providing finders.
 - Validating and saving entities.
 - Deleting entities.
-- Defining & accessing associations.
+- Defining and accessing associations.
 - Triggering callback events.
 - Interacting with behaviors.
 
@@ -116,7 +116,7 @@ with table objects.
 Key Differences
 ===============
 
-The new ORM is a large departure from the existing ``Model`` layer, there are
+The new ORM is a large departure from the existing ``Model`` layer. There are
 many important differences that are important in understanding how the new ORM
 operates and how to update your code.
 
@@ -178,21 +178,23 @@ ever::
     $query->where(['id' => $favoritesQuery->select(['id'])]);
 
 You can decorate queries with iterators and call methods without even touching
-the database, this is great when you have parts of your view cached and having
+the database. This is great when you have parts of your view cached and having
 the results taken from the database is not actually required::
 
     // No queries made in this example!
     $results = $articles->find()
         ->order(['title' => 'DESC'])
-        ->extract('title');
+        ->formatResults(function (\Cake\Collection\CollectionInterface $results) {
+            return $results->extract('title');
+        });
 
 Queries can be seen as the result object, trying to iterate the query, calling
-``toArray`` or any method inherited from :ref:`collection<collection-objects>`,
+``toArray()`` or any method inherited from :doc:`collection </core-libraries/collections>`,
 will result in the query being executed and results returned to you.
 
 The biggest difference you will find when coming from CakePHP 2.x is that
 ``find('first')`` does not exist anymore. There is a trivial replacement for it,
-and it is the ``first`` method::
+and it is the ``first()`` method::
 
     // Before
     $article = $this->Article->find('first');
@@ -210,8 +212,13 @@ and it is the ``first`` method::
         'conditions' => ['author_id' => 1]
     ])->first();
 
-If you are a loading a single record by its primary key, it will be better to
-just call ``get``::
+    // Can also be written
+    $article = $this->Articles->find()
+        ->where(['author_id' => 1])
+        ->first();
+
+If you are loading a single record by its primary key, it will be better to
+just call ``get()``::
 
     $article = $this->Articles->get(10);
 
@@ -223,13 +230,16 @@ a cost for people migrating from 2.x. If you had some custom find methods in
 your models, they will need some modifications. This is how you create custom
 finder methods in 3.0::
 
-    class ArticlesTable {
+    class ArticlesTable
+    {
 
-        public function findPopular(Query $query, array $options) {
+        public function findPopular(Query $query, array $options)
+        {
             return $query->where(['times_viewed' > 1000]);
         }
 
-        public function findFavorites(Query $query, array $options) {
+        public function findFavorites(Query $query, array $options)
+        {
             $for = $options['for'];
             return $query->matching('Users.Favorites', function ($q) use ($for) {
                 return $q->where(['Favorites.user_id' => $for]);
@@ -240,24 +250,27 @@ finder methods in 3.0::
 As you can see, they are pretty straightforward, they get a Query object instead
 of an array and must return a Query object back. For 2.x users that implemented
 afterFind logic in custom finders, you should check out the :ref:`map-reduce`
-section, or use the features found on the :ref:`collection-objects`. If in your
+section, or use the features found on the
+:doc:`collection objects </core-libraries/collections>`. If in your
 models you used to rely on having an afterFind for all find operations you can
 migrate this code in one of a few ways:
 
 1. Override your entity constructor method and do additional formatting there.
 2. Create accessor methods in your entity to create the virtual properties.
-3. Redefine ``findAll()`` and attach a map/reduce function.
+3. Redefine ``findAll()`` and use ``formatResults``.
 
 In the 3rd case above your code would look like::
 
-    public function findAll(Query $query, array $options) {
-        $mapper = function ($row, $key, $mr) {
-            // Your afterFind logic
-        };
-        return $query->mapReduce($mapper);
+    public function findAll(Query $query, array $options)
+    {
+        return $query->formatResults(function (\Cake\Collection\CollectionInterface $results) {
+            return $results->map(function ($row) {
+                // Your afterfind logic
+            });
+        })
     }
 
-You may have noticed that custom finders receive an options array, you can pass
+You may have noticed that custom finders receive an options array. You can pass
 any extra information to your finder using this parameter. This is great
 news for people migrating from 2.x. Any of the query keys that were used in
 previous versions will be converted automatically for you in 3.x to the correct
@@ -275,8 +288,15 @@ functions::
         'limit' => 10,
     ]);
 
-Hopefully, migrating from older versions is not as daunting as it first seems,
-much of the features we have added helps you remove code as you can better
+If your application uses 'magic' or :ref:`dynamic-finders`, you will have to
+adapt those calls. In 3.x the ``findAllBy*`` methods have been removed, instead
+``findBy*`` always returns a query object. To get the first result, you need to
+use the ``first()`` method::
+
+    $article = $this->Articles->findByTitle('A great post!')->first();
+
+Hopefully, migrating from older versions is not as daunting as it first seems.
+Many of the features we have added will help you remove code as you can better
 express your requirements using the new ORM and at the same time the
 compatibility wrappers will help you rewrite those tiny differences in a fast
 and painless way.
@@ -316,7 +336,7 @@ In previous versions of CakePHP you needed to make extensive use of the
 properties. These features have been removed in 3.0. Because of how ResultSets
 iteratively generate entities, the ``afterFind`` callback was not possible.
 Both afterFind and virtual fields can largely be replaced with virtual
-properies on entities. For example if your User entity has both first and last
+properties on entities. For example if your User entity has both first and last
 name columns you can add an accessor for `full_name` and generate the property
 on the fly::
 
@@ -324,8 +344,10 @@ on the fly::
 
     use Cake\ORM\Entity;
 
-    class User extends Entity {
-        public function getFullName() {
+    class User extends Entity
+    {
+        protected function _getFullName()
+        {
             return $this->first_name . '  ' . $this->last_name;
         }
     }
@@ -345,8 +367,10 @@ fields gave::
     use Cake\ORM\Table;
     use Cake\ORM\Query;
 
-    class ReviewsTable extends Table {
-        function findAverage(Query $query, array $options = []) {
+    class ReviewsTable extends Table
+    {
+        public function findAverage(Query $query, array $options = [])
+        {
             $avg = $query->func()->avg('rating');
             $query->select(['average' => $avg]);
             return $query;
@@ -360,7 +384,7 @@ In previous versions of CakePHP the various associations your models had were
 defined in properties like ``$belongsTo`` and ``$hasMany``. In CakePHP 3.0,
 associations are created with methods. Using methods allows us to sidestep the
 many limitations class definitions have, and provide only one way to define
-associations. Your ``initialize`` method and all other parts of your application
+associations. Your ``initialize()`` method and all other parts of your application
 code, interact with the same API when manipulating associations::
 
     namespace App\Model\Table;
@@ -368,9 +392,11 @@ code, interact with the same API when manipulating associations::
     use Cake\ORM\Table;
     use Cake\ORM\Query;
 
-    class ReviewsTable extends Table {
+    class ReviewsTable extends Table
+    {
 
-        public function initialize(array $config) {
+        public function initialize(array $config)
+        {
             $this->belongsTo('Movies');
             $this->hasOne('Ratings');
             $this->hasMany('Comments')
@@ -382,7 +408,7 @@ code, interact with the same API when manipulating associations::
 As you can see from the example above each of the association types uses
 a method to create the association. One other difference is that
 ``hasAndBelongsToMany`` has been renamed to ``belongsToMany``. To find out more
-about creating associations in 3.0 see the section on :ref:`table-associations`.
+about creating associations in 3.0 see the section on :doc:`/orm/associations`.
 
 Another welcome improvement to CakePHP is the ability to create your own
 association classes. If you have association types that are not covered by the
@@ -395,33 +421,30 @@ Validation No Longer Defined as a Property
 Like associations, validation rules were defined as a class property in previous
 versions of CakePHP. This array would then be lazily transformed into
 a ``ModelValidator`` object. This transformation step added a layer of
-indirection, complicating rule changes at runtime. Futhermore, validation rules
+indirection, complicating rule changes at runtime. Furthermore, validation rules
 being defined as a property made it difficult for a model to have multiple sets
 of validation rules. In CakePHP 3.0, both these problems have been remedied.
-Validation rules are always built with a ``Validator`` object, and it is trivial to
-have multiple sets of rules::
+Validation rules are always built with a ``Validator`` object, and it is trivial
+to have multiple sets of rules::
 
     namespace App\Model\Table;
 
     use Cake\ORM\Table;
     use Cake\ORM\Query;
+    use Cake\Validation\Validator;
 
-    class ReviewsTable extends Table {
+    class ReviewsTable extends Table
+    {
 
-        public function validationDefault($validator) {
-            $validator->validatePresence('body')
+        public function validationDefault(Validator $validator)
+        {
+            $validator->requirePresence('body')
                 ->add('body', 'length', [
                     'rule' => ['minLength', 20],
                     'message' => 'Reviews must be 20 characters or more',
                 ])
-                ->add('user_id', 'exists', [
-                    'rule' => function ($value, $context) {
-                        $q = $this->association('Users')
-                            ->find()
-                            ->where(['id' => $value]);
-                        return $q->count() === 1;
-                    },
-                    'message' => 'A valid user is required.'
+                ->add('user_id', 'numeric', [
+                    'rule' => 'numeric'
                 ]);
             return $validator;
         }
@@ -429,9 +452,51 @@ have multiple sets of rules::
     }
 
 You can define as many validation methods as you need. Each method should be
-prefixed with ``validation`` and accept a ``$validator`` argument. You can then
-use your validators when saving using the ``validate`` option. See the
-documentation on :ref:`saving-entities` for more information.
+prefixed with ``validation`` and accept a ``$validator`` argument.
+
+In previous versions of CakePHP 'validation' and the related callbacks covered
+a few related but different uses. In CakePHP 3.0, what was formerly called
+validation is now split into two concepts:
+
+#. Data type and format validation.
+#. Enforcing application, or business rules.
+
+Validation is now applied before ORM entities are created from request data.
+This step lets you ensure data matches the data type, format, and basic shape
+your application expects. You can use your validators when converting request
+data into entities by using the ``validate`` option. See the documentation on
+:ref:`converting-request-data` for more information.
+
+:ref:`Application rules <application-rules>` allow you to define rules that
+ensure your application's rules, state and workflows are enforced. Rules are
+defined in your Table's ``buildRules()`` method. Behaviors can add rules using
+the ``buildRules()`` hook method. An example ``buildRules()`` method for our
+articles table could be::
+
+    // In src/Model/Table/ArticlesTable.php
+    namespace App\Model\Table;
+
+    use Cake\ORM\Table;
+    use Cake\ORM\RulesChecker;
+
+    class ArticlesTable extends Table
+    {
+        public function buildRules(RulesChecker $rules)
+        {
+            $rules->add($rules->existsIn('user_id', 'Users'));
+            $rules->add(
+                function ($article, $options) {
+                    return ($article->published && empty($article->reviewer));
+                },
+                'isReviewed',
+                [
+                    'errorField' => 'published',
+                    'message' => 'Articles must be reviewed before publishing.'
+                ]
+            );
+            return $rules;
+        }
+    }
 
 Identifier Quoting Disabled by Default
 --------------------------------------
@@ -449,7 +514,7 @@ a connection::
     'Datasources' => [
         'default' => [
             'className' => 'Cake\Database\Driver\Mysql',
-            'login' => 'root',
+            'username' => 'root',
             'password' => 'super_secret',
             'host' => 'localhost',
             'database' => 'cakephp',
@@ -466,7 +531,7 @@ Updating Behaviors
 ==================
 
 Like most ORM related features, behaviors have changed in 3.0 as well. They now
-attach to ``Table`` instances which are the conceptual descendent of the
+attach to ``Table`` instances which are the conceptual descendant of the
 ``Model`` class in previous versions of CakePHP. There are a few key
 differences from behaviors in CakePHP 2.x:
 
@@ -476,7 +541,7 @@ differences from behaviors in CakePHP 2.x:
 - The method signatures for mixin methods have changed.
 - The method signatures for callback methods have changed.
 - The base class for behaviors have changed.
-- Behaviors can easily add finder methods.
+- Behaviors can add finder methods.
 
 New Base Class
 --------------
@@ -484,7 +549,7 @@ New Base Class
 The base class for behaviors has changed. Behaviors should now extend
 ``Cake\ORM\Behavior``; if a behavior does not extend this class an exception
 will be raised. In addition to the base class changing, the constructor for
-behaviors has been modified, and the ``startup`` method has been removed.
+behaviors has been modified, and the ``startup()`` method has been removed.
 Behaviors that need access to the table they are attached to should define
 a constructor::
 
@@ -492,11 +557,13 @@ a constructor::
 
     use Cake\ORM\Behavior;
 
-    class SluggableBehavior extends Behavior {
+    class SluggableBehavior extends Behavior
+    {
 
         protected $_table;
 
-        public function __construct(Table $table, array $config) {
+        public function __construct(Table $table, array $config)
+        {
             parent::__construct($table, $config);
             $this->_table = $table;
         }
@@ -514,10 +581,11 @@ behavior mixin methods can expect the **same** arguments provided to the table
     // Assume table has a slug() method provided by a behavior.
     $table->slug($someValue);
 
-The behavior providing the ``slug`` method will receive only 1 argument, and its
+The behavior providing the ``slug()`` method will receive only 1 argument, and its
 method signature should look like::
 
-    public function slug($value) {
+    public function slug($value)
+    {
         // Code here.
     }
 
@@ -528,7 +596,8 @@ Behavior callbacks have been unified with all other listener methods. Instead of
 their previous arguments, they need to expect an event object as their first
 argument::
 
-    public function beforeFind(Event $event, Query $query, array $options) {
+    public function beforeFind(Event $event, Query $query, array $options)
+    {
         // Code.
     }
 

@@ -1,7 +1,7 @@
-Timestamp Behavior
-##################
+Timestamp
+#########
 
-.. php:namespace:: Cake\Model\Behavior
+.. php:namespace:: Cake\ORM\Behavior
 
 .. php:class:: TimestampBehavior
 
@@ -16,8 +16,10 @@ Basic Usage
 
 You enable the timestamp behavior like any other behavior::
 
-    class ArticlesTable extends Table {
-        public function initialize(array $config) {
+    class ArticlesTable extends Table
+    {
+        public function initialize(array $config)
+        {
             $this->addBehavior('Timestamp');
         }
     }
@@ -34,8 +36,10 @@ Using and Configuring the Behavior
 If you need to modify fields with different names, or want to update additional
 timestamp fields on custom events you can use some additional configuration::
 
-    class OrdersTable extends Table {
-        public function initialize(array $config) {
+    class OrdersTable extends Table
+    {
+        public function initialize(array $config)
+        {
             $this->addBehavior('Timestamp', [
                 'events' => [
                     'Model.beforeSave' => [
@@ -66,6 +70,18 @@ a record. In CakePHP you can use the ``touch()`` method to do exactly this::
     // Touch based on a specific event.
     $orders->touch($order, 'Orders.completed');
 
+After you have saved the entity, the field is updated.
+
 Touching records can be useful when you want to signal that a parent resource
 has changed when a child resource is created/updated. For example: updating an
 article when a new comment is added.
+
+Saving Updates Without Modifying Timestamps
+===========================================
+
+To disable the automatic modification of the ``updated`` timestamp column when
+saving an entity you can mark the attribute as 'dirty'::
+
+    // Mark the modified column as dirty making
+    // the current value be set on update.
+    $order->dirty('modified', true);

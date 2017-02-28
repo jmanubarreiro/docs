@@ -57,7 +57,7 @@ Folder API
 .. php:attr:: mode
 
     Mode to be used when creating folders. Defaults to ``0755``. Does nothing on
-    windows machines.
+    Windows machines.
 
 .. php:staticmethod:: addPathElement(string $path, string $element)
 
@@ -99,13 +99,13 @@ Folder API
         // Will put folder1 and all its contents into folder2
 
         $folder = new Folder('/path/to/folder');
-        $folder->copy(array(
+        $folder->copy([
             'to' => '/path/to/new/folder',
             'from' => '/path/to/copy/from', // Will cause a cd() to occur
             'mode' => 0755,
-            'skip' => array('skip-me.php', '.git'),
+            'skip' => ['skip-me.php', '.git'],
             'scheme' => Folder::SKIP  // Skip directories/files that already exist.
-        ));
+        ]);
 
     There are 3 supported schemes:
 
@@ -205,10 +205,10 @@ Folder API
 
         $Folder = new Folder(WWW_ROOT);
         $result = $Folder->inPath(APP);
-        // $result = true, /var/www/example/app/ is in /var/www/example/app/webroot/
+        // $result = true, /var/www/example/ is in /var/www/example/webroot/
 
         $result = $Folder->inPath(WWW_ROOT . 'img' . DS, true);
-        // $result = true, /var/www/example/app/webroot/ is in /var/www/example/app/webroot/img/
+        // $result = true, /var/www/example/webroot/ is in /var/www/example/webroot/img/
 
 .. php:staticmethod:: isAbsolute(string $path)
 
@@ -397,8 +397,8 @@ File API
 .. php:staticmethod:: prepare(string $data, boolean $forceWindows = false)
 
     Prepares a ascii string for writing. Converts line endings to the
-    correct terminator for the current platform. For Windows "\r\n"
-    will be used, "\n" for all other platforms.
+    correct terminator for the current platform. For Windows "\\r\\n"
+    will be used, "\\n" for all other platforms.
 
 .. php:method:: pwd()
 
@@ -418,7 +418,7 @@ File API
 
 .. php:method:: size()
 
-    Returns the filesize.
+    Returns the filesize in bytes.
 
 .. php:method:: writable()
 
