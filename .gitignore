@@ -20,3 +20,4 @@ build/*
 Icon?
 ehthumbs.db
 Thumbs.db
+.settings/org.eclipse.core.resources.prefs
